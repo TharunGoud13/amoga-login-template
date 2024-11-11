@@ -24,6 +24,8 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } =  NextAuth(
         session.user.mobile = token?.user?.mobile;
         session.user.business_number = token?.user?.business_number;
         session.user.business_name = token?.user?.business_name;
+        session.user.first_name = token?.user?.first_name;
+        session.user.last_name = token?.user?.last_name
         
       }
       return session;

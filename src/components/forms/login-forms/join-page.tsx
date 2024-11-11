@@ -15,7 +15,8 @@ import { toast } from "@/components/ui/use-toast";
 import { GET_CONTACTS_API, NEXT_PUBLIC_API_KEY } from "@/constants/envConfig";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { FC, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -58,12 +59,16 @@ const otpFormSchema = z.object({
 type UserFormValue = z.infer<typeof formSchema>;
 type OtpFormValue = z.infer<typeof otpFormSchema>;
 
-const JoinPage = () => {
+const JoinPage:FC<any> = ({setSelectedTab}) => {
   const [signupMethod, setSignupMethod] = useState("email");
   const [showSignupOtpField, setShowSignupOtpField] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showRePassword, setShowRePassword] = useState(false);
+  const [otpSessionId, setOtpSessionId] = useState<string | null>(null);
+  const router = useRouter()
+
+  console.log("otpSessionId----",otpSessionId)
 
   const defaultValues = {
     first_name: "",
@@ -121,9 +126,120 @@ const JoinPage = () => {
     }
   };
 
+  const onSendOtp = async() => {
+    const {mobile} = otpForm.getValues();
+    if (!mobile) {
+      toast({ description: "Mobile number is required to send OTP.", variant: "destructive" });
+      return;
+    }
+    setLoading(true);
+
+    try{
+    const response = await fetch("api/otp/send-otp",{
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ mobile }),
+    })
+    const result = await response.json();
+    console.log("send----result---",result)
+    console.log("send----response---",response)
+
+    if(response.ok){
+      setOtpSessionId(result.sessionId);
+      setShowSignupOtpField(true)
+      toast({ description: "OTP sent successfully", variant: "default" });
+    }
+    else{
+      toast({ description: "Failed to send OTP", variant: "destructive" });
+    }}
+    catch(error){
+      toast({ description: "An error occurred while sending OTP.", variant: "destructive" });
+    }
+    finally{
+      setLoading(false);
+    }
+
+  }
+
+
+  const registerUserDetails = async(userData:any) => {
+    const myHeaders = new Headers();
+    myHeaders.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
+    myHeaders.append("Content-Type", "application/json");
+    
+    const requestOptions: any = {
+      method: "POST",
+      headers: myHeaders,
+      body: JSON.stringify(userData),
+    };
+
+    try {
+      const response = await fetch(GET_CONTACTS_API, requestOptions);
+      const data = await response.text();
+      console.log("response----",response)
+      
+      if (response.status === 201) {
+        toast({ description: "User Created Successfully", variant: "default" });
+        let text: any = document.getElementById("success-text");
+        if (text) {
+          text.textContent = "User Created Successfully";
+        }
+        return true;
+      }
+      else if(response.status === 409){
+        toast({ description: "User already exists.", variant: "destructive" });
+        return false;
+      }
+      return false;
+    } catch (error: any) {
+      toast({ description: "Failed to create user", variant: "destructive" });
+      return false;
+    }
+  };
+
   const onSubmitOtp = async (data: OtpFormValue) => {
-    setShowSignupOtpField(true);
-    console.log("OTP=====", data);
+    if(!otpSessionId) return;
+    console.log("data-----",data)
+    setLoading(true);
+
+    try{
+      const response = await fetch(`api/otp/verify-otp`,{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sessionId: otpSessionId, otp: data.otp }),
+      })
+      const result = await response.json();
+
+      if(result.verified){
+        const userData = {
+          first_name: data.first_name,
+          last_name: data.last_name,
+          user_mobile: data.mobile,
+          user_name: data.first_name + " " + data.last_name
+        }
+
+        const registerUser = await registerUserDetails(userData)
+
+        if(registerUser){
+          toast({ description: "User created successfully!", variant: "default" });
+          otpForm.reset();
+          setShowSignupOtpField(false);
+          // setSelectedTab('login')
+        }
+      }
+      else{
+        toast({ description: "Invalid OTP", variant: "destructive" });
+      }
+    }
+    catch(error){
+      toast({ description: "An error occurred while verifying OTP.", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -393,13 +509,16 @@ const JoinPage = () => {
                   )}
                 />
 
-                <Button
-                  disabled={loading}
-                  className="ml-auto w-full"
-                  type="submit"
-                >
-                  Get OTP
-                </Button>
+                {!showSignupOtpField && (
+                  <Button
+                    disabled={loading}
+                    className="ml-auto w-full"
+                    type="button"
+                    onClick={onSendOtp}
+                  >
+                    Get OTP
+                  </Button>
+                )}
 
                 {showSignupOtpField && (
                   <FormField
@@ -426,6 +545,11 @@ const JoinPage = () => {
                     )}
                   />
                 )}
+                {showSignupOtpField && (
+                <Button disabled={loading} className="ml-auto w-full" type="submit">
+                  Verify OTP
+                </Button>
+              )}
               </div>
             </form>
           </Form>

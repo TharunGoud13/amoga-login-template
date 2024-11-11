@@ -3,6 +3,7 @@ import GitHubProvider from "next-auth/providers/github";
 import LinkedInProvider from "next-auth/providers/linkedin";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { NEXT_PUBLIC_API_KEY } from "@/constants/envConfig";
+import { middlewareAPI } from "./auth-middleware";
 
 export const ssoProviders = [
   GoogleProvider({
@@ -23,49 +24,78 @@ export const ssoProviders = [
       email: { label: "Email", type: "text" },
       password: { label: "Password", type: "password" },
     },
-    async authorize(credentials) {
+    async authorize(credentials:any) {
       if (!credentials?.email || !credentials?.password) {
         return null;
       }
 
       try {
-        const response = await fetch(
-          "https://amogademo-postgrest.morr.biz/user_catalog",
-          {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${NEXT_PUBLIC_API_KEY}`,
-              "Content-Type": "application/json",
-            },
+        const response = await middlewareAPI({
+          email: credentials.email,
+          password: credentials.password,})
+
+          if(response){
+            return response
           }
-        );
-
-        if (!response.ok) throw new Error("Failed to fetch user data");
-
-        const users = await response.json();
-        const user = users.find(
-          (u:any) =>
-            u.user_email === credentials.email &&
-            u.password === credentials.password
-        );
-
-        if (user) {
-          return {
-            id: user.user_catalog_id,
-            email: user.user_email,
-            name: user.user_name,
-            mobile: user.user_mobile,
-            business_number: user.business_number,
-            picture: user.user_picture,
-            business_name: user.business_name,
-          };
-        }
-        return null;
+          return null
       } catch (error) {
         return null;
       }
     },
   }),
+  CredentialsProvider({
+    id:"mobile-otp",
+    name: "Mobile OTP",
+    credentials: {
+      mobile: {label: "Mobile Number",type: "text"},
+      otp: {label: "OTP", type: "text"},
+      sessionId: {label: "Session ID", type: "text"}
+    },
+    async authorize(credentials: any) {
+      console.log("credentials======",credentials);
+      if (!credentials?.mobile || !credentials?.otp) {
+        return null;
+      }
+
+      try {
+        // Verify OTP
+        const otpResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/otp/verify-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId: credentials.sessionId, otp: credentials.otp }),
+        });
+        
+        const otpData = await otpResponse.json();
+        console.log("otpData----",otpData);
+
+        // Check if OTP is verified
+        if (otpData.verified === true) {
+          // Check if user exists in the database
+          const userResponse = await fetch("https://amogademo-postgrest.morr.biz/user_catalog", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${NEXT_PUBLIC_API_KEY}`,
+            },
+          });
+          
+          const users = await userResponse.json();
+          const user = users.find((user:any) => user.user_mobile === credentials.mobile);
+
+          if (user) {
+            // Return user data to establish a session
+            return { id: user.id, name: `${user.first_name} ${user.last_name}`, mobile: user.user_mobile };
+          } else {
+            return null;
+          }
+        }
+        return null;
+      } catch (error) {
+        console.error("Error during OTP login:", error);
+        return null;
+      }
+    },
+  })
 ];
 
 export const showProviderButtons = {

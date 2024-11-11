@@ -71,7 +71,7 @@ const LoginForm: FC<any> = () => {
                 <LoginPage/>
               </TabsContent>
               <TabsContent value="join">
-                  <JoinPage/>
+                  <JoinPage setSelectedTab={setSelectedTab}/>
               </TabsContent>
               <TabsContent value="signon">
               <SignOnPage/>

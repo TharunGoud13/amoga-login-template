@@ -32,9 +32,12 @@ const formSchema = z.object({
 const otpFormSchema = z.object({
   mobile: z
     .string()
-    .min(10,{message: "Enter Valid Mobile Number"})
-    .max(10,{message: "Enter Valid Mobile Number"})
-    .nonempty({ message: "Mobile is required" }),
+    .min(10, { message: "Enter a valid Mobile Number" })
+    .max(10, { message: "Enter a valid Mobile Number" }),
+  otp: z
+    .string()
+    .min(4, { message: "Enter a valid OTP" })
+    .max(6, { message: "Enter a valid OTP" }),
 });
 
 type UserFormValue = z.infer<typeof formSchema>;
@@ -47,6 +50,7 @@ const LoginPage = () => {
   const [loginMethod, setLoginMethod] = useState("email");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [otpSessionId, setOtpSessionId] = useState<string | null>(null);
 
   const defaultValues = {
     email: "",
@@ -58,12 +62,100 @@ const LoginPage = () => {
     defaultValues,
   });
 
-  const otpForm = useForm<OtpFormValue>({
+  const otpForm:any = useForm<OtpFormValue>({
     resolver: zodResolver(otpFormSchema),
     defaultValues: {
       mobile: "",
+      otp: "",
     },
   });
+
+  const onSendOtp = async () => {
+    const { mobile } = otpForm.getValues();
+    if (!mobile) {
+      toast({
+        description: "Mobile number is required to send OTP.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setLoading(true);
+
+    try {
+      const response = await fetch("api/otp/send-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ mobile }),
+      });
+      const result = await response.json();
+
+      if (response.ok) {
+        setOtpSessionId(result.sessionId);
+        setShowLoginOtpField(true);
+        toast({ description: "OTP sent successfully", variant: "default" });
+      } else {
+        toast({ description: "Failed to send OTP", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({
+        description: "An error occurred while sending OTP.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onSubmitOtp = async (data: any) => {
+    console.log("data----",data)
+    if (!otpSessionId) {
+      toast({
+        description: "Please request OTP first",
+        variant: "destructive",
+      });
+      return;
+    }
+    setLoading(true);
+    try{
+      const response:any = await signIn("mobile-otp",{
+        mobile: data.mobile,
+        otp: data.otp,
+        redirect: false,
+        sessionId: otpSessionId
+      })
+      console.log("response----",response)
+      if (response?.error && response?.error === "CredentialsSignin") {
+        toast({
+          description: "Invalid OTP. Please try again.",
+          variant: "destructive",
+        });
+      } else if (response?.ok) {
+        router.push("/");
+      }
+      
+      else{
+        toast({
+          description: "Invalid OTP, please try again.",
+          variant: "destructive",
+        });
+      }
+
+      
+    }
+    catch(error){
+      router.push("/applogin");
+      toast({
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    }
+    finally{
+      setLoading(false);
+    }
+    
+  };
 
   const onSubmit = async (data: UserFormValue) => {
     setLoading(true);
@@ -93,10 +185,6 @@ const LoginPage = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const onSubmitOtp = async (data: OtpFormValue) => {
-    console.log("OTP=====", data);
   };
 
   return (
@@ -219,32 +307,50 @@ const LoginPage = () => {
                     </FormItem>
                   )}
                 />
-                {/* <Label htmlFor="mobile" className="flex items-center"></Label>
-                <Input
-                  id="mobile"
-                  type="tel"
-                  placeholder="+1234567890"
-                  required
-                /> */}
-              
-               <Button
-               disabled={loading}
-                type="submit"
-                className="w-full"
-              >
-                Get OTP
-              </Button>
+
+                {!showLoginOtpField && (
+                  <Button
+                    disabled={loading}
+                    type="button"
+                    className="w-full"
+                    onClick={onSendOtp}
+                  >
+                    Get OTP
+                  </Button>
+                )}
+
+                {showLoginOtpField && (
+                  <FormField
+                    control={otpForm.control}
+                    name="otp"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          OTP
+                          <span className="text-red-500 mr-1">*</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            id="otp"
+                            inputMode="numeric"
+                            type="number"
+                            placeholder="Enter OTP"
+                            required
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+                {showLoginOtpField && (
+                <Button disabled={loading} className="ml-auto w-full" type="submit">
+                  Verify OTP
+                </Button>
+              )}
               </div>
             </form>
-
-            {/* {showLoginOtpField && (
-              <div className="space-y-2">
-                <Label htmlFor="otp" className="flex items-center">
-                  <span className="text-red-500 mr-1">*</span>OTP
-                </Label>
-                <Input id="otp" type="text" placeholder="Enter OTP" required />
-              </div>
-            )}  */}
           </Form>
         </>
       )}
