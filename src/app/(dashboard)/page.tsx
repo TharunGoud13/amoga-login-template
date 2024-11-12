@@ -6,7 +6,8 @@ const Home = async() => {
   const session = await auth()
   console.log("session---",session)
   return (
-    <div className='flex h-screen w-screen items-center justify-center'>Home Page
+    <div className='flex h-screen w-screen items-center justify-center'>
+      Hello <span>{session?.user?.name}</span>
     <LogoutButton/>
     </div>
   )
