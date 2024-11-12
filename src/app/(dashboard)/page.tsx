@@ -7,7 +7,7 @@ const Home = async() => {
   console.log("session---",session)
   return (
     <div className='flex h-screen w-screen items-center justify-center'>
-      Hello <span>{session?.user?.name}</span>
+       <span>Hello {session?.user?.name}</span>
     <LogoutButton/>
     </div>
   )
