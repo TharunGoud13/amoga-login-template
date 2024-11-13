@@ -10,7 +10,11 @@ export async function GET(req: any) {
   }
 
   try {
-    const userId = extractUserIdFromToken(token);
+    const {userId, expiryTimestamp} = extractUserIdFromToken(token);
+
+    if (Date.now() > expiryTimestamp) {
+      return NextResponse.json({ error: 'Token has expired.' }, { status: 410 });
+    }
     const isVerified = await verifyEmailInDatabase(userId);
 
     if (isVerified) {
@@ -24,8 +28,9 @@ export async function GET(req: any) {
   }
 }
 
-function extractUserIdFromToken(token:any) {
-  // Extract user ID from the token. Example: `userId-timestamp`
-  const parts = token.split('-');
-  return parts[0]; // Return the user ID part
+function extractUserIdFromToken(token: any) {
+  const parts = token.split("-");
+  const userId = parts[0];
+  const expiryTimestamp = parseInt(parts[1], 10);
+  return { userId, expiryTimestamp };
 }

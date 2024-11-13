@@ -32,9 +32,9 @@ import {
 const formSchema = z.object({
   email: z
     .string()
-    .email({ message: "Enter a valid email address" })
+    .email({ message: "Please Enter a valid email address." })
     .min(1, { message: "Email is required" }),
-  password: z.string().min(1, { message: "Password is required" }),
+  password: z.string().min(8, { message: "Password should be at least 8 characters." }),
 });
 
 const otpFormSchema = z.object({
@@ -135,12 +135,20 @@ const LoginPage = () => {
         redirect: false,
         sessionId: otpSessionId,
       });
+      console.log("response----",response)
       if (response?.error && response?.error === "CredentialsSignin") {
         toast({
           description: "Invalid OTP. Please try again.",
           variant: "destructive",
         });
-      } else if (response?.ok) {
+      }
+      else if(response?.error && response?.error === "Configuration"){
+        toast({
+          description: "Invalid OTP. Please try again.",
+          variant: "destructive",
+        });
+      }
+       else if (response?.ok) {
         router.push("/");
       } else {
         toast({
@@ -209,9 +217,9 @@ const LoginPage = () => {
         router.push("/");
       } else {
         let text: any = document.getElementById("error-text");
-        text.textContent = "Invalid credentials, please try again.";
+        text.textContent = "Invalid email or password, please try again.";
         toast({
-          description: "Invalid credentials, please try again.",
+          description: "Invalid email or password, please try again.",
           variant: "destructive",
         });
         router.push("/applogin");
@@ -367,7 +375,7 @@ const LoginPage = () => {
                       <FormControl>
                         <Input
                           id="mobile"
-                          type="tel"
+                          type="number"
                           placeholder="+1234567890"
                           required
                           {...field}

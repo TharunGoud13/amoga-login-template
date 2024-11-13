@@ -36,7 +36,7 @@ export async function POST(req: Request) {
 
     // Generate reset token
     const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenExpiry = new Date(Date.now() + 3600000).toISOString();
+    const resetTokenExpiry = new Date(Date.now() + 60000).toISOString();
     console.log("email----", email);
     console.log("resetToken----", resetToken);
 

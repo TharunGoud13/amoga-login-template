@@ -30,12 +30,12 @@ const formSchema = z
       .min(10)
       .max(10)
       .nonempty({ message: "Mobile number is required" }),
-    password: z.string().min(4, {
-      message: "Password must be at len 8 .",
+    password: z.string().min(8, {
+      message: "Password must be at least 8 characters .",
     }),
     retype_password: z
       .string()
-      .min(1, {
+      .min(8, {
         message: "Passwords don't match",
       })
       .nonempty({ message: "Required" }),
@@ -159,6 +159,10 @@ const JoinPage: FC<any> = ({ setSelectedTab }) => {
           }
         }
       }
+      else if (response1.status === 409) {
+        toast({ description: "Email already in use.", variant: "destructive" });
+        return false;
+      }
       return data;
     } catch (error: any) {
       
@@ -227,7 +231,7 @@ const JoinPage: FC<any> = ({ setSelectedTab }) => {
         }
         return true;
       } else if (response.status === 409) {
-        toast({ description: "User already exists.", variant: "destructive" });
+        toast({ description: "Mobile number already registered.", variant: "destructive" });
         return false;
       }
       return false;
@@ -306,6 +310,7 @@ const JoinPage: FC<any> = ({ setSelectedTab }) => {
         body: JSON.stringify({ sessionId: otpSessionId, otp: data.otp }),
       });
       const result = await response.json();
+      console.log("response----",response)
 
       if (result.verified) {
         const userData = {
@@ -528,7 +533,7 @@ const JoinPage: FC<any> = ({ setSelectedTab }) => {
               >
                 Join
               </Button>
-              {verificationError && (
+              { (
                 <p className="text-sm underline text-gray-500 text-right cursor-pointer" onClick={handleResendVerificationEmail}>
                   Resend Verification Email
                 </p>
@@ -600,7 +605,7 @@ const JoinPage: FC<any> = ({ setSelectedTab }) => {
                         <Input
                           id="mobile"
                           inputMode="numeric"
-                          type="tel"
+                          type="number"
                           placeholder="+1234567890"
                           required
                           {...field}

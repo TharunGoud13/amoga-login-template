@@ -38,5 +38,6 @@ export async function POST(req: NextRequest) {
 }
 
 function generateVerificationToken(userId:any) {
-  return `${userId}-${Date.now()}`;
+  const expiryTime = Date.now() + 10 * 60 * 1000;
+  return `${userId}-${expiryTime}`;
 }
