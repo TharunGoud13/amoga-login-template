@@ -163,7 +163,7 @@ const LoginPage = () => {
     e.preventDefault();
     setForgotPwdLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/forgot-password`, {
+      const response = await fetch("api/forgot-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
