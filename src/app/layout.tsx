@@ -3,7 +3,10 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import NextTopLoader from 'nextjs-toploader';
 import { Toaster } from "@/components/ui/toaster";
-import { SessionProvider } from "next-auth/react";
+import Providers from "@/components/ThemeToggle/providers";
+import { auth } from "@/auth";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -23,15 +26,20 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+  const locale = await getLocale()
+  const messages = await getMessages()
 
   return (
-    <html lang="en">
+    <html lang={locale}>
       <body className={poppins.className}>
+        <NextIntlClientProvider messages={messages}>
         <NextTopLoader/> 
-        <SessionProvider>
+        <Providers session={session}>
             {children}
-            </SessionProvider>       
+            </Providers>       
             <Toaster />
+            </NextIntlClientProvider>
       </body>
     </html>
   );

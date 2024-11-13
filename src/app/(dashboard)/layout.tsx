@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { auth } from "@/auth";
+import Header from "@/components/layout/topNav";
 
 export const metadata: Metadata = {
   title: "morr",
@@ -37,6 +38,7 @@ export default async function DashboardLayout({
 
   return (
     <>
+    <Header/>
       <div className="flex overflow-hidden">
         <main className="w-full pt-14">{children}</main>
       </div>

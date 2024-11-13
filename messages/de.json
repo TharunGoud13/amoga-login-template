@@ -1,0 +1,17 @@
+{
+    "TopNav":{
+        "dashboard":"Armaturenbrett",
+        "menu":"Speisekarte",
+        "task":"Aufgabe",
+        "products":"Produkte"
+    },
+    "LocaleSwitcher": {
+      "en": "English",
+      "de": "German",
+      "fr":"French",
+      "me":"Melayu",
+      "te": "Telugu",
+      "hi": "Hindi",
+      "label": "Language"
+    }
+}

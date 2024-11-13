@@ -1,0 +1,17 @@
+{
+    "TopNav":{
+        "dashboard":"డాష్‌బోర్డ్",
+        "menu":"మెనూ",
+        "task":"టాస్క్",
+        "products":"ఉత్పత్తులు"
+    },
+    "LocaleSwitcher": {
+      "en": "English",
+      "de": "German",
+      "fr":"French",
+      "me":"Melayu",
+      "te": "Telugu",
+      "hi": "Hindi",
+      "label": "Language"
+    }
+}
