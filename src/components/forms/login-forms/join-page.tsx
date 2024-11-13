@@ -135,7 +135,7 @@ const JoinPage: FC<any> = ({ setSelectedTab }) => {
         console.log("user----", user);
 
         if (user && user.user_catalog_id) {
-          const emailVerificationResponse = await fetch("/api/send-email", {
+          const emailVerificationResponse = await fetch("api/send-email", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -255,7 +255,7 @@ const JoinPage: FC<any> = ({ setSelectedTab }) => {
       const [user] = await getUserResponse.json();
 
       if (user && user.user_catalog_id) {
-        const emailVerificationResponse = await fetch("/api/send-email", {
+        const emailVerificationResponse = await fetch("api/send-email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
