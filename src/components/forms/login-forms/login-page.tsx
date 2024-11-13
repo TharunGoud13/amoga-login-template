@@ -19,6 +19,14 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { toast } from "../../ui/use-toast";
 import { Eye, EyeOff } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 // Define form schema with validation rules
 const formSchema = z.object({
@@ -51,6 +59,9 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [otpSessionId, setOtpSessionId] = useState<string | null>(null);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState("");
+  const [forgotPwdLoading, setForgotPwdLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const defaultValues = {
     email: "",
@@ -109,7 +120,6 @@ const LoginPage = () => {
   };
 
   const onSubmitOtp = async (data: any) => {
-    console.log("data----",data)
     if (!otpSessionId) {
       toast({
         description: "Please request OTP first",
@@ -119,13 +129,12 @@ const LoginPage = () => {
     }
     setLoading(true);
     try{
-      const response:any = await signIn("mobile-otp",{
+      const response:any = await signIn("mobile-otp", {
         mobile: data.mobile,
         otp: data.otp,
         redirect: false,
-        sessionId: otpSessionId
-      })
-      console.log("response----",response)
+        sessionId: otpSessionId,
+      });
       if (response?.error && response?.error === "CredentialsSignin") {
         toast({
           description: "Invalid OTP. Please try again.",
@@ -133,29 +142,60 @@ const LoginPage = () => {
         });
       } else if (response?.ok) {
         router.push("/");
-      }
-      
-      else{
+      } else {
         toast({
           description: "Invalid OTP, please try again.",
           variant: "destructive",
         });
       }
-
-      
-    }
-    catch(error){
+    } catch (error) {
       router.push("/applogin");
       toast({
         description: "An unexpected error occurred",
         variant: "destructive",
       });
-    }
-    finally{
+    } finally {
       setLoading(false);
     }
-    
   };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotPwdLoading(true);
+    try {
+      const response = await fetch("/api/forgot-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: forgotPasswordEmail}),
+      });
+      console.log("response===",response)
+      console.log("---",forgotPasswordEmail)
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          description: "Password reset link has been sent to your email",
+        });
+        setIsOpen(false);
+      } else {
+        toast({
+          variant: "destructive",
+          description: data.error || "Failed to send reset link",
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        description: "An unexpected error occurred",
+      });
+    } finally {
+      setForgotPwdLoading(false);
+    }
+  };
+
 
   const onSubmit = async (data: UserFormValue) => {
     setLoading(true);
@@ -275,6 +315,36 @@ const LoginPage = () => {
               >
                 Login
               </Button>
+              <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                <DialogTrigger asChild>
+                  <p className="px-0 underline text-gray-500 hover:text-gray-900 text-sm cursor-pointer flex justify-end text-right font-normal">
+                    Forgot password?
+                  </p>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Forgot password</DialogTitle>
+                    <DialogDescription>
+                      Enter your email address and we&apos;ll send you a link to
+                      reset your password.
+                    </DialogDescription>
+                  </DialogHeader>
+                    <div className="space-y-2">
+                      <Label htmlFor="forgot-email">Email</Label>
+                      <Input
+                        id="forgot-email"
+                        placeholder="Email"
+                        type="email"
+                        value={forgotPasswordEmail}
+                        onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <Button onClick={handleForgotPassword}  className="w-full">
+                      {forgotPwdLoading? "Sending..." :  "Send reset link"}
+                    </Button>
+                </DialogContent>
+              </Dialog>
             </form>
           </Form>
         </>
@@ -345,10 +415,14 @@ const LoginPage = () => {
                   />
                 )}
                 {showLoginOtpField && (
-                <Button disabled={loading} className="ml-auto w-full" type="submit">
-                  Verify OTP
-                </Button>
-              )}
+                  <Button
+                    disabled={loading}
+                    className="ml-auto w-full"
+                    type="submit"
+                  >
+                    Verify OTP
+                  </Button>
+                )}
               </div>
             </form>
           </Form>

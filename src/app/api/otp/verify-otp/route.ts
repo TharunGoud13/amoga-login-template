@@ -5,7 +5,6 @@ const BASE_URL = "https://2factor.in/API/V1/";
 
 export async function POST(req: NextRequest) {
   const { sessionId, otp } = await req.json();
-  console.log("verify---data---",sessionId, otp);
 
   if (!sessionId || !otp) {
     return NextResponse.json(
@@ -19,7 +18,6 @@ export async function POST(req: NextRequest) {
   try {
     const response = await fetch(url);
     const data = await response.json();
-    console.log("data-----",data)
 
     if (data.Status === "Success") {
       return NextResponse.json({ verified: true });

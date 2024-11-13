@@ -59,16 +59,14 @@ const otpFormSchema = z.object({
 type UserFormValue = z.infer<typeof formSchema>;
 type OtpFormValue = z.infer<typeof otpFormSchema>;
 
-const JoinPage:FC<any> = ({setSelectedTab}) => {
+const JoinPage: FC<any> = ({ setSelectedTab }) => {
   const [signupMethod, setSignupMethod] = useState("email");
   const [showSignupOtpField, setShowSignupOtpField] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showRePassword, setShowRePassword] = useState(false);
   const [otpSessionId, setOtpSessionId] = useState<string | null>(null);
-  const router = useRouter()
-
-  console.log("otpSessionId----",otpSessionId)
+  const [verificationError, setVerificationError] = useState(false);
 
   const defaultValues = {
     first_name: "",
@@ -97,6 +95,7 @@ const JoinPage:FC<any> = ({setSelectedTab}) => {
     const payload = {
       first_name: data.first_name,
       last_name: data.last_name,
+      user_name: data.first_name + " " + data.last_name,
       user_email: data.email,
       user_mobile: data.user_mobile,
       password: data.password,
@@ -114,61 +113,102 @@ const JoinPage:FC<any> = ({setSelectedTab}) => {
 
     try {
       const response1 = await fetch(GET_CONTACTS_API, requestOptions1);
-      const data = await response1.text();
-      if (response1.status == 201) {
+      const responseData: any = await response1.text();
+      console.log("responseData-----", responseData);
+      console.log("response----", response1);
+      if (response1.status === 201) {
         toast({ description: "User Created Successfully", variant: "default" });
-        let text: any = document.getElementById("success-text");
-        text.textContent = "User Created Successfully";
+        
+
+        const getUserResponse = await fetch(
+          `${GET_CONTACTS_API}?user_email=eq.${data.email}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${NEXT_PUBLIC_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        const [user] = await getUserResponse.json();
+        console.log("user----", user);
+
+        if (user && user.user_catalog_id) {
+          const emailVerificationResponse = await fetch("/api/send-email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_email: data.email,
+              user_catalog_id: user.user_catalog_id,
+              user_name: data.first_name + " " + data.last_name,
+            }),
+          });
+
+          if (emailVerificationResponse.ok) {
+            toast({
+              description: "Verification email sent",
+              variant: "default",
+            });
+          } else {
+            toast({
+              description: "Failed to send verification email",
+              variant: "destructive",
+            });
+            setVerificationError(true);
+          }
+        }
       }
       return data;
     } catch (error: any) {
+      
       throw new Error("Error", error);
     }
   };
 
-  const onSendOtp = async() => {
-    const {mobile} = otpForm.getValues();
+  const onSendOtp = async () => {
+    const { mobile } = otpForm.getValues();
     if (!mobile) {
-      toast({ description: "Mobile number is required to send OTP.", variant: "destructive" });
+      toast({
+        description: "Mobile number is required to send OTP.",
+        variant: "destructive",
+      });
       return;
     }
     setLoading(true);
 
-    try{
-    const response = await fetch("api/otp/send-otp",{
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ mobile }),
-    })
-    const result = await response.json();
-    console.log("send----result---",result)
-    console.log("send----response---",response)
+    try {
+      const response = await fetch("api/otp/send-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ mobile }),
+      });
+      const result = await response.json();
 
-    if(response.ok){
-      setOtpSessionId(result.sessionId);
-      setShowSignupOtpField(true)
-      toast({ description: "OTP sent successfully", variant: "default" });
-    }
-    else{
-      toast({ description: "Failed to send OTP", variant: "destructive" });
-    }}
-    catch(error){
-      toast({ description: "An error occurred while sending OTP.", variant: "destructive" });
-    }
-    finally{
+      if (response.ok) {
+        setOtpSessionId(result.sessionId);
+        setShowSignupOtpField(true);
+        toast({ description: "OTP sent successfully", variant: "default" });
+      } else {
+        toast({ description: "Failed to send OTP", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({
+        description: "An error occurred while sending OTP.",
+        variant: "destructive",
+      });
+    } finally {
       setLoading(false);
     }
+  };
 
-  }
-
-
-  const registerUserDetails = async(userData:any) => {
+  const registerUserDetails = async (userData: any) => {
     const myHeaders = new Headers();
     myHeaders.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
     myHeaders.append("Content-Type", "application/json");
-    
+
     const requestOptions: any = {
       method: "POST",
       headers: myHeaders,
@@ -178,8 +218,7 @@ const JoinPage:FC<any> = ({setSelectedTab}) => {
     try {
       const response = await fetch(GET_CONTACTS_API, requestOptions);
       const data = await response.text();
-      console.log("response----",response)
-      
+
       if (response.status === 201) {
         toast({ description: "User Created Successfully", variant: "default" });
         let text: any = document.getElementById("success-text");
@@ -187,8 +226,7 @@ const JoinPage:FC<any> = ({setSelectedTab}) => {
           text.textContent = "User Created Successfully";
         }
         return true;
-      }
-      else if(response.status === 409){
+      } else if (response.status === 409) {
         toast({ description: "User already exists.", variant: "destructive" });
         return false;
       }
@@ -199,44 +237,103 @@ const JoinPage:FC<any> = ({setSelectedTab}) => {
     }
   };
 
+  const handleResendVerificationEmail = async () => {
+    const { email, first_name, last_name } = form.getValues();
+
+    try {
+      const getUserResponse = await fetch(
+        `${GET_CONTACTS_API}?user_email=eq.${email}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${NEXT_PUBLIC_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const [user] = await getUserResponse.json();
+
+      if (user && user.user_catalog_id) {
+        const emailVerificationResponse = await fetch("/api/send-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_email: email,
+            user_catalog_id: user.user_catalog_id,
+            user_name: first_name + " " + last_name,
+          }),
+        });
+
+        if (emailVerificationResponse.ok) {
+          toast({
+            description: "Verification email resent successfully",
+            variant: "default",
+          });
+          setVerificationError(false);
+        } else {
+          toast({
+            description: "Failed to resend verification email",
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          description: "User details not found",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        description: "An error occurred while resending verification email",
+        variant: "destructive",
+      });
+    } 
+  };
+
+
   const onSubmitOtp = async (data: OtpFormValue) => {
-    if(!otpSessionId) return;
-    console.log("data-----",data)
+    if (!otpSessionId) return;
+    console.log("data-----", data);
     setLoading(true);
 
-    try{
-      const response = await fetch(`api/otp/verify-otp`,{
-        method: 'POST',
+    try {
+      const response = await fetch(`api/otp/verify-otp`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ sessionId: otpSessionId, otp: data.otp }),
-      })
+      });
       const result = await response.json();
 
-      if(result.verified){
+      if (result.verified) {
         const userData = {
           first_name: data.first_name,
           last_name: data.last_name,
           user_mobile: data.mobile,
-          user_name: data.first_name + " " + data.last_name
-        }
+          user_name: data.first_name + " " + data.last_name,
+        };
 
-        const registerUser = await registerUserDetails(userData)
+        const registerUser = await registerUserDetails(userData);
 
-        if(registerUser){
-          toast({ description: "User created successfully!", variant: "default" });
+        if (registerUser) {
+          toast({
+            description: "User created successfully!",
+            variant: "default",
+          });
           otpForm.reset();
           setShowSignupOtpField(false);
           // setSelectedTab('login')
         }
-      }
-      else{
+      } else {
         toast({ description: "Invalid OTP", variant: "destructive" });
       }
-    }
-    catch(error){
-      toast({ description: "An error occurred while verifying OTP.", variant: "destructive" });
+    } catch (error) {
+      toast({
+        description: "An error occurred while verifying OTP.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -431,6 +528,11 @@ const JoinPage:FC<any> = ({setSelectedTab}) => {
               >
                 Join
               </Button>
+              {verificationError && (
+                <p className="text-sm underline text-gray-500 text-right cursor-pointer" onClick={handleResendVerificationEmail}>
+                  Resend Verification Email
+                </p>
+              )}
             </form>
           </Form>
         </>
@@ -546,10 +648,14 @@ const JoinPage:FC<any> = ({setSelectedTab}) => {
                   />
                 )}
                 {showSignupOtpField && (
-                <Button disabled={loading} className="ml-auto w-full" type="submit">
-                  Verify OTP
-                </Button>
-              )}
+                  <Button
+                    disabled={loading}
+                    className="ml-auto w-full"
+                    type="submit"
+                  >
+                    Verify OTP
+                  </Button>
+                )}
               </div>
             </form>
           </Form>
