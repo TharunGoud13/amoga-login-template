@@ -16,143 +16,105 @@ import { GripVertical } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
-const defaultColors = ["#FF6B6B", "#16a34a", "#14532d", "#fde047", "#60a5fa"];
-
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 
-interface DashboardComponent {
-  id: string;
-  component: JSX.Element;
-  width: string;
-  defaultWidth: string;
-  type: 'stats' | 'chart' | 'regular';
-}
+const defaultColors = ["#FF6B6B", "#16a34a", "#14532d", "#fde047", "#60a5fa"];
 
 export default function Dashboard() {
   const [activeColors, setActiveColors] = useState<string[]>(defaultColors);
   const [isEditMode, setIsEditMode] = useState(false);
 
-  const StatCard = ({ title, value, change, icon }: any) => (
-    <Card className="group relative">
-      {isEditMode && (
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-background/50 flex items-center justify-center">
-          <GripVertical className="h-6 w-6 text-muted-foreground" />
-        </div>
-      )}
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        {icon}
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        <p className="text-xs text-muted-foreground">{change}</p>
-      </CardContent>
-    </Card>
-  );
-
-  // Initialize dashboard components
-  const [components, setComponents] = useState<DashboardComponent[]>([
+  const [statCards, setStatCards] = useState([
     {
-      id: "stats",
-      width: "col-span-12",
-      defaultWidth: "col-span-12",
-      type: 'stats',
-      component: (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            title="Total Revenue"
-            value="$45,231.89"
-            change="+20.1% from last month"
-            icon={
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                className="h-4 w-4 text-muted-foreground"
-              >
-                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-              </svg>
-            }
-          />
-          <StatCard
-            title="Subscriptions"
-            value="+2350"
-            change="+180.1% from last month"
-            icon={
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                className="h-4 w-4 text-muted-foreground"
-              >
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-              </svg>
-            }
-          />
-          <StatCard
-            title="Sales"
-            value="+12,234"
-            change="+19% from last month"
-            icon={
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                className="h-4 w-4 text-muted-foreground"
-              >
-                <rect width="20" height="14" x="2" y="5" rx="2" />
-                <path d="M2 10h20" />
-              </svg>
-            }
-          />
-          <StatCard
-            title="Active Now"
-            value="+573"
-            change="+201 since last hour"
-            icon={
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                className="h-4 w-4 text-muted-foreground"
-              >
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-              </svg>
-            }
-          />
-        </div>
+      id: "total-revenue",
+      title: "Total Revenue",
+      value: "$45,231.89",
+      change: "+20.1% from last month",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          className="h-4 w-4 text-muted-foreground"
+        >
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+        </svg>
       ),
     },
     {
+      id: "subscriptions",
+      title: "Subscriptions",
+      value: "+2350",
+      change: "+180.1% from last month",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          className="h-4 w-4 text-muted-foreground"
+        >
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      ),
+    },
+    {
+      id: "sales",
+      title: "Sales",
+      value: "+12,234",
+      change: "+19% from last month",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          className="h-4 w-4 text-muted-foreground"
+        >
+          <rect width="20" height="14" x="2" y="5" rx="2" />
+          <path d="M2 10h20" />
+        </svg>
+      ),
+    },
+    {
+      id: "active-now",
+      title: "Active Now",
+      value: "+573",
+      change: "+201 since last hour",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          className="h-4 w-4 text-muted-foreground"
+        >
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+        </svg>
+      ),
+    },
+  ]);
+
+  const [dashboardSections, setDashboardSections] = useState([
+    {
       id: "overview",
-      width: "col-span-12 md:col-span-7",
-      defaultWidth: "col-span-12 md:col-span-7",
-      type: 'chart',
       component: (
         <Card className="group relative">
-          {isEditMode && (
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-background/50 flex items-center justify-center">
-              <GripVertical className="h-6 w-6 text-muted-foreground" />
-            </div>
-          )}
           <CardHeader>
             <CardTitle>Overview</CardTitle>
           </CardHeader>
@@ -164,16 +126,8 @@ export default function Dashboard() {
     },
     {
       id: "recent-sales",
-      width: "col-span-12 md:col-span-5",
-      defaultWidth: "col-span-12 md:col-span-5",
-      type: 'regular',
       component: (
         <Card className="group relative">
-          {isEditMode && (
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-background/50 flex items-center justify-center">
-              <GripVertical className="h-6 w-6 text-muted-foreground" />
-            </div>
-          )}
           <CardHeader>
             <CardTitle>Recent Sales</CardTitle>
             <CardDescription>You made 265 sales this month.</CardDescription>
@@ -190,52 +144,32 @@ export default function Dashboard() {
     setActiveColors(newColors);
   };
 
-  const onDragEnd = (result: any) => {
-    console.log("result-----",result)
-    if (!result.destination || !isEditMode) return;
-
-    // copy the components array 
-    const items = Array.from(components);
-    // removes the dragged item from items array and stores in reorderedItem
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    console.log("reorderedItems----",reorderedItem);
+  const handleCardDragEnd = (result: any) => {
+    if (!result.destination) return;
     
-    // Adjust widths based on position
-    const newItems = items.map(item => ({
-      ...item,
-      width: item.defaultWidth // Reset to default width
-    }));
+    const { source, destination } = result;
+    const newCards = Array.from(statCards);
+    const [removed] = newCards.splice(source.index, 1);
+    newCards.splice(destination.index, 0, removed);
 
-    console.log("newItems----",newItems)
+    setStatCards(newCards);
+  };
 
-    // If moving to first position (stats position), make it full width
-    if (result.destination.index === 0) {
-      reorderedItem.width = "col-span-12";
-      // Adjust the next item if it exists
-      if (newItems[0]) {
-        if (newItems[0].type === 'chart') {
-          newItems[0].width = "col-span-12 md:col-span-7";
-        } else if (newItems[0].type === 'regular') {
-          newItems[0].width = "col-span-12 md:col-span-5";
-        }
-      }
-    } else {
-      // If moving away from first position, restore default width
-      reorderedItem.width = reorderedItem.defaultWidth;
-    }
+  const handleSectionDragEnd = (result: any) => {
+    if (!result.destination) return;
+    const { source, destination } = result;
+    const newSections = Array.from(dashboardSections);
+    const [removed] = newSections.splice(source.index, 1);
+    newSections.splice(destination.index, 0, removed);
 
-    // Insert the reordered item at its new position
-    newItems.splice(result.destination.index, 0, reorderedItem);
-    console.log("newItems after reordering----",newItems)
-
-    setComponents(newItems);
+    setDashboardSections(newSections);
   };
 
   return (
     <ScrollArea className="h-full w-full">
-      <div className="flex-1 space-y-4 p-4 pt-[10%] md:pt-[1%] md:p-8">
+      <div className="flex-1 space-y-4 p-4 md:p-8">
         <Tabs defaultValue="overview" className="space-y-4">
-          <div className="flex items-center justify-between flex-wrap w-full">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
             <div className="flex items-center space-x-4">
               <TabsList className="bg-secondary text-primary">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -244,8 +178,10 @@ export default function Dashboard() {
                 </TabsTrigger>
               </TabsList>
             </div>
-            
-            <ChartTheme onThemeChange={handleThemeChange} />
+            <div className="flex items-center gap-4 flex-wrap">
+              
+              <ChartTheme onThemeChange={handleThemeChange} />
+            </div>
           </div>
           <div className="flex items-center space-x-2">
                 <Switch
@@ -256,33 +192,64 @@ export default function Dashboard() {
                 <Label htmlFor="edit-mode" className="text-sm font-medium">
                   Enable Editing
                 </Label>
-              </div>
+              </div> 
           <TabsContent value="overview" className="space-y-4">
-            <DragDropContext onDragEnd={onDragEnd}>
-              <Droppable droppableId="dashboard" isDropDisabled={!isEditMode}>
-                {(provided: any) => (
+            <DragDropContext onDragEnd={handleCardDragEnd}>
+              <Droppable
+                droppableId="stat-cards"
+                isDropDisabled={!isEditMode}
+                direction="horizontal"
+              >
+                {(provided) => (
                   <div
-                    {...provided.droppableProps}
                     ref={provided.innerRef}
-                    className="grid grid-cols-12 gap-4"
+                    {...provided.droppableProps}
+                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
                   >
-                    {components.map((item, index) => (
+                    {statCards.map((card, index) => (
                       <Draggable
-                        key={item.id}
-                        draggableId={item.id}
+                        key={card.id}
+                        draggableId={card.id}
                         index={index}
                         isDragDisabled={!isEditMode}
                       >
-                        {(provided: any, snapshot: any) => (
+                        {(provided) => (
                           <div
                             ref={provided.innerRef}
                             {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className={`${item.width} ${
-                              snapshot.isDragging ? "z-50" : ""
-                            }`}
+                            style={{
+                              ...provided.draggableProps.style,
+                              gridRow: "auto",
+                              gridColumn: "auto",
+                            }}
+                            className="h-full"
                           >
-                            {item.component}
+                            <Card className="relative h-full">
+                              {isEditMode && (
+                                <div
+                                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-background/50 flex items-center justify-center cursor-move"
+                                  {...provided.dragHandleProps}
+                                >
+                                  <GripVertical className="h-6 w-6 text-muted-foreground" />
+                                </div>
+                              )}
+                              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">
+                                  {card.title}
+                                </CardTitle>
+                                {card.icon}
+                              </CardHeader>
+                              <CardContent>
+                                <div className="space-y-2">
+                                  <h2 className="text-lg font-semibold">
+                                    {card.value}
+                                  </h2>
+                                  <p className="text-sm text-muted-foreground">
+                                    {card.change}
+                                  </p>
+                                </div>
+                              </CardContent>
+                            </Card>
                           </div>
                         )}
                       </Draggable>
@@ -294,6 +261,38 @@ export default function Dashboard() {
             </DragDropContext>
           </TabsContent>
         </Tabs>
+        
+        <DragDropContext onDragEnd={handleSectionDragEnd}>
+          <Droppable droppableId="sections" direction="horizontal">
+            {(provided) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className="flex flex-col lg:flex-row gap-4"
+              >
+                {dashboardSections.map((section, index) => (
+                  <Draggable
+                    key={section.id}
+                    draggableId={section.id}
+                    index={index}
+                  >
+                    {(provided) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        className="w-full min-w-0"
+                      >
+                        {section.component}
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
       </div>
     </ScrollArea>
   );

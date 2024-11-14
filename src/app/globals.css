@@ -206,6 +206,44 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
   }
+
+  .bg-gradient {
+    background: var(--gradient);
+  }
+
+  .gradient {
+    /* CSS: .bg-gradient { background: var(--gradient) } */
+    --gradient: linear-gradient(to top left,#1FA2FF,#12D8FA,#A6FFCB);
+
+    --background: 218 65% 4.48%;
+    --foreground: 218 10% 97.8%;
+
+    --muted: 218 50% 16.8%;
+    --muted-foreground: 218 10% 55.6%;
+
+    --popover: 218 45% 7.280000000000001%;
+    --popover-foreground: 218 10% 97.8%;
+
+    --card: 218 45% 7.280000000000001%;
+    --card-foreground: 218 10% 97.8%;
+
+    --border: 218 50% 16.8%;
+    --input: 218 50% 16.8%;
+
+    --primary: 218 100% 56%;
+    --primary-foreground: 218 10% 5.6000000000000005%;
+
+    --secondary: 218 50% 16.8%;
+    --secondary-foreground: 218 10% 97.8%;
+
+    --accent: 218 50% 16.8%;
+    --accent-foreground: 218 10% 97.8%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 218 10% 97.8%;
+
+    --ring: 218 100% 56%;
+}
   
 }
 
@@ -216,6 +254,28 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  body.gradient {
+    background: var(--gradient);
+  }
+}
+
+.gradient .bg-background {
+  background: var(--gradient);
+}
+
+.gradient .bg-card {
+  background: color-mix(in srgb, var(--gradient) 80%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.gradient .bg-popover {
+  background: color-mix(in srgb, var(--gradient) 90%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.gradient .bg-secondary {
+  background: color-mix(in srgb, var(--gradient) 70%, transparent);
 }
 
 @layer utilities {
