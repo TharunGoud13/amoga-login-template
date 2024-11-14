@@ -4,6 +4,8 @@ import LogoutButton from "../forms/logout-button";
 import LocaleSwitcher from "../language/LocaleSwitcher";
 import { useTranslations } from "next-intl";
 import UserNav from "./user-nav";
+import { cn } from "@/lib/utils";
+import { MobileSidebar } from "./mobile-sidebar";
 
 export default function Header() {
   const t = useTranslations("TopNav");
@@ -30,8 +32,11 @@ export default function Header() {
             <Link href="/dashboard" className="text-primary">
               {t("dashboard")}
             </Link>
-          </div>
+          </div> 
         </div>
+        <div className={cn('block lg:!hidden')}>
+            <MobileSidebar />
+          </div>
         <div className="flex items-center gap-2.5">
           <ThemeToggle />
           <LocaleSwitcher />
