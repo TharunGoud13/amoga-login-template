@@ -70,7 +70,7 @@
   }
 
   .blue {
-    --gradient: linear-gradient(to top left,#09203f,#537895);
+    /* --gradient: linear-gradient(to top left,#09203f,#537895); */
     --background: 228 68% 95%;
     --foreground: 228 7.5% 0.56%;
     --muted: 228 7.5% 91.4%;
@@ -212,10 +212,6 @@
   }
 
   .gradient {
-    /* Name: custom color palette
-       Author: Ilias Ism
-       URL: https://gradient.page */
-
     /* CSS: .bg-gradient { background: var(--gradient) } */
     --gradient: linear-gradient(to top left,#1FA2FF,#12D8FA,#A6FFCB);;
 

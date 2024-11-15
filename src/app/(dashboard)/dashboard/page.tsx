@@ -142,6 +142,26 @@ export default function Dashboard() {
 
   const handleThemeChange = (newColors: string[]) => {
     setActiveColors(newColors);
+    // Update the Overview component with new colors
+    const newSections = dashboardSections.map(section => {
+      if (section.id === 'overview') {
+        return {
+          ...section,
+          component: (
+            <Card className="group relative">
+              <CardHeader>
+                <CardTitle>Overview</CardTitle>
+              </CardHeader>
+              <CardContent className="pl-2">
+                <Overview colors={newColors} />
+              </CardContent>
+            </Card>
+          )
+        };
+      }
+      return section;
+    });
+    setDashboardSections(newSections);
   };
 
   const handleCardDragEnd = (result: any) => {
