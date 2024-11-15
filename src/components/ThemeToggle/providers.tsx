@@ -10,7 +10,7 @@ export default function Providers({
   children: React.ReactNode;
 }) {
   return (
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem themes={['light','dark','zinc','blue','green','violet','gradient']}>
+      <ThemeProvider attribute="class" defaultTheme='system' enableSystem themes={['white','blue','green','violet']}>
         <SessionProvider session={session}>{children}</SessionProvider>
       </ThemeProvider>
   );
