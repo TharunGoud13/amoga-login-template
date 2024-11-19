@@ -36,9 +36,6 @@ export default function Header() {
             <Link href="/form_maker" className="text-primary">
               Form Maker
             </Link>
-            <Link href="/form_maker_1" className="text-primary">
-              Form Maker 1
-            </Link>
           </div> 
         </div>
         <div className={cn('block lg:!hidden')}>

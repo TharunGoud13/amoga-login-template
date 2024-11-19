@@ -42,7 +42,7 @@ export const FormFieldList: React.FC<FormFieldListProps> = ({
 
   return (
     <div className="mt-3 lg:mt-0">
-      <h1>hiiii</h1>
+      
       <Reorder.Group
         axis="y"
         onReorder={setFormFields}
