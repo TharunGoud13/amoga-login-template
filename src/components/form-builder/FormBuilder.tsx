@@ -17,17 +17,26 @@ import List from './List'
 import Entries from './Entries'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
+import { NEXT_PUBLIC_API_KEY, SAVE_FORM_DATA } from '@/constants/envConfig'
+import { useSession } from 'next-auth/react'
+import { v4 as uuidv4 } from "uuid"
+import { toast } from '../ui/use-toast'
+import { usePathname, useRouter } from 'next/navigation'
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
 export default function FormBuilder() {
+  const {data: session} = useSession()
+  const path = usePathname()
   const isDesktop = useMediaQuery('(min-width: 768px)')
+  const route = useRouter()
 
   const [formFields, setFormFields] = useState<FormFieldOrGroup[]>([])
   const [selectedField, setSelectedField] = useState<FormFieldType | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [formInput, setFormInput] = useState("");
 
+// console.log("path----",path)
 
   const addFormField = (variant: string, index: number) => {
     const newFieldName = `name_${Math.random().toString().slice(-10)}`
@@ -57,8 +66,64 @@ export default function FormBuilder() {
     setFormFields([...formFields, newField])
   }
 
-  const handleSave = () => {
-    console.log("formInput----", formInput);
+  function formatDateToCustomFormat(date: Date) {
+    const pad = (num: any, size = 2) => String(num).padStart(size, '0'); // Helper to pad numbers
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
+           `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.` +
+           `${pad(date.getMilliseconds(), 3)}`;
+}
+
+
+// const currentUrl = window.location.href.split("/form")[0];
+// const currentUrl = window.location
+// console.log("current",currentUrl)
+
+
+  const handleSave = async() => {
+    const headers = new Headers()
+    headers.append("Content-Type", "application/json")
+    headers.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`)
+    const date = new Date()
+
+    const formUrl = `${process.env.NEXT_PUBLIC_API_URL}/submit/${uuidv4()}`
+   
+    const payload = {
+      status: "active",
+      created_user_id: session?.user?.id,
+      created_user_name: session?.user?.name,
+      created_date: formatDateToCustomFormat(date),
+      form_name: formInput,
+      form_json: formFields,
+      version_no: 1,
+      share_url: uuidv4(),
+    }
+
+    console.log("payload----", payload)
+
+    try{
+
+    const requestOptions: any = {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify(payload),
+    };
+
+    console.log("formInput----", formFields);
+    const response = await fetch(SAVE_FORM_DATA,requestOptions)
+    console.log("response----",response)
+    if(response.ok){
+      toast({description: "Form saved successfully",variant: "default"})
+      route.push(`/form_maker/${payload.share_url}`)
+    }
+    else{
+      toast({description: "Failed to save form",variant: "destructive"})
+    }
+
+    setFormFields([])
+    setFormInput("")}
+    catch(error){
+      toast({description: "Failed to save form",variant: "destructive"})
+    }
   };
 
   const findFieldPath = (
