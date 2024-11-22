@@ -13,7 +13,7 @@ import { FormPreview } from "./FormPreview";
 import { EditFieldDialog } from "./EditFieldDialog";
 import EmptyListImage from "@/assets/oc-thinking.png";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import List from "./List";
+import List from "./List/List";
 import Entries from "./Entries";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
