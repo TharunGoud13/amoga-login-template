@@ -201,7 +201,7 @@ export default function FormBuilder() {
       <Tabs defaultValue="form" className=" pt-5 pr-5 pl-5">
         <TabsList className="grid md:w-[400px] grid-cols-3">
           <TabsTrigger value="form">Form</TabsTrigger>
-          <TabsTrigger value="list">List</TabsTrigger>
+          <TabsTrigger value="list">Forms</TabsTrigger>
           <TabsTrigger value="entries">Entries</TabsTrigger>
         </TabsList>
         <TabsContent value="form">
