@@ -2,7 +2,7 @@ import { FormFieldType } from '@/types'
 
 export const generateCodeSnippet = (field: FormFieldType) => {
   switch (field.variant) {
-    case 'Checkbox':
+    case 'Check Box':
       return `<FormField
           control={form.control}
           name="${field.name}"
@@ -24,6 +24,36 @@ export const generateCodeSnippet = (field: FormFieldType) => {
                 <FormMessage />
               </div>
             </FormItem>
+          )}
+        />`
+
+    case 'Radio Box':
+      return `
+      <FormField
+          control={form.control}
+          name="${field.name}"
+          render={({ field }) => (
+            <FormItem
+          className={cn(
+            "flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4",
+            field.className
+          )}
+        >
+          <FormControl>
+            <Checkbox
+              checked={checked} // Ensure this is handled as boolean
+              onCheckedChange={() => {
+                setChecked(!checked);
+              }}
+              disabled={field.disabled}
+            />
+          </FormControl>
+          <div className="space-y-1 leading-none">
+            <FormLabel>{field.label}</FormLabel> {field.required && "*"}
+            <FormDescription>{field.description}</FormDescription>
+          </div>
+          <FormMessage />
+        </FormItem>
           )}
         />`
     case 'Combobox':
@@ -92,7 +122,7 @@ export const generateCodeSnippet = (field: FormFieldType) => {
             </FormItem>
           )}
         />`
-    case 'Date Picker':
+    case 'Date':
       return `
       <FormField
       control={form.control}
@@ -136,7 +166,7 @@ export const generateCodeSnippet = (field: FormFieldType) => {
         </FormItem>
       )}
     />`
-    case 'Datetime Picker':
+    case 'Date Time':
       return `
       <FormField
       control={form.control}
@@ -159,7 +189,7 @@ export const generateCodeSnippet = (field: FormFieldType) => {
         </FormItem>
       )}
     />`
-    case 'Input':
+    case 'Text Box':
       return `
         <FormField
           control={form.control}
@@ -182,7 +212,52 @@ export const generateCodeSnippet = (field: FormFieldType) => {
             </FormItem>
           )}
         />`
-    case 'Input OTP':
+        case 'Email':
+      return `
+        <FormField
+          control={form.control}
+          name="${field.name}"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>${field.label}</FormLabel>
+              <FormControl>
+                <Input 
+                placeholder="${field.placeholder}"
+                ${field.disabled ? 'disabled' : ''}
+                type="${field.type}"
+                {...field} />
+              </FormControl>
+              ${
+                field.description &&
+                `<FormDescription>${field.description}</FormDescription>`
+              }
+              <FormMessage />
+            </FormItem>
+          )}
+        />`
+    case 'Label':
+      return `
+        <FormField
+          control={form.control}
+          name="${field.name}"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>${field.label}</FormLabel>
+              <FormControl>
+                <div className="flex items-center space-x-2">
+        <Checkbox id="terms" />
+        <Label htmlFor="terms">Accept terms and conditions</Label>
+      </div>
+              </FormControl>
+              ${
+                field.description &&
+                `<FormDescription>${field.description}</FormDescription>`
+              }
+              <FormMessage />
+            </FormItem>
+          )}
+        />`
+    case 'OTP':
       return `
        <FormField
           control={form.control}
@@ -213,7 +288,7 @@ export const generateCodeSnippet = (field: FormFieldType) => {
             </FormItem>
           )}
         />`
-    case 'Location Input':
+    case 'Location Select':
       return `
            <FormField
               control={form.control}
@@ -276,7 +351,7 @@ export const generateCodeSnippet = (field: FormFieldType) => {
                 </FormItem>
               )}
             />`
-    case 'Select':
+    case 'Dropdown':
       return `
         <FormField
           control={form.control}
@@ -304,7 +379,7 @@ export const generateCodeSnippet = (field: FormFieldType) => {
             </FormItem>
           )}
         />`
-    case 'Slider':
+    case 'Progress':
       return `
             <FormField
               control={form.control}
@@ -425,7 +500,7 @@ export const generateCodeSnippet = (field: FormFieldType) => {
             </FormItem>
           )}
         />`
-    case 'Textarea':
+    case 'Text Area':
       return `
         <FormField
           control={form.control}
@@ -448,7 +523,7 @@ export const generateCodeSnippet = (field: FormFieldType) => {
             </FormItem>
           )}
         />`
-    case 'File Input':
+    case 'File Upload':
       return `
             <FormField
               control={form.control}
@@ -515,7 +590,7 @@ export const generateCodeSnippet = (field: FormFieldType) => {
           )}
         />
         `
-    case 'Phone':
+    case 'Number':
       return `
           <FormField
             control={form.control}
@@ -527,7 +602,32 @@ export const generateCodeSnippet = (field: FormFieldType) => {
                   <PhoneInput
                     placeholder="${field.placeholder}"
                     {...field}
-                    defaultCountry="TR"
+                    defaultCountry="IN"
+                  />
+                </FormControl>
+              ${
+                field.description &&
+                `<FormDescription>${field.description}</FormDescription>`
+              }
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+            `
+
+            case 'Mobile':
+      return `
+          <FormField
+            control={form.control}
+            name="${field.name}"
+            render={({ field }) => (
+              <FormItem className="flex flex-col items-start">
+              <FormLabel>${field.label}</FormLabel>
+                <FormControl className="w-full">
+                  <PhoneInput
+                    placeholder="${field.placeholder}"
+                    {...field}
+                    defaultCountry="IN"
                   />
                 </FormControl>
               ${

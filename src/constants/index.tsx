@@ -1,61 +1,96 @@
 import { FieldType } from '@/types'
+import { Area } from 'recharts';
 
 export const fieldTypes: FieldType[] = [
-  { name: 'Checkbox', isNew: false },
-  { name: 'Combobox', isNew: false },
-  { name: 'Date Picker', isNew: false },
-  { name: 'Datetime Picker', isNew: true },
-  { name: 'File Input', isNew: false },
-  { name: 'Input', isNew: false },
-  { name: 'Input OTP', isNew: false },
-  { name: 'Location Input', isNew: true },
-  { name: 'Multi Select', isNew: false },
+  { name: 'Label', isNew: false },
+  { name: 'Text Box', isNew: false },
+  { name: 'Text Area', isNew: false },
+  { name: 'Number', isNew: false },
+  { name: 'Mobile', isNew: false },
+  { name: 'OTP', isNew: false },
+  { name: 'Email', isNew: false },
   { name: 'Password', isNew: false },
-  { name: 'Phone', isNew: false },
-  { name: 'Select', isNew: false },
-  { name: 'Signature Input', isNew: true },
-  { name: 'Slider', isNew: false },
-  { name: 'Smart Datetime Input', isNew: true },
-  { name: 'Switch', isNew: false },
-  { name: 'Tags Input', isNew: false },
-  { name: 'Textarea', isNew: false },
+  { name: 'Date', isNew: false },
+  { name: 'Date Time', isNew: true },
+  { name: 'Dropdown', isNew: false },
+  { name: 'Check Box', isNew: false },
+  { name: 'Combobox', isNew: false },
+  { name: 'Radio Group', isNew: false },
+  { name: 'Search Lookup', isNew: false },
+  { name: 'Multi Select', isNew: false },
+  { name: 'Image', isNew: false },
+  { name: 'File Upload', isNew: false },
+  { name: 'Location Select', isNew: true },
+  { name: 'Tool Top Icon', isNew: true },
+  { name: 'Progress', isNew: false },
+  { name: 'Tab Seperator', isNew: false },
+  // { name: 'Signature Input', isNew: true },
+  // { name: 'Smart Datetime Input', isNew: true },
+  // { name: 'Switch', isNew: false },
+  // { name: 'Tags Input', isNew: false },
 ]
 
 export const defaultFieldConfig: Record<
   string,
   { label: string; description: string; placeholder?: any }
 > = {
-  Checkbox: {
+  'Check Box': {
     label: 'Use different settings for my mobile devices',
     description:
       'You can manage your mobile notifications in the mobile settings page.',
+  },
+  'Image': {
+    label: 'Profile Picture',
+    description: 'Upload your profile picture.',
+  },
+  'Radio Group': {
+    label: 'Use different settings for my mobile devices',
+    description:
+      'You can manage your mobile notifications in the mobile settings page.',
+  },
+  'Tool Top Icon': {
+    label: 'Select your framework',
+    description: 'Select from the options below.',
+  },
+  'Search Lookup': {
+    label: 'Choose your framework',
+    description: 'Select from the options below.',
+  },
+  'Tab Seperator': {
+    label: 'Select your framework',
+    description: 'Select from the options below.',
   },
   Combobox: {
     label: 'Language',
     description: 'This is the language that will be used in the dashboard.',
   },
-  'Date Picker': {
+  'Date': {
     label: 'Date of birth',
     description: 'Your date of birth is used to calculate your age.',
   },
-  'Datetime Picker': {
+  'Date Time': {
     label: 'Submission Date',
     description: 'Add the date of submission with detailly.',
   },
-  'File Input': {
+  'File Upload': {
     label: 'Select File',
     description: 'Select a file to upload.',
   },
-  Input: {
+  'Text Box': {
     label: 'Username',
-    description: 'This is your public display name.',
-    placeholder: 'shadcn',
+    description: '',
+    placeholder: 'Username',
   },
-  'Input OTP': {
+  'Email': {
+    label: 'Email',
+    description: '',
+    placeholder: 'Email Address',
+  },
+  'OTP': {
     label: 'One-Time Password',
     description: 'Please enter the one-time password sent to your phone.',
   },
-  'Location Input': {
+  'Location Select': {
     label: 'Select Country',
     description:
       'If your country has states, it will be appear after selecting country',
@@ -64,7 +99,7 @@ export const defaultFieldConfig: Record<
     label: 'Select your framework',
     description: 'Select multiple options.',
   },
-  Select: {
+  Dropdown: {
     label: 'Email',
     description: 'You can manage email addresses in your email settings.',
     placeholder: 'Select a verified email to display',
@@ -86,15 +121,19 @@ export const defaultFieldConfig: Record<
     description: 'Receive emails about new products, features, and more.',
   },
   'Tags Input': { label: 'Enter your tech stack.', description: 'Add tags.' },
-  Textarea: {
+  'Text Area': {
     label: 'Bio',
-    description: 'You can @mention other users and organizations.',
+    description: '',
   },
   Password: {
     label: 'Password',
     description: 'Enter your password.',
   },
-  Phone: {
+  Number: {
+    label: 'Number',
+    description: 'Enter your Number.',
+  },
+  Mobile: {
     label: 'Phone number',
     description: 'Enter your phone number.',
   },

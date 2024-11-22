@@ -16,16 +16,7 @@ export const generateZodSchema = (
     let fieldSchema: z.ZodTypeAny
 
     switch (field.variant) {
-      case 'Checkbox':
-        fieldSchema = z.boolean().default(true)
-        break
-      case 'Date Picker':
-        fieldSchema = z.coerce.date()
-        break
-      case 'Datetime Picker':
-        fieldSchema = z.coerce.date()
-        break
-      case 'Input':
+      case 'Text Box':
         if (field.type === 'email') {
           fieldSchema = z.string().email()
           break
@@ -36,7 +27,26 @@ export const generateZodSchema = (
           fieldSchema = z.string()
           break
         }
-      case 'Location Input':
+      case 'Check Box':
+        fieldSchema = z.boolean().default(true)
+        break
+      case 'Radio Box':
+        fieldSchema = z.boolean().default(true)
+
+        break
+      case 'Search Lookup':
+        case "Image":
+      case 'Select':
+      case 'Date':
+        fieldSchema = z.coerce.date()
+        break
+      case 'Date Time':
+        fieldSchema = z.coerce.date()
+        break
+      case 'Tool Top Icon':
+        case "Tab Seperator":
+      
+      case 'Location Select':
         fieldSchema = z.tuple([
           z.string({
             required_error: 'Country is required',
@@ -44,7 +54,7 @@ export const generateZodSchema = (
           z.string().optional(), // State name, optional
         ])
         break
-      case 'Slider':
+      case 'Progress':
         fieldSchema = z.coerce.number()
         break
       case 'Signature Input':
@@ -210,7 +220,7 @@ export const generateImports = (
         importSet.add('import { Calendar } from "@/components/ui/calendar"')
         importSet.add('import { Calendar as CalendarIcon } from "lucide-react"')
         break
-      case 'Datetime Picker':
+      case 'Date Time':
         importSet.add(
           'import { DatetimePicker } from "@/components/ui/datetime-picker"',
         )
@@ -222,23 +232,23 @@ export const generateImports = (
         field.locale &&
           importSet.add(`import { ${field.locale} } from "date-fns/locale"`)
         break
-      case 'File Input':
+      case 'File Upload':
         importSet.add('import { CloudUpload, Paperclip } from "lucide-react"')
         importSet.add(
           'import { FileInput, FileUploader, FileUploaderContent, FileUploaderItem } from "@/components/ui/file-upload"',
         )
         break
-      case 'Input OTP':
+      case 'OTP':
         importSet.add(
           'import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot} from "@/components/ui/input-otp"',
         )
         break
-      case 'Location Input':
+      case 'Location Select':
         importSet.add(
           'import LocationSelector from "@/components/ui/location-input"',
         )
         break
-      case 'Select':
+      case 'Dropdown':
         importSet.add(
           'import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select"',
         )
@@ -262,7 +272,12 @@ export const generateImports = (
           'import { PasswordInput } from "@/components/ui/password-input"',
         )
         break
-      case 'Phone':
+      case 'Number':
+        importSet.add(
+          'import { PhoneInput } from "@/components/ui/phone-input";',
+        )
+        break
+        case 'Mobile':
         importSet.add(
           'import { PhoneInput } from "@/components/ui/phone-input";',
         )
@@ -298,7 +313,7 @@ export const generateConstants = (
         { label: "Korean", value: "ko" },
         { label: "Chinese", value: "zh" },
       ] as const;`)
-    } else if (field.variant === 'File Input') {
+    } else if (field.variant === 'File Upload') {
       constantSet.add(`
         const [files, setFiles] = useState<File[] | null>(null); 
 
@@ -307,7 +322,7 @@ export const generateConstants = (
           maxSize: 1024 * 1024 * 4,
           multiple: true,
         };`)
-    } else if (field.variant === 'Location Input') {
+    } else if (field.variant === 'Location Select') {
       constantSet.add(`
         const [countryName, setCountryName] = useState<string>('')
         const [stateName, setStateName] = useState<string>('')
@@ -339,9 +354,9 @@ export const generateDefaultValues = (
       case 'Tags Input':
         defaultValues[field.name] = []
         break
-      case 'Datetime Picker':
+      case 'Date Time':
       case 'Smart Datetime Input':
-      case 'Date Picker':
+      case 'Date':
         defaultValues[field.name] = new Date()
         break
     }
@@ -362,9 +377,9 @@ export const generateDefaultValuesString = (
     } else if (field.variant === 'Tags Input') {
       defaultValues[field.name] = ['test']
     } else if (
-      field.variant === 'Datetime Picker' ||
+      field.variant === 'Date Time' ||
       field.variant === 'Smart Datetime Input' ||
-      field.variant === 'Date Picker'
+      field.variant === 'Date'
     ) {
       dateFields.push(field.name)
       delete defaultValues[field.name]

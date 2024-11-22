@@ -13,6 +13,7 @@ type FieldSelectorProps = {
 export const FieldSelector: React.FC<FieldSelectorProps> = ({
   addFormField,
 }) => {
+  console.log("fieldTypes----",fieldTypes)
   return (
     <div className="flex md:flex-col  items-start flex-wrap md:flex-nowrap gap-3 h-[70vh] overflow-y-auto">
 

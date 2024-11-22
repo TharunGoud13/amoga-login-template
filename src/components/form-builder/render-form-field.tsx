@@ -1,10 +1,10 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-'use client'
+"use client";
 
-import { ChangeEvent, useRef, useState } from 'react'
+import { ChangeEvent, useRef, useState } from "react";
 
-import { FormFieldType } from '@/types'
-import { cn } from '@/lib/utils'
+import { FormFieldType } from "@/types";
+import { cn } from "@/lib/utils";
 
 import {
   FormControl,
@@ -13,25 +13,25 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Input } from '@/components/ui/input'
+} from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
-} from '@/components/ui/input-otp'
+} from "@/components/ui/input-otp";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Switch } from '@/components/ui/switch'
-import { Textarea } from '@/components/ui/textarea'
-import { Calendar } from '@/components/ui/calendar'
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Command,
   CommandEmpty,
@@ -39,27 +39,27 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from '@/components/ui/command'
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@/components/ui/popover'
-import { Button } from '@/components/ui/button'
-import { format } from 'date-fns'
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
 // import { PasswordInput } from '@/components/ui/password-input'
-import { PasswordInput } from '../ui/password-input'
-import { PhoneInput } from '../ui/phone-input'
+import { PasswordInput } from "../ui/password-input";
+import { PhoneInput } from "../ui/phone-input";
 import {
   FileUploader,
   FileUploaderContent,
   FileUploaderItem,
   FileInput,
-} from '@/components/ui/file-upload'
-import { Slider } from '@/components/ui/slider'
-import { CalendarIcon, Check, ChevronsUpDown, Paperclip } from 'lucide-react'
+} from "@/components/ui/file-upload";
+import { Slider } from "@/components/ui/slider";
+import { CalendarIcon, Check, ChevronsUpDown, Paperclip } from "lucide-react";
 // import { TagsInput } from '@/components/ui/tags-input'
-import { TagsInput } from '../ui/tags-input'
+import { TagsInput } from "../ui/tags-input";
 import {
   MultiSelector,
   MultiSelectorContent,
@@ -67,23 +67,25 @@ import {
   MultiSelectorItem,
   MultiSelectorList,
   MultiSelectorTrigger,
-} from '../ui/multi-select'
-import { DatetimePicker } from '@/components/ui/datetime-picker'
-import { SmartDatetimeInput } from '@/components/ui/smart-datetime-input'
-import LocationSelector from '@/components/ui/location-input'
-import SignatureInput from '@/components/ui/signature-input'
+} from "../ui/multi-select";
+import { DatetimePicker } from "@/components/ui/datetime-picker";
+import { SmartDatetimeInput } from "@/components/ui/smart-datetime-input";
+import LocationSelector from "@/components/ui/location-input";
+import SignatureInput from "@/components/ui/signature-input";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { Label } from "../ui/label";
 
 const languages = [
-  { label: 'English', value: 'en' },
-  { label: 'French', value: 'fr' },
-  { label: 'German', value: 'de' },
-  { label: 'Spanish', value: 'es' },
-  { label: 'Portuguese', value: 'pt' },
-  { label: 'Russian', value: 'ru' },
-  { label: 'Japanese', value: 'ja' },
-  { label: 'Korean', value: 'ko' },
-  { label: 'Chinese', value: 'zh' },
-] as const
+  { label: "English", value: "en" },
+  { label: "French", value: "fr" },
+  { label: "German", value: "de" },
+  { label: "Spanish", value: "es" },
+  { label: "Portuguese", value: "pt" },
+  { label: "Russian", value: "ru" },
+  { label: "Japanese", value: "ja" },
+  { label: "Korean", value: "ko" },
+  { label: "Chinese", value: "zh" },
+] as const;
 
 const FileSvgDraw = () => {
   return (
@@ -111,60 +113,108 @@ const FileSvgDraw = () => {
         SVG, PNG, JPG or GIF
       </p>
     </>
-  )
-}
+  );
+};
 
 export const renderFormField = (field: FormFieldType, form: any) => {
-  const [checked, setChecked] = useState<boolean>(field.checked)
-  const [value, setValue] = useState<any>(field.value)
-  const [selectedValues, setSelectedValues] = useState<string[]>(['React'])
-  const [tagsValue, setTagsValue] = useState<string[]>([])
-  const [files, setFiles] = useState<File[] | null>(null) // Initialize to null or use [] for an empty array
-  const [date, setDate] = useState<Date>()
-  const [datetime, setDatetime] = useState<Date>()
-  const [smartDatetime, setSmartDatetime] = useState<Date | null>()
-  const [countryName, setCountryName] = useState<string>('')
-  const [stateName, setStateName] = useState<string>('')
-  const [password, setPassword] = useState<string>('')
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [checked, setChecked] = useState<boolean>(field.checked);
+  const [value, setValue] = useState<any>(field.value);
+  const [selectedValues, setSelectedValues] = useState<string[]>(["React"]);
+  const [tagsValue, setTagsValue] = useState<string[]>([]);
+  const [files, setFiles] = useState<File[] | null>(null); // Initialize to null or use [] for an empty array
+  const [date, setDate] = useState<Date>();
+  const [datetime, setDatetime] = useState<Date>();
+  const [smartDatetime, setSmartDatetime] = useState<Date | null>();
+  const [countryName, setCountryName] = useState<string>("");
+  const [stateName, setStateName] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const dropZoneConfig = {
     maxFiles: 5,
     maxSize: 1024 * 1024 * 4,
     multiple: true,
-  }
+  };
 
   switch (field.variant) {
-    case 'Checkbox':
+    case "Check Box":
       return (
         <FormItem
           className={cn(
-            'flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4',
-            field.className,
+            "flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4",
+            field.className
           )}
         >
           <FormControl>
             <Checkbox
               checked={checked} // Ensure this is handled as boolean
               onCheckedChange={() => {
-                setChecked(!checked)
+                setChecked(!checked);
               }}
               disabled={field.disabled}
             />
           </FormControl>
           <div className="space-y-1 leading-none">
-            <FormLabel>{field.label}</FormLabel> {field.required && '*'}
+            <FormLabel>{field.label}</FormLabel> {field.required && "*"}
             <FormDescription>{field.description}</FormDescription>
           </div>
           <FormMessage />
         </FormItem>
-      )
-    case 'Combobox':
+      );
+    case "Radio Group":
+      return (
+        <FormItem
+          className={cn(
+            "flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4",
+            field.className
+          )}
+        >
+          <FormControl>
+            <RadioGroup defaultValue="comfortable">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="default" id="r1" />
+                <Label htmlFor="r1">Default</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="comfortable" id="r2" />
+                <Label htmlFor="r2">Comfortable</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="compact" id="r3" />
+                <Label htmlFor="r3">Compact</Label>
+              </div>
+            </RadioGroup>
+          </FormControl>
+          <div className="space-y-1 leading-none">
+            <FormLabel>{field.label}</FormLabel> {field.required && "*"}
+            <FormDescription>{field.description}</FormDescription>
+          </div>
+          <FormMessage />
+        </FormItem>
+      );
+      case "Search Lookup":
+        return(
+          <div></div>
+        );
+        case "Image":
+          return(
+            <div></div>
+          )
+          case "Tool Top Icon":
+            return(
+              <div></div>
+            )
+
+            case "Tab Seperator":
+              return(
+                <div></div>
+              )
+    case "Combobox":
       return (
         <FormItem className="flex flex-col">
           <div>
-            <FormLabel>{field.label}</FormLabel> {field.required && '*'}
-          </div>{' '}
+            <FormLabel>{field.label}</FormLabel> {field.required && "*"}
+          </div>{" "}
           <Popover>
             <PopoverTrigger asChild>
               <FormControl>
@@ -172,14 +222,14 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                   variant="outline"
                   role="combobox"
                   className={cn(
-                    'w-full justify-between',
-                    !value && 'text-muted-foreground',
+                    "w-full justify-between",
+                    !value && "text-muted-foreground"
                   )}
                 >
                   {value
                     ? languages.find((language) => language.value === value)
                         ?.label
-                    : 'Select language'}
+                    : "Select language"}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </FormControl>
@@ -195,16 +245,16 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                         value={language.label}
                         key={language.value}
                         onSelect={() => {
-                          setValue(language.value)
-                          form.setValue(field.name, language.value)
+                          setValue(language.value);
+                          form.setValue(field.name, language.value);
                         }}
                       >
                         <Check
                           className={cn(
-                            'mr-2 h-4 w-4',
+                            "mr-2 h-4 w-4",
                             language.value === value
-                              ? 'opacity-100'
-                              : 'opacity-0',
+                              ? "opacity-100"
+                              : "opacity-0"
                           )}
                         />
                         {language.label}
@@ -218,25 +268,25 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormDescription>{field.description}</FormDescription>
           <FormMessage />
         </FormItem>
-      )
-    case 'Date Picker':
+      );
+    case "Date":
       return (
         <FormItem className="flex flex-col">
           <div>
-            <FormLabel>{field.label}</FormLabel> {field.required && '*'}
+            <FormLabel>{field.label}</FormLabel> {field.required && "*"}
           </div>
           <Popover>
             <PopoverTrigger asChild>
               <FormControl>
                 <Button
-                  variant={'outline'}
+                  variant={"outline"}
                   className={cn(
-                    'w-full justify-start text-left font-normal',
-                    !date && 'text-muted-foreground',
+                    "w-full justify-start text-left font-normal",
+                    !date && "text-muted-foreground"
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, 'PPP') : <span>Pick a date</span>}
+                  {date ? format(date, "PPP") : <span>Pick a date</span>}
                 </Button>
               </FormControl>
             </PopoverTrigger>
@@ -245,11 +295,11 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                 mode="single"
                 selected={date}
                 onSelect={(newDate) => {
-                  setDate(newDate)
+                  setDate(newDate);
                   form.setValue(field.name, newDate, {
                     shouldValidate: true,
                     shouldDirty: true,
-                  })
+                  });
                 }}
                 initialFocus
               />
@@ -258,37 +308,37 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormDescription>{field.description}</FormDescription>
           <FormMessage />
         </FormItem>
-      )
-    case 'Datetime Picker':
+      );
+    case "Date Time":
       return (
         <FormItem className="flex flex-col">
           <div>
-            <FormLabel>{field.label}</FormLabel> {field.required && '*'}
+            <FormLabel>{field.label}</FormLabel> {field.required && "*"}
           </div>
           <DatetimePicker
             {...field}
             value={datetime}
             // onChange={setDatetime}
             onChange={(newDate) => {
-              setDatetime(newDate)
+              setDatetime(newDate);
               form.setValue(field.name, newDate, {
                 shouldValidate: true,
                 shouldDirty: true,
-              })
+              });
             }}
             format={[
-              ['months', 'days', 'years'],
-              ['hours', 'minutes', 'am/pm'],
+              ["months", "days", "years"],
+              ["hours", "minutes", "am/pm"],
             ]}
           />
           <FormDescription>{field.description}</FormDescription>
           <FormMessage />
         </FormItem>
-      )
-    case 'File Input':
+      );
+    case "File Upload":
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel> {field.required && '*'}
+          <FormLabel>{field.label}</FormLabel> {field.required && "*"}
           <FormControl>
             <FileUploader
               value={files}
@@ -318,11 +368,11 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
         </FormItem>
-      )
-    case 'Input':
+      );
+    case "Text Box":
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel> {field.required && '*'}
+          <FormLabel>{field.label}</FormLabel> {field.required && "*"}
           <FormControl>
             <Input
               placeholder={field.placeholder}
@@ -333,11 +383,39 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormDescription>{field.description}</FormDescription>
           <FormMessage />
         </FormItem>
-      )
-    case 'Input OTP':
+      );
+    case "Email":
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel> {field.required && '*'}
+          <FormLabel>{field.label}</FormLabel> {field.required && "*"}
+          <FormControl>
+            <Input
+              placeholder={field.placeholder}
+              disabled={field.disabled}
+              type={field?.type}
+            />
+          </FormControl>
+          <FormDescription>{field.description}</FormDescription>
+          <FormMessage />
+        </FormItem>
+      );
+    case "Label":
+      return (
+        <FormItem>
+          <FormControl>
+          <div className="flex items-center space-x-2">
+        <Checkbox id="terms" />
+        <Label htmlFor="terms">Accept terms and conditions</Label>
+      </div>
+          </FormControl>
+          <FormDescription>{field.description}</FormDescription>
+          <FormMessage />
+        </FormItem>
+      );
+    case "OTP":
+      return (
+        <FormItem>
+          <FormLabel>{field.label}</FormLabel> {field.required && "*"}
           <FormControl>
             <InputOTP maxLength={6}>
               <InputOTPGroup>
@@ -356,28 +434,28 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormDescription>{field.description}</FormDescription>
           <FormMessage />
         </FormItem>
-      )
-    case 'Location Input':
+      );
+    case "Location Select":
       return (
         <FormItem className="flex flex-col">
           <div>
-            <FormLabel>{field.label}</FormLabel> {field.required && '*'}
+            <FormLabel>{field.label}</FormLabel> {field.required && "*"}
           </div>
           <LocationSelector
             onCountryChange={(country) => {
-              setCountryName(country?.name || '')
-              form.setValue(field.name, [country?.name || '', stateName || ''])
+              setCountryName(country?.name || "");
+              form.setValue(field.name, [country?.name || "", stateName || ""]);
             }}
             onStateChange={(state) => {
-              setStateName(state?.name || '')
-              form.setValue(field.name, [countryName || '', state?.name || ''])
+              setStateName(state?.name || "");
+              form.setValue(field.name, [countryName || "", state?.name || ""]);
             }}
           />
           <FormDescription>{field.description}</FormDescription>
           <FormMessage />
         </FormItem>
-      )
-    case 'Multi Select':
+      );
+    case "Multi Select":
       return (
         <FormItem>
           <FormLabel>{field.label}</FormLabel>
@@ -385,11 +463,11 @@ export const renderFormField = (field: FormFieldType, form: any) => {
             <MultiSelector
               values={selectedValues}
               onValuesChange={(newValues) => {
-                setSelectedValues(newValues)
+                setSelectedValues(newValues);
                 form.setValue(field.name, newValues, {
                   shouldValidate: true,
                   shouldDirty: true,
-                })
+                });
               }}
               className="max-w-xs"
             >
@@ -398,9 +476,9 @@ export const renderFormField = (field: FormFieldType, form: any) => {
               </MultiSelectorTrigger>
               <MultiSelectorContent>
                 <MultiSelectorList>
-                  <MultiSelectorItem value={'React'}>React</MultiSelectorItem>
-                  <MultiSelectorItem value={'Vue'}>Vue</MultiSelectorItem>
-                  <MultiSelectorItem value={'Svelte'}>Svelte</MultiSelectorItem>
+                  <MultiSelectorItem value={"React"}>React</MultiSelectorItem>
+                  <MultiSelectorItem value={"Vue"}>Vue</MultiSelectorItem>
+                  <MultiSelectorItem value={"Svelte"}>Svelte</MultiSelectorItem>
                 </MultiSelectorList>
               </MultiSelectorContent>
             </MultiSelector>
@@ -408,11 +486,11 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormDescription>{field.description}</FormDescription>
           <FormMessage />
         </FormItem>
-      )
-    case 'Select':
+      );
+    case "Dropdown":
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel> {field.required && '*'}
+          <FormLabel>{field.label}</FormLabel> {field.required && "*"}
           <Select onValueChange={field.onChange} defaultValue="m@example.com">
             <FormControl>
               <SelectTrigger>
@@ -428,12 +506,12 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormDescription>{field.description}</FormDescription>
           <FormMessage />
         </FormItem>
-      )
-    case 'Slider':
-      const min = field.min || 0
-      const max = field.max || 100
-      const step = field.step || 1
-      const defaultValue = 5
+      );
+    case "Progress":
+      const min = field.min || 0;
+      const max = field.max || 100;
+      const step = field.step || 1;
+      const defaultValue = 5;
 
       return (
         <FormItem>
@@ -445,7 +523,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
               step={step}
               defaultValue={[defaultValue]}
               onValueChange={(value) => {
-                setValue(value[0])
+                setValue(value[0]);
               }} // Update to set the first value as a number
             />
           </FormControl>
@@ -455,8 +533,8 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           </FormDescription>
           <FormMessage />
         </FormItem>
-      )
-    case 'Signature Input':
+      );
+    case "Signature Input":
       return (
         <FormItem>
           <FormLabel>{field.label}</FormLabel>
@@ -464,7 +542,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
             <SignatureInput
               canvasRef={canvasRef}
               onSignatureChange={(signature) => {
-                if (signature) field.onChange(signature)
+                if (signature) field.onChange(signature);
               }}
             />
           </FormControl>
@@ -473,8 +551,8 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           </FormDescription>
           <FormMessage />
         </FormItem>
-      )
-    case 'Smart Datetime Input':
+      );
+    case "Smart Datetime Input":
       return (
         <FormItem>
           <FormLabel>{field.label}</FormLabel>
@@ -484,11 +562,11 @@ export const renderFormField = (field: FormFieldType, form: any) => {
               hour12={field.hour12}
               value={smartDatetime}
               onValueChange={(newDate) => {
-                setSmartDatetime(newDate)
+                setSmartDatetime(newDate);
                 form.setValue(field.name, newDate, {
                   shouldValidate: true,
                   shouldDirty: true,
-                })
+                });
               }}
               placeholder="e.g. tomorrow at 3pm"
             />
@@ -498,28 +576,28 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           </FormDescription>
           <FormMessage />
         </FormItem>
-      )
-    case 'Switch':
+      );
+    case "Switch":
       return (
         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
           <div className="space-y-0.5">
-            <FormLabel>{field.label}</FormLabel> {field.required && '*'}
+            <FormLabel>{field.label}</FormLabel> {field.required && "*"}
             <FormDescription>{field.description}</FormDescription>
           </div>
           <FormControl>
             <Switch
               checked={checked}
               onCheckedChange={() => {
-                setChecked(!checked)
+                setChecked(!checked);
               }}
             />
           </FormControl>
         </FormItem>
-      )
-    case 'Tags Input':
+      );
+    case "Tags Input":
       const currentTags = Array.isArray(form.watch(field.name))
         ? form.watch(field.name)
-        : []
+        : [];
 
       return (
         <FormItem>
@@ -528,11 +606,11 @@ export const renderFormField = (field: FormFieldType, form: any) => {
             <TagsInput
               value={tagsValue}
               onValueChange={(newTags) => {
-                setTagsValue(newTags)
+                setTagsValue(newTags);
                 form.setValue(field.name, newTags, {
                   shouldValidate: true,
                   shouldDirty: true,
-                })
+                });
               }}
               placeholder="Enter your tags"
             />
@@ -540,8 +618,8 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormDescription>{field.description}</FormDescription>
           <FormMessage />
         </FormItem>
-      )
-    case 'Textarea':
+      );
+    case "Text Area":
       return (
         <FormItem>
           <FormLabel>{field.label}</FormLabel>
@@ -555,48 +633,67 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormDescription>{field.description}</FormDescription>
           <FormMessage />
         </FormItem>
-      )
-    case 'Password':
+      );
+    case "Password":
       return (
         <FormItem>
           <FormLabel>{field.label}</FormLabel>
           <FormControl>
-            <PasswordInput 
+            <PasswordInput
               value={password}
-              placeholder='password'
-              onChange={(e:ChangeEvent<HTMLInputElement>)=>{
-                setPassword(e.target.value)
+              placeholder="password"
+              onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                setPassword(e.target.value);
                 form.setValue(field.name, e.target.value, {
                   shouldValidate: true,
                   shouldDirty: true,
-                })
+                });
               }}
             />
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
           <FormMessage />
         </FormItem>
-      )
-    case 'Phone':
+      );
+    case "Number":
       return (
         <FormItem>
           <FormLabel>{field.label}</FormLabel>
           <FormControl>
-
-            <PhoneInput 
-              defaultCountry="TR" 
-              onChange={(phoneNumber)=>{
-              form.setValue(field.name, phoneNumber, {
-                shouldValidate: true,
-                shouldDirty: true,
-              })
-            }}/>
+            <PhoneInput
+              defaultCountry="IN"
+              onChange={(phoneNumber) => {
+                form.setValue(field.name, phoneNumber, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                });
+              }}
+            />
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
           <FormMessage />
         </FormItem>
-      )
+      );
+    case "Mobile":
+      return (
+        <FormItem>
+          <FormLabel>{field.label}</FormLabel>
+          <FormControl>
+            <PhoneInput
+              defaultCountry="IN"
+              onChange={(phoneNumber) => {
+                form.setValue(field.name, phoneNumber, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                });
+              }}
+            />
+          </FormControl>
+          <FormDescription>{field.description}</FormDescription>
+          <FormMessage />
+        </FormItem>
+      );
     default:
-      return null
+      return null;
   }
-}
+};

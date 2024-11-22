@@ -27,6 +27,7 @@ const Page = (props: any) => {
         requestOptions
       );
       const result = await response.json();
+      console.log("result----",result)
       if (response.ok) {
         toast({ description: "Data fetched successfully", variant: "default" });
         setData(result);
@@ -61,7 +62,7 @@ const Page = (props: any) => {
     const formJson = data[0].form_json || [];
     return formJson.map((field: any, index: number) => {
       switch (field.variant) {
-        case "Input":
+        case "Text Box":
           return (
             <div key={index} className="mb-4">
               <Label htmlFor={field.name} className="block mb-1">
@@ -72,16 +73,10 @@ const Page = (props: any) => {
                 name={field.name}
                 id={field.name}
                 placeholder={field.placeholder}
-                value={field.name || ""}
                 onChange={handleChange}
                 disabled={field.disabled}
                 required={field.required}
               />
-              {field.description && (
-                <p className="text-sm text-muted-foreground mt-1">
-                  {field.description}
-                </p>
-              )}
             </div>
           );
         // Add other variants if needed, e.g., TextArea, Select, Checkbox
@@ -98,11 +93,11 @@ const Page = (props: any) => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 flex flex-col justify-center items-center  h-screen">
       
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="w-[30%] rounded border-gray-500 p-5 shadow-lg shadow-gray-400">
         {renderFormFields()}
-        <Button type="submit" className="mt-4">
+        <Button type="submit" className="mt-4 w-full">
           Submit
         </Button>
       </form>
