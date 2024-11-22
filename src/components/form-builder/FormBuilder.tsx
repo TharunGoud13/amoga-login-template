@@ -30,6 +30,7 @@ export default function FormBuilder() {
   const path = usePathname();
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const route = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const [formFields, setFormFields] = useState<FormFieldOrGroup[]>([]);
   const [selectedField, setSelectedField] = useState<FormFieldType | null>(
@@ -90,6 +91,7 @@ export default function FormBuilder() {
     headers.append("Content-Type", "application/json");
     headers.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
     const date = new Date();
+    setIsLoading(true);
 
     const formUrl = `${process.env.NEXT_PUBLIC_API_URL}/submit/${uuidv4()}`;
 
@@ -117,15 +119,18 @@ export default function FormBuilder() {
       const response = await fetch(SAVE_FORM_DATA, requestOptions);
       console.log("response----", response);
       if (response.ok) {
+        setIsLoading(false)
         toast({ description: "Form saved successfully", variant: "default" });
         route.push(`/form_maker/${payload.share_url}`);
       } else {
+        setIsLoading(false)
         toast({ description: "Failed to save form", variant: "destructive" });
       }
 
       setFormFields([]);
       setFormInput("");
     } catch (error) {
+      setIsLoading(false)
       toast({ description: "Failed to save form", variant: "destructive" });
     }
   };
@@ -208,7 +213,7 @@ export default function FormBuilder() {
               onChange={(e) => setFormInput(e.target.value)}
               placeholder="Enter form name"
             />
-            <Button onClick={handleSave}>Save</Button>
+            <Button onClick={handleSave}>{isLoading ? "Saving...":"Save"}</Button>
           </div>
           <div className="flex md:w-[400px] text-primary text-sm justify-between pt-3">
             <span>Version No: 1.0</span>
