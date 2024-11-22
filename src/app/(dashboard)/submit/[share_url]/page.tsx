@@ -135,6 +135,7 @@ const Page = (props: any) => {
 
 
   async function onSubmit(data: any) {
+    console.log("formdata-----",formData)
     const headers = new Headers();
     headers.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
     headers.append("Content-Type", "application/json");
@@ -143,8 +144,8 @@ const Page = (props: any) => {
     setLoading(true);
 
     const payload = {
-      form_id: formData.form_id,
-      form_name: formData.form_name,
+      form_id: formData[0].form_id,
+      form_name: formData[0].form_name,
       created_user_id: session?.user?.id,
       created_user_name: session?.user?.name,
       created_date: formatDateToCustomFormat(date),
