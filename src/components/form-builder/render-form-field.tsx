@@ -82,7 +82,7 @@ import {
   HoverCardTrigger,
 } from "../ui/hover-card";
 import { Progress } from "../ui/progress";
-import { ImageUpload } from "../ui/image-upload";
+import { MediaCard } from "../ui/media-card";
 
 const languages = [
   { label: "English", value: "en" },
@@ -130,7 +130,8 @@ export const renderFormField = (field: FormFieldType, form: any) => {
   const [value, setValue] = useState<any>(field.value);
   const [selectedValues, setSelectedValues] = useState<string[]>(["React"]);
   const [tagsValue, setTagsValue] = useState<string[]>([]);
-  const [files, setFiles] = useState<File[] | null>(null); // Initialize to null or use [] for an empty array
+  const [files, setFiles] = useState<File[] | null>(null);
+  const [images, setImages] = useState<File[] | null>(null);
   const [date, setDate] = useState<Date>();
   const [datetime, setDatetime] = useState<Date>();
   const [smartDatetime, setSmartDatetime] = useState<Date | null>();
@@ -140,10 +141,33 @@ export const renderFormField = (field: FormFieldType, form: any) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [progress, setProgress] = useState(13);
 
+  console.log("images----", images);
+  console.log("files----", files);
+
   const dropZoneConfig = {
     maxFiles: 5,
     maxSize: 1024 * 1024 * 4,
     multiple: true,
+  };
+
+  const imageDropZoneConfig = {
+    accept: { "image/*": [] },
+  };
+
+  const handleFileChange = (newFiles: File[] | any) => {
+    setFiles(newFiles);
+    setValue(newFiles as File[]);
+  };
+
+  const handleImageChange = (newImages: any) => {
+    const validImageTypes = ["image/jpeg", "image/png", "image/gif"];
+    const filteredImages = newImages.filter((image: any) =>
+      validImageTypes.includes(image.type)
+    );
+
+    console.log("Filtered Images:", filteredImages);
+    setImages(filteredImages);
+    setValue(filteredImages);
   };
 
   useEffect(() => {
@@ -209,13 +233,6 @@ export const renderFormField = (field: FormFieldType, form: any) => {
       );
     case "Search Lookup":
       return <div></div>;
-    case "Image":
-      return (
-        <div className="container mx-auto p-4">
-          
-          <ImageUpload />
-        </div>
-      );
     case "Badge":
       return (
         <div>
@@ -388,7 +405,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormControl>
             <FileUploader
               value={files}
-              onValueChange={setFiles}
+              onValueChange={handleFileChange}
               dropzoneOptions={dropZoneConfig}
               className="relative bg-background rounded-lg p-2"
             >
@@ -404,6 +421,40 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                 {files &&
                   files.length > 0 &&
                   files.map((file, i) => (
+                    <FileUploaderItem key={i} index={i}>
+                      <Paperclip className="h-4 w-4 stroke-current" />
+                      <span>{file.name}</span>
+                    </FileUploaderItem>
+                  ))}
+              </FileUploaderContent>
+            </FileUploader>
+          </FormControl>
+          <FormDescription>{field.description}</FormDescription>
+        </FormItem>
+      );
+    case "Image Upload":
+      return (
+        <FormItem>
+          <FormLabel>{field.label}</FormLabel> {field.required && "*"}
+          <FormControl>
+            <FileUploader
+              value={images}
+              onValueChange={handleImageChange}
+              dropzoneOptions={imageDropZoneConfig}
+              className="relative bg-background rounded-lg p-2"
+            >
+              <FileInput
+                id="fileInput"
+                className="outline-dashed outline-1 outline-slate-500"
+              >
+                <div className="flex items-center justify-center flex-col pt-3 pb-4 w-full ">
+                  <FileSvgDraw />
+                </div>
+              </FileInput>
+              <FileUploaderContent>
+                {images &&
+                  images.length > 0 &&
+                  images.map((file, i) => (
                     <FileUploaderItem key={i} index={i}>
                       <Paperclip className="h-4 w-4 stroke-current" />
                       <span>{file.name}</span>
@@ -579,6 +630,15 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           </FormDescription>
           <FormMessage />
         </FormItem>
+      );
+    case "Media Card":
+      return (
+        <div>
+          <MediaCard
+            title="Exciting New Product"
+            description="Discover our latest innovation that will revolutionize your daily life."
+          />
+        </div>
       );
     case "Signature Input":
       return (

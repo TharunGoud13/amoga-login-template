@@ -21,11 +21,12 @@ export const fieldTypes: FieldType[] = [
   { name: 'Seperator', isNew: false },
   { name: 'Combobox', isNew: false },
   { name: 'Multi Select', isNew: false },
-  { name: 'Image', isNew: false },
+  { name: 'Image Upload', isNew: false },
   { name: 'File Upload', isNew: false },
   { name: 'Location Select', isNew: true },
   { name: 'Tool Tip Card', isNew: true },
   { name: 'Progress', isNew: true },
+  { name: 'Media Card', isNew: true },
   // { name: 'Search Lookup', isNew: false },
   { name: 'Tab Seperator', isNew: false },
   // { name: 'Signature Input', isNew: true },
@@ -43,10 +44,7 @@ export const defaultFieldConfig: Record<
     description:
       'You can manage your mobile notifications in the mobile settings page.',
   },
-  'Image': {
-    label: 'Profile Picture',
-    description: 'Upload your profile picture.',
-  },
+  
   'Radio Group': {
     label: 'Use different settings for my mobile devices',
     description:
@@ -83,6 +81,10 @@ export const defaultFieldConfig: Record<
   'File Upload': {
     label: 'Select File',
     description: 'Select a file to upload.',
+  },
+  'Image Upload': {
+    label: 'Select Image',
+    description: 'Upload your profile picture.',
   },
   'Text Box': {
     label: 'Username',

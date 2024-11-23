@@ -17,14 +17,14 @@ const Page = (props: any) => {
         
         <div className='pt-4 pb-4 mb-4 flex flex-col justify-center items-center md:justify-start '>
             <h1 className='md:text-xl'>Share this form</h1>
-            <span className='md:text-lg text-gray-400'>
+            <span className='md:text-lg text-center text-gray-400'>
                 Anyone with the link can view and submit the form
             </span>
             <hr/>
         </div>
         <div className='md:w-[500px] space-y-3'>
         <Input  readOnly value={`${process.env.NEXT_PUBLIC_API_URL}/submit/${pathName}`}/> 
-        <Button className='md:w-[500px]' onClick={handleClick}>Copy Link</Button>
+        <Button className='md:w-[500px] w-full' onClick={handleClick}>Copy Link</Button>
         </div>
     </div>
   )
