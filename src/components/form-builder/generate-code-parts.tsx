@@ -43,7 +43,6 @@ export const generateZodSchema = (
       case 'Date Time':
         fieldSchema = z.coerce.date()
         break
-      case 'Tool Top Icon':
         case "Tab Seperator":
       
       case 'Location Select':

@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 
 import { FormFieldType } from "@/types";
 import { cn } from "@/lib/utils";
@@ -74,6 +74,15 @@ import LocationSelector from "@/components/ui/location-input";
 import SignatureInput from "@/components/ui/signature-input";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Label } from "../ui/label";
+import { Badge } from "../ui/badge";
+import { Separator } from "../ui/separator";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "../ui/hover-card";
+import { Progress } from "../ui/progress";
+import { ImageUpload } from "../ui/image-upload";
 
 const languages = [
   { label: "English", value: "en" },
@@ -129,12 +138,18 @@ export const renderFormField = (field: FormFieldType, form: any) => {
   const [stateName, setStateName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [progress, setProgress] = useState(13);
 
   const dropZoneConfig = {
     maxFiles: 5,
     maxSize: 1024 * 1024 * 4,
     multiple: true,
   };
+
+  useEffect(() => {
+    const timer = setTimeout(() => setProgress(66), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   switch (field.variant) {
     case "Check Box":
@@ -173,42 +188,73 @@ export const renderFormField = (field: FormFieldType, form: any) => {
             <RadioGroup defaultValue="comfortable">
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="default" id="r1" />
-                <Label htmlFor="r1">Default</Label>
+                <Label htmlFor="r1">{field.name}</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="comfortable" id="r2" />
-                <Label htmlFor="r2">Comfortable</Label>
+                <Label htmlFor="r2">{field.name}</Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="compact" id="r3" />
-                <Label htmlFor="r3">Compact</Label>
+                <Label htmlFor="r3">{field.name}</Label>
               </div>
             </RadioGroup>
           </FormControl>
           <div className="space-y-1 leading-none">
-            <FormLabel>{field.label}</FormLabel> {field.required && "*"}
-            <FormDescription>{field.description}</FormDescription>
+            {/* <FormLabel>{field.label}</FormLabel> {field.required && "*"} */}
+            {/* <FormDescription>{field.description}</FormDescription> */}
           </div>
           <FormMessage />
         </FormItem>
       );
-      case "Search Lookup":
-        return(
-          <div></div>
-        );
-        case "Image":
-          return(
-            <div></div>
-          )
-          case "Tool Top Icon":
-            return(
-              <div></div>
-            )
+    case "Search Lookup":
+      return <div></div>;
+    case "Image":
+      return (
+        <div className="container mx-auto p-4">
+          
+          <ImageUpload />
+        </div>
+      );
+    case "Badge":
+      return (
+        <div>
+          <Badge>{field.name}</Badge>
+        </div>
+      );
 
-            case "Tab Seperator":
-              return(
-                <div></div>
-              )
+    case "Seperator":
+      return (
+        <div className="space-y-2">
+          <p>{field.name}</p>
+          <Separator />
+          <p>{field.description}</p>
+        </div>
+      );
+
+    case "Tool Tip Card":
+      return (
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <Button variant="link">{field.label}</Button>
+          </HoverCardTrigger>
+          <HoverCardContent className="w-80">
+            <div>
+              <p>{field.label}</p>
+              <p>{field.name}</p>
+              <p>{field.description}</p>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
+      );
+
+    case "Progress":
+      return (
+        <div>
+          <p>{form.label}</p>
+          <Progress value={progress} className="w-[60%]" />
+        </div>
+      );
     case "Combobox":
       return (
         <FormItem className="flex flex-col">
@@ -403,10 +449,10 @@ export const renderFormField = (field: FormFieldType, form: any) => {
       return (
         <FormItem>
           <FormControl>
-          <div className="flex items-center space-x-2">
-        <Checkbox id="terms" />
-        <Label htmlFor="terms">Accept terms and conditions</Label>
-      </div>
+            <div className="flex items-center space-x-2">
+              <Checkbox id="terms" />
+              <Label htmlFor="terms">Accept terms and conditions</Label>
+            </div>
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
           <FormMessage />
@@ -507,7 +553,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormMessage />
         </FormItem>
       );
-    case "Progress":
+    case "Slider":
       const min = field.min || 0;
       const max = field.max || 100;
       const step = field.step || 1;

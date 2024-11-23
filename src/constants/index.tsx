@@ -2,9 +2,9 @@ import { FieldType } from '@/types'
 import { Area } from 'recharts';
 
 export const fieldTypes: FieldType[] = [
+  { name: 'Text Area', isNew: false },
   { name: 'Label', isNew: false },
   { name: 'Text Box', isNew: false },
-  { name: 'Text Area', isNew: false },
   { name: 'Number', isNew: false },
   { name: 'Mobile', isNew: false },
   { name: 'OTP', isNew: false },
@@ -14,15 +14,19 @@ export const fieldTypes: FieldType[] = [
   { name: 'Date Time', isNew: true },
   { name: 'Dropdown', isNew: false },
   { name: 'Check Box', isNew: false },
-  { name: 'Combobox', isNew: false },
+  { name: 'Badge', isNew: false },
   { name: 'Radio Group', isNew: false },
-  { name: 'Search Lookup', isNew: false },
+  { name: 'Slider', isNew: false },
+  { name: 'Switch', isNew: false },
+  { name: 'Seperator', isNew: false },
+  { name: 'Combobox', isNew: false },
   { name: 'Multi Select', isNew: false },
   { name: 'Image', isNew: false },
   { name: 'File Upload', isNew: false },
   { name: 'Location Select', isNew: true },
-  { name: 'Tool Top Icon', isNew: true },
-  { name: 'Progress', isNew: false },
+  { name: 'Tool Tip Card', isNew: true },
+  { name: 'Progress', isNew: true },
+  // { name: 'Search Lookup', isNew: false },
   { name: 'Tab Seperator', isNew: false },
   // { name: 'Signature Input', isNew: true },
   // { name: 'Smart Datetime Input', isNew: true },
@@ -48,9 +52,13 @@ export const defaultFieldConfig: Record<
     description:
       'You can manage your mobile notifications in the mobile settings page.',
   },
-  'Tool Top Icon': {
+  'Badge': {
     label: 'Select your framework',
     description: 'Select from the options below.',
+  },
+  'Progress': {
+    label: 'Select your framework',
+    description: 'Select from the options below.'
   },
   'Search Lookup': {
     label: 'Choose your framework',
