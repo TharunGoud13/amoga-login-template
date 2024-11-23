@@ -73,15 +73,17 @@ export const FieldItem = ({
       disabled: false,
       label: label || newFieldName,
       name: newFieldName,
-      onChange: () => {},
-      onSelect: () => {},
+      onChange: () => { },
+      onSelect: () => { },
       placeholder: placeholder || 'Placeholder',
       required: true,
       rowIndex: index,
-      setValue: () => {},
+      setValue: () => { },
       type: '',
       value: '',
       variant,
+      mediaFileName: '',
+      mediaUrl: ''
     }
 
     setFormFields((prevFields) => {

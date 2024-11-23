@@ -56,15 +56,17 @@ export default function FormBuilder() {
       disabled: false,
       label: label || newFieldName,
       name: newFieldName,
-      onChange: () => {},
-      onSelect: () => {},
+      onChange: () => { },
+      onSelect: () => { },
       placeholder: placeholder || "Placeholder",
       required: true,
       rowIndex: index,
-      setValue: () => {},
+      setValue: () => { },
       type: "",
       value: "",
       variant,
+      mediaFileName: "",
+      mediaUrl: ""
     };
     setFormFields([...formFields, newField]);
   };
