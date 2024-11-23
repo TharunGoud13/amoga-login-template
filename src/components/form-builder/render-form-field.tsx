@@ -126,6 +126,7 @@ const FileSvgDraw = () => {
 };
 
 export const renderFormField = (field: FormFieldType, form: any) => {
+  console.log("field====",field)
   const [checked, setChecked] = useState<boolean>(field.checked);
   const [value, setValue] = useState<any>(field.value);
   const [selectedValues, setSelectedValues] = useState<string[]>(["React"]);
@@ -140,9 +141,8 @@ export const renderFormField = (field: FormFieldType, form: any) => {
   const [password, setPassword] = useState<string>("");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [progress, setProgress] = useState(13);
+  const [media, setMedia] = useState<File | null>(null);
 
-  console.log("images----", images);
-  console.log("files----", files);
 
   const dropZoneConfig = {
     maxFiles: 5,
@@ -632,11 +632,29 @@ export const renderFormField = (field: FormFieldType, form: any) => {
         </FormItem>
       );
     case "Media Card":
+
+    const handleMediaChange = (newMedia: File | null) => {
+      setMedia(newMedia);
+      form.setValue(field.name, newMedia); // Synchronize with react-hook-form
+    };
       return (
         <div>
           <MediaCard
-            title="Exciting New Product"
-            description="Discover our latest innovation that will revolutionize your daily life."
+            title={field.label || "Exciting New Product"} 
+            description={field.description || "Discover our latest innovation."} 
+            value={field.value} 
+            onTitleChange={(newTitle) => {
+              field.label = newTitle;
+              form.setValue(`${field.name}`, newTitle); 
+            }}
+            onDescriptionChange={(newDescription) => {
+              field.description = newDescription;
+              form.setValue(`${field.name}`, newDescription);
+            }}
+            onMediaChange={(media: any) => {
+              field.value = media;
+              form.setValue(field.name, media); 
+            }}
           />
         </div>
       );

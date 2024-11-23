@@ -14,40 +14,73 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Heart,
-  Share,
-  Bookmark,
-  MoreHorizontal,
-  Upload,
-} from "lucide-react";
+import { Heart, Share, Bookmark, MoreHorizontal, Upload } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { usePathname } from "next/navigation";
 
 interface MediaCardProps {
   title: string;
   description: string;
+  value: any;
+  onMediaChange: (media: { url: string; name: string }) => void;
+  onTitleChange: (title: string) => void;
+  onDescriptionChange: (description: string) => void;
 }
 
-export function MediaCard({ title, description }: MediaCardProps) {
+export function MediaCard({
+  title,
+  description,
+  value,
+  onMediaChange,
+  onTitleChange,
+  onDescriptionChange,
+}: MediaCardProps) {
   const [customHtml, setCustomHtml] = useState(
     '<p class="text-sm">This is <strong>custom HTML</strong> content.</p>'
   );
-  const [mediaSource, setMediaSource] = useState<string | null>(null);
+  const [mediaSource, setMediaSource] = useState<string | null>(
+    value?.url || null
+  );
   const [mediaType, setMediaType] = useState<"image" | "video">("image");
+  const [mediaFileName, setMediaFileName] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const path = usePathname();
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const currentPath = path.includes("submit");
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setMediaSource(url);
-      setMediaType(file.type.startsWith("video") ? "video" : "image");
-      return () => URL.revokeObjectURL(url); // Cleanup the object URL
+    if (!file) return;
+
+    // Upload file to server
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to upload file");
+      }
+
+      const data = await response.json();
+      const fileUrl = data.url;
+
+      setMediaSource(fileUrl);
+      onMediaChange({ url: fileUrl, name: file.name });
+    } catch (error) {
+      console.error("File upload error:", error);
+      alert("Failed to upload file. Please try again.");
     }
   };
 
@@ -55,7 +88,8 @@ export function MediaCard({ title, description }: MediaCardProps) {
     const url = event.target.value;
     if (url.match(/\.(jpeg|jpg|png|gif|webp|mp4|webm|ogg)$/i)) {
       setMediaSource(url);
-      setMediaType(url.match(/\.(mp4|webm|ogg)$/i) ? "video" : "image");
+      setMediaFileName(""); // Clear file name for URL input
+      onMediaChange({ url: url, name: "" }); // Update parent JSON
     } else {
       alert("Please enter a valid image or video URL");
     }
@@ -63,6 +97,28 @@ export function MediaCard({ title, description }: MediaCardProps) {
 
   return (
     <div className="space-y-4">
+      {!currentPath && 
+      <>
+      <div className="space-y-2">
+        <Label htmlFor="title-input">Title</Label>
+        <Input
+          id="title-input"
+          type="text"
+          value={title}
+          onChange={(e) => onTitleChange(e.target.value)}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="description-input">Description</Label>
+        <Input
+          id="description-input"
+          type="text"
+          value={description}
+          onChange={(e) => onDescriptionChange(e.target.value)}
+        />
+      </div>
+      </>
+      }
       <Card className="w-full max-w-sm mx-auto overflow-hidden">
         <CardHeader>
           <CardTitle>{title}</CardTitle>
@@ -149,44 +205,46 @@ export function MediaCard({ title, description }: MediaCardProps) {
           </DropdownMenu>
         </CardFooter>
       </Card>
-      <div className="w-full max-w-sm mx-auto space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="media-upload">Upload Image or Video</Label>
-          <div className="flex items-center space-x-2">
-            <Input
-              id="media-upload"
-              type="file"
-              accept="image/*,video/*"
-              onChange={handleFileChange}
-              className="hidden"
-              ref={fileInputRef}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Upload File
-            </Button>
-            <Input
-              type="text"
-              placeholder="Or enter media URL"
-              onChange={handleLinkChange}
+      {!currentPath && (
+        <div className="w-full max-w-sm mx-auto space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="media-upload">Upload Image or Video</Label>
+            <div className="flex items-center space-x-2">
+              <Input
+                id="media-upload"
+                type="file"
+                accept="image/*,video/*"
+                onChange={handleFileChange}
+                className="hidden"
+                ref={fileInputRef}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                Upload File
+              </Button>
+              <Input
+                type="text"
+                placeholder="Or enter media URL"
+                onChange={handleLinkChange}
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="custom-html">Custom HTML</Label>
+            <Textarea
+              id="custom-html"
+              value={customHtml}
+              onChange={(e) => setCustomHtml(e.target.value)}
+              placeholder="Enter custom HTML here"
+              rows={4}
             />
           </div>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="custom-html">Custom HTML</Label>
-          <Textarea
-            id="custom-html"
-            value={customHtml}
-            onChange={(e) => setCustomHtml(e.target.value)}
-            placeholder="Enter custom HTML here"
-            rows={4}
-          />
-        </div>
-      </div>
+      )}
     </div>
   );
 }

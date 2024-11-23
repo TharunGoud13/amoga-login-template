@@ -69,6 +69,17 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
             />
           </div>
           <div>
+            <Label htmlFor="label">Name</Label>
+            <Input
+              id="name"
+              type={field?.type}
+              value={editedField.name}
+              onChange={(e) =>
+                setEditedField({ ...editedField, name: e.target.value })
+              }
+            />
+          </div>
+          <div>
             <Label htmlFor="label">Description</Label>
             <Input
               id="description"
@@ -98,17 +109,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
               }
             />
           </div>
-          <div>
-            <Label htmlFor="label">Name</Label>
-            <Input
-              id="name"
-              type={field?.type}
-              value={editedField.name}
-              onChange={(e) =>
-                setEditedField({ ...editedField, name: e.target.value })
-              }
-            />
-          </div>
+          
           <If
             condition={field?.variant === 'Input'}
             render={() => (
