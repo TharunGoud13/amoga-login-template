@@ -29,6 +29,7 @@ export const fieldTypes: FieldType[] = [
   { name: 'Media Card', isNew: true },
   // { name: 'Search Lookup', isNew: false },
   { name: 'Tab Seperator', isNew: false },
+  { name: "Iframe", isNew: false },
   // { name: 'Signature Input', isNew: true },
   // { name: 'Smart Datetime Input', isNew: true },
   // { name: 'Switch', isNew: false },

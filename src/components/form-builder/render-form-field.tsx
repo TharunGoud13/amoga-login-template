@@ -57,7 +57,7 @@ import {
   FileInput,
 } from "@/components/ui/file-upload";
 import { Slider } from "@/components/ui/slider";
-import { CalendarIcon, Check, ChevronsUpDown, Paperclip } from "lucide-react";
+import { CalendarIcon, Check, ChevronsUpDown, ExternalLink, Paperclip } from "lucide-react";
 // import { TagsInput } from '@/components/ui/tags-input'
 import { TagsInput } from "../ui/tags-input";
 import {
@@ -83,6 +83,7 @@ import {
 } from "../ui/hover-card";
 import { Progress } from "../ui/progress";
 import { MediaCard } from "../ui/media-card";
+import { usePathname } from "next/navigation";
 
 const languages = [
   { label: "English", value: "en" },
@@ -142,6 +143,9 @@ export const renderFormField = (field: FormFieldType, form: any) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [progress, setProgress] = useState(13);
   const [media, setMedia] = useState<File | null>(null);
+  const [iframeUrl, setIframeUrl] = useState<string | null>(null);
+  const path = usePathname()
+  const currentPath = path.includes("submit");
 
 
   const dropZoneConfig = {
@@ -152,6 +156,13 @@ export const renderFormField = (field: FormFieldType, form: any) => {
 
   const imageDropZoneConfig = {
     accept: { "image/*": [] },
+  };
+
+  const handleIframeUrlChange = (url: string) => {
+    setIframeUrl(url);
+    field.value = url;
+    setValue(url); 
+
   };
 
   const handleFileChange = (newFiles: File[] | any) => {
@@ -676,6 +687,50 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormMessage />
         </FormItem>
       );
+      case "Iframe":
+  return (
+    <div>
+      <FormItem>
+        <FormLabel>{field.label || "Embedded Content"}</FormLabel> {field.required && "*"}
+        <FormControl>
+      {!currentPath &&
+          <Input
+            type="text"
+            className="flex-grow px-2 py-1 border rounded"
+            placeholder="Enter iframe URL"
+            value={iframeUrl || (field.value as string) || ""}
+            onChange={(e) => {handleIframeUrlChange(e.target.value)}} // Call handler on change
+          />
+        }
+        </FormControl>
+        <FormDescription>{field.description || "Provide a valid iframe URL."}</FormDescription>
+        <FormMessage />
+      </FormItem>
+
+      {/* Render iframe if URL is provided */}
+      {iframeUrl || field.value ? (
+        <div
+          className="relative w-full h-28 mt-2 bg-gray-100 rounded-md overflow-hidden cursor-pointer group"
+          onClick={() => window.open(iframeUrl || (field.value as string), "_blank", "noopener,noreferrer")}
+        >
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 group-hover:bg-opacity-70 transition-opacity">
+            <ExternalLink className="h-8 w-8 text-white" />
+          </div>
+          <iframe
+            src={iframeUrl || (field.value as string)}
+            className="absolute inset-0 w-full h-full border-0 pointer-events-none"
+            title="Embedded content preview"
+          />
+        </div>
+      ) : (
+        <div className="mt-2 w-full h-28 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center">
+          <p className="text-xs text-gray-500 text-center">No iframe URL set</p>
+        </div>
+      )}
+    </div>
+  );
+      
+     
     case "Smart Datetime Input":
       return (
         <FormItem>
