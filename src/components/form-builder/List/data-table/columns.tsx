@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
+import DataTableRowActions from "./data-table-row-actions"
 
 export const columns: ColumnDef<any>[] = [
   { accessorKey: "form_id", header: "Form ID" },
@@ -65,20 +66,9 @@ export const columns: ColumnDef<any>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
+      const formId = row.getValue("form_id") as string;
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>View details</DropdownMenuItem>
-            <DropdownMenuItem>Edit form</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <DataTableRowActions formId={formId}/>
       )
     },
   },

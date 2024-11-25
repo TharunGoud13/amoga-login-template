@@ -82,8 +82,6 @@ export const FieldItem = ({
       type: '',
       value: '',
       variant,
-      mediaFileName: '',
-      mediaUrl: ''
     }
 
     setFormFields((prevFields) => {

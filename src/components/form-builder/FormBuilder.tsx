@@ -1,5 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { FormFieldType } from "@/types";
 import { defaultFieldConfig } from "@/constants";
@@ -32,14 +33,19 @@ export default function FormBuilder() {
   const route = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
+  const currentPath = path.includes("edit");
+  const currentId = path.split("/").at(-1)
+
   const [formFields, setFormFields] = useState<FormFieldOrGroup[]>([]);
   const [selectedField, setSelectedField] = useState<FormFieldType | null>(
     null
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [formInput, setFormInput] = useState("");
+  const [editModeData, setEditModeData] = useState<any>([])
+  const [editFormInput, setEditFormInput] = useState<any>("")
 
-  // console.log("path----",path)
+
 
   const addFormField = (variant: string, index: number) => {
     const newFieldName = `name_${Math.random().toString().slice(-10)}`;
@@ -65,8 +71,6 @@ export default function FormBuilder() {
       type: "",
       value: "",
       variant,
-      mediaFileName: "",
-      mediaUrl: ""
     };
     setFormFields([...formFields, newField]);
   };
@@ -83,10 +87,46 @@ export default function FormBuilder() {
       `${pad(date.getMilliseconds(), 3)}`
     );
   }
+  
 
-  // const currentUrl = window.location.href.split("/form")[0];
-  // const currentUrl = window.location
-  // console.log("current",currentUrl)
+  const getData = async () => {
+    try{
+    const response = await fetch(`${SAVE_FORM_DATA}?form_id=eq.${currentId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${NEXT_PUBLIC_API_KEY}`,
+      },
+    });
+
+    const result = await response.json();
+    setEditModeData(result[0])
+    if(response.ok){
+      toast({ description: "Data fetched successfully", variant: "default" });
+    }
+    else{
+      toast({ description: "Failed to fetch data", variant: "destructive" });
+    }
+    
+  }
+  catch(error){
+    console.log("Error in fetching data", error);
+    toast({ description: "Error in fetching data", variant: "destructive" });
+  }
+  };
+
+  useEffect(() => {
+    if(currentPath){
+    getData();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (currentPath && editModeData?.form_json) {
+      setFormFields(editModeData.form_json);
+      setEditFormInput(editModeData?.form_name || "");
+    }
+  }, [currentPath, editModeData]);
 
   const handleSave = async () => {
     const headers = new Headers();
@@ -95,7 +135,6 @@ export default function FormBuilder() {
     const date = new Date();
     setIsLoading(true);
 
-    const formUrl = `${process.env.NEXT_PUBLIC_API_URL}/submit/${uuidv4()}`;
 
     const payload = {
       status: "active",
@@ -108,31 +147,44 @@ export default function FormBuilder() {
       share_url: uuidv4(),
     };
 
-    console.log("payload----", payload);
-
     try {
-      const requestOptions: any = {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(payload),
-      };
+      let response;
 
-      console.log("formInput----", formFields);
-      const response = await fetch(SAVE_FORM_DATA, requestOptions);
-      console.log("response----", response);
+      if (currentPath && editModeData) {
+        const updatePayload = {
+          ...payload,
+          form_json: formFields,
+          form_name: editFormInput,
+          version_no: editModeData?.version_no + 1
+        };
+
+        response = await fetch(`${SAVE_FORM_DATA}?form_id=eq.${currentId}`, {
+          method: "PATCH",
+          headers: headers,
+          body: JSON.stringify(updatePayload),
+        });
+      } else {
+        
+        response = await fetch(SAVE_FORM_DATA, {
+          method: "POST", 
+          headers: headers,
+          body: JSON.stringify(payload),
+        });
+      }
+
       if (response.ok) {
-        setIsLoading(false)
+        setIsLoading(false);
         toast({ description: "Form saved successfully", variant: "default" });
         route.push(`/form_maker/${payload.share_url}`);
       } else {
-        setIsLoading(false)
+        setIsLoading(false);
         toast({ description: "Failed to save form", variant: "destructive" });
       }
 
       setFormFields([]);
       setFormInput("");
     } catch (error) {
-      setIsLoading(false)
+      setIsLoading(false);
       toast({ description: "Failed to save form", variant: "destructive" });
     }
   };
@@ -200,30 +252,40 @@ export default function FormBuilder() {
 
   return (
     <section className="p-2.5 space-y-8">
-      <Tabs defaultValue="form" className=" pt-5 pr-5 pl-5">
-        <TabsList className="grid md:w-[400px] grid-cols-3">
+      <Tabs
+        defaultValue={currentPath ? "edit" : "form"}
+        className=" pt-5 pr-5 pl-5"
+      >
+        <TabsList
+          className={`grid md:w-[400px] ${
+            currentPath ? "grid-cols-4" : "grid-cols-3"
+          }`}
+        >
           <TabsTrigger value="form">Form</TabsTrigger>
           <TabsTrigger value="list">Forms</TabsTrigger>
           <TabsTrigger value="entries">Entries</TabsTrigger>
+          {currentPath && <TabsTrigger value="edit">Edit</TabsTrigger>}
         </TabsList>
         <TabsContent value="form">
           <div className="flex flex-col items-end">
-          <div className="flex flex-end w-full justify-end pt-4 gap-2.5 md:w-[400px] items-center">
-            <Input
-              type="text"
-              value={formInput}
-              onChange={(e) => setFormInput(e.target.value)}
-              placeholder="Enter form name"
-            />
-            <Button onClick={handleSave}>{isLoading ? "Saving...":"Save"}</Button>
-          </div>
-          <div className="flex md:w-[400px] text-primary text-sm justify-between pt-3">
-            <span>Version No: 1.0</span>
-            <span>Date: 19 Nov 2024</span>
-          </div>
+            <div className="flex flex-end w-full justify-end pt-4 gap-2.5 md:w-[400px] items-center">
+              <Input
+                type="text"
+                value={formInput}
+                onChange={(e) => setFormInput(e.target.value)}
+                placeholder="Enter form name"
+              />
+              <Button onClick={handleSave}>
+                {isLoading ? "Saving..." : "Save"}
+              </Button>
+            </div>
+            <div className="flex md:w-[400px] text-primary text-sm justify-between pt-3">
+              <span>Version No: 1.0</span>
+              <span>Date: 19 Nov 2024</span>
+            </div>
           </div>
           <If
-            condition={formFields.length > 0}
+            condition={formFields && formFields.length > 0}
             render={() => (
               <div className="grid grid-cols-1 md:grid-cols-2 items-start gap-8 md:px-5 h-full">
                 <div className="w-full h-full col-span-1 md:space-x-3 md:max-h-[75vh] flex flex-col md:flex-row ">
@@ -276,6 +338,73 @@ export default function FormBuilder() {
         </TabsContent>
         <TabsContent value="entries">
           <Entries />
+        </TabsContent>
+        <TabsContent value="edit">
+          <div className="flex flex-col items-end">
+            <div className="flex flex-end w-full justify-end pt-4 gap-2.5 md:w-[400px] items-center">
+              <Input
+                type="text"
+                value={editFormInput}
+                onChange={(e) => setEditFormInput(e.target.value)}
+                placeholder="Enter form name"
+              />
+              <Button onClick={handleSave}>
+                {isLoading ? "Saving..." : "Save"}
+              </Button>
+            </div>
+            <div className="flex md:w-[400px] text-primary text-sm justify-between pt-3">
+              <span>Version No: 1.0</span>
+              <span>Date: 19 Nov 2024</span>
+            </div>
+          </div>
+          <If
+            condition={formFields && formFields.length > 0}
+            render={() => (
+              <div className="grid grid-cols-1 md:grid-cols-2 items-start gap-8 md:px-5 h-full">
+                <div className="w-full h-full col-span-1 md:space-x-3 md:max-h-[75vh] flex flex-col md:flex-row ">
+                  <FieldSelectorWithSeparator
+                    addFormField={(variant: string, index: number = 0) =>
+                      addFormField(variant, index)
+                    }
+                  />
+                  <div className="overflow-y-auto  flex-1 ">
+                    <FormFieldList
+                      formFields={formFields}
+                      setFormFields={setFormFields}
+                      updateFormField={updateFormField}
+                      openEditDialog={openEditDialog}
+                    />
+                  </div>
+                </div>
+                <div className="col-span-1 w-full h-full space-y-3">
+                  <SpecialComponentsNotice formFields={formFields} />
+                  <FormPreview formFields={formFields} />
+                </div>
+              </div>
+            )}
+            otherwise={() => (
+              <div className="flex flex-col md:flex-row items-center gap-3 md:px-5">
+                <FieldSelectorWithSeparator
+                  addFormField={(variant: string, index: number = 0) =>
+                    addFormField(variant, index)
+                  }
+                />
+                <Image
+                  src={EmptyListImage}
+                  width={585}
+                  height={502}
+                  alt="Empty Image"
+                  className="object-contain mx-auto p-5 md:p-20"
+                />
+              </div>
+            )}
+          />
+          <EditFieldDialog
+            isOpen={isDialogOpen}
+            onClose={() => setIsDialogOpen(false)}
+            field={selectedField}
+            onSave={handleSaveField}
+          />
         </TabsContent>
       </Tabs>
     </section>
