@@ -145,6 +145,25 @@ const Page = (props: any) => {
     const formUrl = `${process.env.NEXT_PUBLIC_API_URL}/submit/${pathName}`;
     setLoading(true);
 
+    const isFileUploadVariant = formJsonData.some((item) => item.variant === "File Upload");
+
+    if(isFileUploadVariant){
+      const uploadedFileUrl = localStorage.getItem("uploadedFileUrl");
+      if (uploadedFileUrl) {
+        
+        data.file_url = uploadedFileUrl; 
+        Object.keys(data).forEach((key) => {
+          if (typeof data[key] === "string" && data[key].startsWith("C:\\fakepath\\")) {
+            // Extract file name from path (split on backslash and take the last part)
+            const fileName = data[key].split("\\").pop();
+            data[key] = fileName;
+          }
+        });
+      } else {
+        console.warn("No file URL found in localStorage");
+      }
+    }
+
     const payload = {
       form_id: formData[0].form_id,
       form_name: formData[0].form_name,
@@ -173,7 +192,6 @@ const Page = (props: any) => {
         setLoading(false);
       }
     } catch (error) {
-      // toast.error('Failed to submit the form. Please try again.')
       toast({ description: "Failed to submit the form. Please try again.", variant: "destructive" });
       form.reset();
       setLoading(false);

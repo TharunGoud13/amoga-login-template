@@ -57,7 +57,13 @@ import {
   FileInput,
 } from "@/components/ui/file-upload";
 import { Slider } from "@/components/ui/slider";
-import { CalendarIcon, Check, ChevronsUpDown, ExternalLink, Paperclip } from "lucide-react";
+import {
+  CalendarIcon,
+  Check,
+  ChevronsUpDown,
+  ExternalLink,
+  Paperclip,
+} from "lucide-react";
 // import { TagsInput } from '@/components/ui/tags-input'
 import { TagsInput } from "../ui/tags-input";
 import {
@@ -143,17 +149,12 @@ export const renderFormField = (field: FormFieldType, form: any) => {
   const [progress, setProgress] = useState(13);
   const [media, setMedia] = useState<File | null>(null);
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
-  const path = usePathname()
+  const path = usePathname();
   const currentPath = path.includes("submit");
-  const [uploading, setUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [uploadError, setUploadError] = useState<string | null>(null)
-  const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null)
-
-
-  const handleUploadComplete = (url: string) => {
-    setUploadedFileUrl(url)
-  }
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
 
   const dropZoneConfig = {
     maxFiles: 5,
@@ -168,37 +169,54 @@ export const renderFormField = (field: FormFieldType, form: any) => {
   const handleIframeUrlChange = (url: string) => {
     setIframeUrl(url);
     field.value = url;
-    setValue(url); 
-
+    setValue(url);
   };
 
-  const handleFileChange = async(newFiles: File[] | any) => {
-    setFiles(newFiles);
-    setValue(newFiles as File[]);
-    const formData = new FormData()
-    formData.append('file', newFiles)
+  const handleFileChange = async (newFiles: File[] | any) => {
+    // Clear previous states
+    setUploadError(null);
+    setUploadedFileUrl(null);
 
-    try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!response.ok) {
-        throw new Error('Upload failed')
-      }
-
-      const data = await response.json()
-      setUploadedFileUrl(data.url)
-      
-    } catch (error) {
-      console.error('Upload error:', error)
-      setUploadError('Failed to upload file. Please try again.')
-    } finally {
-      setUploading(false)
+    if (!currentPath) {
+      setUploadError("File upload is disabled in the current path.");
+      return;
     }
 
+    setUploading(true);
+    setFiles(newFiles);
 
+    const formData = new FormData();
+    newFiles.forEach((file: any) => {
+      formData.append("file", file);
+    });
+
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const data = await response.json();
+      setUploadedFileUrl(data.url);
+      if (data.url) {
+        localStorage.setItem("uploadedFileUrl", data.url);
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      setUploadError("Failed to upload file. Please try again.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleFileUrlClick = () => {
+    if (uploadedFileUrl) {
+      window.open(uploadedFileUrl, "_blank");
+    }
   };
 
   const handleImageChange = (newImages: any) => {
@@ -455,7 +473,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                 id="fileInput"
                 className="outline-dashed outline-1 outline-slate-500"
               >
-                <div className="flex items-center justify-center flex-col pt-3 pb-4 w-full ">
+                <div className="flex items-center justify-center flex-col pt-3 pb-4 w-full">
                   <FileSvgDraw />
                 </div>
               </FileInput>
@@ -468,9 +486,21 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                       <span>{file.name}</span>
                     </FileUploaderItem>
                   ))}
+
+                {uploadedFileUrl && (
+                  <div
+                    className="mt-2 text-blue-600 cursor-pointer hover:underline"
+                    onClick={handleFileUrlClick}
+                  >
+                    View Uploaded File: {files && files[0]?.name}
+                  </div>
+                )}
               </FileUploaderContent>
             </FileUploader>
           </FormControl>
+          {uploadError && (
+            <div className="text-red-500 text-sm mt-1">{uploadError}</div>
+          )}
           <FormDescription>{field.description}</FormDescription>
         </FormItem>
       );
@@ -674,20 +704,19 @@ export const renderFormField = (field: FormFieldType, form: any) => {
         </FormItem>
       );
     case "Media Card":
-
-    const handleMediaChange = (newMedia: File | null) => {
-      setMedia(newMedia);
-      form.setValue(field.name, newMedia); // Synchronize with react-hook-form
-    };
+      const handleMediaChange = (newMedia: File | null) => {
+        setMedia(newMedia);
+        form.setValue(field.name, newMedia); // Synchronize with react-hook-form
+      };
       return (
         <div>
           <MediaCard
-            title={field.label || "Exciting New Product"} 
-            description={field.description || "Discover our latest innovation."} 
-            value={field.value} 
+            title={field.label || "Exciting New Product"}
+            description={field.description || "Discover our latest innovation."}
+            value={field.value}
             onTitleChange={(newTitle) => {
               field.label = newTitle;
-              form.setValue(`${field.name}`, newTitle); 
+              form.setValue(`${field.name}`, newTitle);
             }}
             onDescriptionChange={(newDescription) => {
               field.description = newDescription;
@@ -695,7 +724,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
             }}
             onMediaChange={(media: any) => {
               field.value = media;
-              form.setValue(field.name, media); 
+              form.setValue(field.name, media);
             }}
           />
         </div>
@@ -718,50 +747,62 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormMessage />
         </FormItem>
       );
-      case "Iframe":
-  return (
-    <div>
-      <FormItem>
-        <FormLabel>{field.label || "Embedded Content"}</FormLabel> {field.required && "*"}
-        <FormControl>
-      {!currentPath &&
-          <Input
-            type="text"
-            className="flex-grow px-2 py-1 border rounded"
-            placeholder="Enter iframe URL"
-            value={iframeUrl || (field.value as string) || ""}
-            onChange={(e) => {handleIframeUrlChange(e.target.value)}} // Call handler on change
-          />
-        }
-        </FormControl>
-        <FormDescription>{field.description || "Provide a valid iframe URL."}</FormDescription>
-        <FormMessage />
-      </FormItem>
+    case "Iframe":
+      return (
+        <div>
+          <FormItem>
+            <FormLabel>{field.label || "Embedded Content"}</FormLabel>{" "}
+            {field.required && "*"}
+            <FormControl>
+              {!currentPath && (
+                <Input
+                  type="text"
+                  className="flex-grow px-2 py-1 border rounded"
+                  placeholder="Enter iframe URL"
+                  value={iframeUrl || (field.value as string) || ""}
+                  onChange={(e) => {
+                    handleIframeUrlChange(e.target.value);
+                  }} // Call handler on change
+                />
+              )}
+            </FormControl>
+            <FormDescription>
+              {field.description || "Provide a valid iframe URL."}
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
 
-      {/* Render iframe if URL is provided */}
-      {iframeUrl || field.value ? (
-        <div
-          className="relative w-full h-28 mt-2 bg-gray-100 rounded-md overflow-hidden cursor-pointer group"
-          onClick={() => window.open(iframeUrl || (field.value as string), "_blank", "noopener,noreferrer")}
-        >
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 group-hover:bg-opacity-70 transition-opacity">
-            <ExternalLink className="h-8 w-8 text-white" />
-          </div>
-          <iframe
-            src={iframeUrl || (field.value as string)}
-            className="absolute inset-0 w-full h-full border-0 pointer-events-none"
-            title="Embedded content preview"
-          />
+          {/* Render iframe if URL is provided */}
+          {iframeUrl || field.value ? (
+            <div
+              className="relative w-full h-28 mt-2 bg-gray-100 rounded-md overflow-hidden cursor-pointer group"
+              onClick={() =>
+                window.open(
+                  iframeUrl || (field.value as string),
+                  "_blank",
+                  "noopener,noreferrer"
+                )
+              }
+            >
+              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 group-hover:bg-opacity-70 transition-opacity">
+                <ExternalLink className="h-8 w-8 text-white" />
+              </div>
+              <iframe
+                src={iframeUrl || (field.value as string)}
+                className="absolute inset-0 w-full h-full border-0 pointer-events-none"
+                title="Embedded content preview"
+              />
+            </div>
+          ) : (
+            <div className="mt-2 w-full h-28 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center">
+              <p className="text-xs text-gray-500 text-center">
+                No iframe URL set
+              </p>
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="mt-2 w-full h-28 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center">
-          <p className="text-xs text-gray-500 text-center">No iframe URL set</p>
-        </div>
-      )}
-    </div>
-  );
-      
-     
+      );
+
     case "Smart Datetime Input":
       return (
         <FormItem>
