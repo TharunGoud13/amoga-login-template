@@ -127,7 +127,6 @@ const FileSvgDraw = () => {
 };
 
 export const renderFormField = (field: FormFieldType, form: any) => {
-  console.log("field====",field)
   const [checked, setChecked] = useState<boolean>(field.checked);
   const [value, setValue] = useState<any>(field.value);
   const [selectedValues, setSelectedValues] = useState<string[]>(["React"]);
@@ -146,7 +145,15 @@ export const renderFormField = (field: FormFieldType, form: any) => {
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
   const path = usePathname()
   const currentPath = path.includes("submit");
+  const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null)
 
+
+  const handleUploadComplete = (url: string) => {
+    setUploadedFileUrl(url)
+  }
 
   const dropZoneConfig = {
     maxFiles: 5,
@@ -165,9 +172,33 @@ export const renderFormField = (field: FormFieldType, form: any) => {
 
   };
 
-  const handleFileChange = (newFiles: File[] | any) => {
+  const handleFileChange = async(newFiles: File[] | any) => {
     setFiles(newFiles);
     setValue(newFiles as File[]);
+    const formData = new FormData()
+    formData.append('file', newFiles)
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error('Upload failed')
+      }
+
+      const data = await response.json()
+      setUploadedFileUrl(data.url)
+      
+    } catch (error) {
+      console.error('Upload error:', error)
+      setUploadError('Failed to upload file. Please try again.')
+    } finally {
+      setUploading(false)
+    }
+
+
   };
 
   const handleImageChange = (newImages: any) => {

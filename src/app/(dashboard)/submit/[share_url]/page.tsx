@@ -133,6 +133,8 @@ const Page = (props: any) => {
     );
   }
 
+  console.log("formJsonData----",formJsonData);
+
 
   async function onSubmit(data: any) {
     console.log("formdata-----",formData)
