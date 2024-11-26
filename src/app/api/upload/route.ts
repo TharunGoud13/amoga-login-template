@@ -1,21 +1,31 @@
-import { NextResponse } from 'next/server'
-import { put } from '@vercel/blob'
+import { NextResponse } from 'next/server';
+import { put } from '@vercel/blob';
+
+// Ensure to use environment variables for sensitive tokens
+const BLOB_READ_WRITE_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
 
 export async function POST(request: Request): Promise<NextResponse> {
-  const formData = await request.formData()
-  const file = formData.get('file') as File
+
+  // Parse the form data and extract the file
+  const formData = await request.formData();
+  const file = formData.get('file') as File;
+  console.log("file----", file);
 
   if (!file) {
-    return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+    return NextResponse.json({ error: 'No file provided' }, { status: 400 });
   }
 
   try {
-    const blob = await put(file.name, file, { access: 'public' })
+    // Upload the file to Vercel Blob
+    const blob = await put(file.name, file, {
+      access: 'public', // Make the file publicly accessible
+      token: BLOB_READ_WRITE_TOKEN, // Use the token for authentication
+    });
 
-    return NextResponse.json({ url: blob.url })
+    // Return the URL of the uploaded file
+    return NextResponse.json({ url: blob.url });
   } catch (error) {
-    console.error('Error uploading to Vercel Blob:', error)
-    return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
+    console.error('Error uploading to Vercel Blob:', error);
+    return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
   }
 }
-

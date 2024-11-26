@@ -126,7 +126,8 @@ const FileSvgDraw = () => {
   );
 };
 
-export const renderFormField = (field: FormFieldType, form: any) => {
+export const renderFormField = (field: FormFieldType, form: any, setFileUrl:any) => {
+  console.log("field----",field)
   const [checked, setChecked] = useState<boolean>(field.checked);
   const [value, setValue] = useState<any>(field.value);
   const [selectedValues, setSelectedValues] = useState<string[]>(["React"]);
@@ -145,16 +146,12 @@ export const renderFormField = (field: FormFieldType, form: any) => {
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
   const path = usePathname()
   const currentPath = path.includes("submit");
-  const [uploading, setUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [uploadError, setUploadError] = useState<string | null>(null)
-  const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false); // To track upload status
+  const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null); // To store uploaded file URL
+  const [uploadError, setUploadError] = useState<string | null>(null); 
 
 
-  const handleUploadComplete = (url: string) => {
-    setUploadedFileUrl(url)
-  }
-
+  console.log("value----",value)
   const dropZoneConfig = {
     maxFiles: 5,
     maxSize: 1024 * 1024 * 4,
@@ -172,34 +169,41 @@ export const renderFormField = (field: FormFieldType, form: any) => {
 
   };
 
-  const handleFileChange = async(newFiles: File[] | any) => {
-    setFiles(newFiles);
-    setValue(newFiles as File[]);
-    const formData = new FormData()
-    formData.append('file', newFiles)
+  const handleFileChange = async (newFiles: File[] | any) => {
+    console.log("files----", newFiles);
+    setFiles(newFiles); 
+    setUploadError(null); 
+    setUploading(true);
+
+    const formData = new FormData();
+    newFiles.forEach((file: File) => {
+      formData.append('file', file);
+    });
 
     try {
       const response = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
-      })
+      });
 
       if (!response.ok) {
-        throw new Error('Upload failed')
+        throw new Error('Upload failed');
       }
 
-      const data = await response.json()
-      setUploadedFileUrl(data.url)
-      
+      const data = await response.json();
+      console.log("data------",data)
+      setFileUrl(data.url);
+      setValue(data.url)
+      setUploadedFileUrl(data.url); // Set the uploaded file's URL in state
+
     } catch (error) {
-      console.error('Upload error:', error)
-      setUploadError('Failed to upload file. Please try again.')
+      console.error('Upload error:', error);
+      setUploadError('Failed to upload file. Please try again.'); // Set error message in state
     } finally {
-      setUploading(false)
+      setUploading(false); // Set uploading state to false when done
     }
-
-
   };
+  
 
   const handleImageChange = (newImages: any) => {
     const validImageTypes = ["image/jpeg", "image/png", "image/gif"];
@@ -440,40 +444,60 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormMessage />
         </FormItem>
       );
-    case "File Upload":
-      return (
-        <FormItem>
-          <FormLabel>{field.label}</FormLabel> {field.required && "*"}
-          <FormControl>
-            <FileUploader
-              value={files}
-              onValueChange={handleFileChange}
-              dropzoneOptions={dropZoneConfig}
-              className="relative bg-background rounded-lg p-2"
-            >
-              <FileInput
-                id="fileInput"
-                className="outline-dashed outline-1 outline-slate-500"
-              >
-                <div className="flex items-center justify-center flex-col pt-3 pb-4 w-full ">
-                  <FileSvgDraw />
+      case "File Upload":
+        return (
+          <FormItem>
+            <FormLabel>{field.label}</FormLabel> {field.required && "*"}
+            <FormControl>
+              {/* Check if there's a prefilled file URL */}
+              {value ? (
+                // If there is a value (URL), show the existing file
+                <div className="relative bg-background rounded-lg p-2">
+                  <div className="flex items-center justify-between">
+                    <a
+                      href={value as string}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500"
+                    >
+                      {value as string}
+                    </a>
+                    <span className="text-sm text-gray-500">Uploaded File</span>
+                  </div>
                 </div>
-              </FileInput>
-              <FileUploaderContent>
-                {files &&
-                  files.length > 0 &&
-                  files.map((file, i) => (
-                    <FileUploaderItem key={i} index={i}>
-                      <Paperclip className="h-4 w-4 stroke-current" />
-                      <span>{file.name}</span>
-                    </FileUploaderItem>
-                  ))}
-              </FileUploaderContent>
-            </FileUploader>
-          </FormControl>
-          <FormDescription>{field.description}</FormDescription>
-        </FormItem>
-      );
+              ) : (
+                // Otherwise, show the file uploader
+                <FileUploader
+                  value={files}
+                  onValueChange={handleFileChange}
+                  dropzoneOptions={dropZoneConfig}
+                  className="relative bg-background rounded-lg p-2"
+                >
+                  <FileInput
+                    id="fileInput"
+                    className="outline-dashed outline-1 outline-slate-500"
+                  >
+                    <div className="flex items-center justify-center flex-col pt-3 pb-4 w-full">
+                      <FileSvgDraw />
+                    </div>
+                  </FileInput>
+                  <FileUploaderContent>
+                    {files &&
+                      files.length > 0 &&
+                      files.map((file, i) => (
+                        <FileUploaderItem key={i} index={i}>
+                          <Paperclip className="h-4 w-4 stroke-current" />
+                          <span>{file.name}</span>
+                        </FileUploaderItem>
+                      ))}
+                  </FileUploaderContent>
+                </FileUploader>
+              )}
+            </FormControl>
+            <FormDescription>{field.description}</FormDescription>
+          </FormItem>
+        );
+      
     case "Image Upload":
       return (
         <FormItem>

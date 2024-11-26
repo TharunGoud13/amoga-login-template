@@ -25,10 +25,11 @@ import { formatJSXCode } from '@/lib/utils'
 export type FormFieldOrGroup = FormFieldType | FormFieldType[]
 
 export type FormPreviewProps = {
-  formFields: FormFieldOrGroup[]
+  formFields: FormFieldOrGroup[];
+  setFileUrl: any
 }
 
-const renderFormFields = (fields: FormFieldOrGroup[], form: any) => {
+const renderFormFields = (fields: FormFieldOrGroup[], form: any,setFileUrl: any) => {
   return fields.map((fieldOrGroup, index) => {
     if (Array.isArray(fieldOrGroup)) {
       // Calculate column span based on number of fields in the group
@@ -56,7 +57,7 @@ const renderFormFields = (fields: FormFieldOrGroup[], form: any) => {
                 >
                   <FormControl>
                     {React.cloneElement(
-                      renderFormField(field, form) as React.ReactElement,
+                      renderFormField(field, form, setFileUrl) as React.ReactElement,
                       {
                         ...formField,
                       },
@@ -78,7 +79,7 @@ const renderFormFields = (fields: FormFieldOrGroup[], form: any) => {
             <FormItem className="col-span-12">
               <FormControl>
                 {React.cloneElement(
-                  renderFormField(fieldOrGroup, form) as React.ReactElement,
+                  renderFormField(fieldOrGroup, form, setFileUrl) as React.ReactElement,
                   {
                     ...formField,
                   },
@@ -92,7 +93,7 @@ const renderFormFields = (fields: FormFieldOrGroup[], form: any) => {
   })
 }
 
-export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
+export const FormPreview: React.FC<FormPreviewProps> = ({ formFields,setFileUrl }) => {
   const formSchema = generateZodSchema(formFields)
 
   const defaultVals = generateDefaultValues(formFields)
@@ -138,7 +139,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({ formFields }) => {
                   onSubmit={form.handleSubmit(onSubmit)}
                   className="space-y-4 py-5 max-w-lg mx-auto"
                 >
-                  {renderFormFields(formFields, form)}
+                  {renderFormFields(formFields, form,setFileUrl)}
                   <Button type="submit">Submit</Button>
                 </form>
               </Form>

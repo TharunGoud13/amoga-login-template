@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { ADD_FORM_DATA, NEXT_PUBLIC_API_KEY, SAVE_FORM_DATA } from "@/constants/envConfig";
@@ -12,15 +12,15 @@ import { renderFormField } from "@/components/form-builder/render-form-field";
 import { z } from "zod";
 import { useSession } from "next-auth/react";
 
-const renderFormFields = (fields: any, form: any) => {
-  return fields.map((fieldOrGroup:any, index:any) => {
+const renderFormFields = (fields: any, form: any, setFileUrl: React.Dispatch<React.SetStateAction<string>>) => {
+  return fields.map((fieldOrGroup: any, index: any) => {
     if (Array.isArray(fieldOrGroup)) {
       const getColSpan = (totalFields: number) => {
         switch (totalFields) {
           case 2:
             return 6;
           case 3:
-            return 4; 
+            return 4;
           default:
             return 12;
         }
@@ -36,7 +36,7 @@ const renderFormFields = (fields: any, form: any) => {
               render={({ field: formField }) => (
                 <FormItem className={`col-span-${getColSpan(fieldOrGroup.length)}`}>
                   <FormControl>
-                    {React.cloneElement(renderFormField(field, form) as React.ReactElement, {
+                    {React.cloneElement(renderFormField(field, form, setFileUrl) as React.ReactElement, {
                       ...formField,
                     })}
                   </FormControl>
@@ -55,7 +55,7 @@ const renderFormFields = (fields: any, form: any) => {
           render={({ field: formField }) => (
             <FormItem className="col-span-12">
               <FormControl>
-                {React.cloneElement(renderFormField(fieldOrGroup, form) as React.ReactElement, {
+                {React.cloneElement(renderFormField(fieldOrGroup, form, setFileUrl) as React.ReactElement, {
                   ...formField,
                 })}
               </FormControl>
@@ -70,17 +70,16 @@ const renderFormFields = (fields: any, form: any) => {
 const Page = (props: any) => {
   const [formData, setData] = useState<any>([]);
   const [formJsonData, setFormJsonData] = useState<any[]>([]);
-  const {data: session} = useSession();
+  const { data: session } = useSession();
   const pathName = props.params.share_url;
   const [loading, setLoading] = useState(false);
+  const [fileUrl, setFileUrl] = useState(""); // State to store file URL
 
   const formSchema = generateZodSchema(formJsonData);
-
   const defaultVals = generateDefaultValues(formJsonData);
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: defaultVals,
-  });
+
+  const form = useForm(
+  );
 
   const getDataFromUrl = async (url: string) => {
     try {
@@ -107,6 +106,12 @@ const Page = (props: any) => {
         if (result.length > 0) {
           const formJson = result[0].form_json || [];
           setFormJsonData(formJson);
+
+          // Check if the file URL is present and prefill it
+          const fileField = formJson.find((field: any) => field.variant === "File Upload");
+          if (fileField) {
+            setFileUrl(fileField.value || ""); // Prefill with the file URL if available
+          }
         }
       }
     } catch (error) {
@@ -118,26 +123,27 @@ const Page = (props: any) => {
     getDataFromUrl(pathName);
   }, [pathName]);
 
-
-
   function formatDateToCustomFormat(date: Date) {
-    const pad = (num: any, size = 2) => String(num).padStart(size, "0"); // Helper to pad numbers
+    const pad = (num: any, size = 2) => String(num).padStart(size, "0");
     return (
-      `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
-        date.getDate()
-      )} ` +
-      `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(
-        date.getSeconds()
-      )}.` +
+      `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
+      `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.` +
       `${pad(date.getMilliseconds(), 3)}`
     );
   }
 
-  console.log("formJsonData----",formJsonData);
-
-
   async function onSubmit(data: any) {
-    console.log("formdata-----",formData)
+    
+    const updatedData:any = { ...data };
+    console.log("formdata-----", updatedData);
+
+  formJsonData.forEach((field: any) => {
+    console.log("field----",field)
+    if (field.variant === "File Upload") {
+      // If a file URL is prefilled, set the value as the URL
+      updatedData["value"] = field.value;
+    }
+  });
     const headers = new Headers();
     headers.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
     headers.append("Content-Type", "application/json");
@@ -151,29 +157,28 @@ const Page = (props: any) => {
       created_user_id: session?.user?.id,
       created_user_name: session?.user?.name,
       created_date: formatDateToCustomFormat(date),
-      form_data: data,
+      form_data: updatedData,
       form_data_row_api: formUrl,
+    };
 
-    }
     const requestOptions = {
       method: "POST",
       headers: headers,
       body: JSON.stringify(payload),
     };
+
     try {
-      const response = await fetch(ADD_FORM_DATA, requestOptions)
-      if(response.ok){
+      const response = await fetch(ADD_FORM_DATA, requestOptions);
+      if (response.ok) {
         toast({ description: "Form submitted successfully", variant: "default" });
         form.reset();
         setLoading(false);
-      }
-      else{
+      } else {
         toast({ description: "Failed to submit the form. Please try again.", variant: "destructive" });
         form.reset();
         setLoading(false);
       }
     } catch (error) {
-      // toast.error('Failed to submit the form. Please try again.')
       toast({ description: "Failed to submit the form. Please try again.", variant: "destructive" });
       form.reset();
       setLoading(false);
@@ -190,8 +195,8 @@ const Page = (props: any) => {
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4 border-gray-400 md:w-[50%] border p-5 rounded shadow-lg shadow-gray-500 py-5 max-w-lg mx-auto"
             >
-              {renderFormFields(formJsonData, form)}
-              <Button className="w-full" type="submit">{loading?"Submitting..." : "Submit"}</Button>
+              {renderFormFields(formJsonData, form, setFileUrl)} {/* Pass setFileUrl */}
+              <Button className="w-full" type="submit">{loading ? "Submitting..." : "Submit"}</Button>
             </form>
           </Form>
         )}

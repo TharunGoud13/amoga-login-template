@@ -44,6 +44,7 @@ export default function FormBuilder() {
   const [formInput, setFormInput] = useState("");
   const [editModeData, setEditModeData] = useState<any>([])
   const [editFormInput, setEditFormInput] = useState<any>("")
+  const [fileUrl, setFileUrl] = useState<any>("")
 
 
 
@@ -87,6 +88,24 @@ export default function FormBuilder() {
       `${pad(date.getMilliseconds(), 3)}`
     );
   }
+
+  console.log("fileurl----",fileUrl)
+
+  useEffect(() => {
+    if (fileUrl) {
+      // Find the index of the File Upload field and update its value with the fileUrl
+      const updatedFields = formFields.map((field:any) => {
+        if (field.variant === "File Upload") {
+          return { ...field, value: fileUrl };  // Update the value to fileUrl
+        }
+        return field;
+      });
+  
+      setFormFields(updatedFields);
+    }
+  }, [fileUrl, formFields]);
+  
+  console.log("formfield----",formFields)
   
 
   const getData = async () => {
@@ -174,8 +193,8 @@ export default function FormBuilder() {
 
       if (response.ok) {
         setIsLoading(false);
-        toast({ description: "Form saved successfully", variant: "default" });
         route.push(`/form_maker/${payload.share_url}`);
+        toast({ description: "Form saved successfully", variant: "default" });
       } else {
         setIsLoading(false);
         toast({ description: "Failed to save form", variant: "destructive" });
@@ -305,7 +324,7 @@ export default function FormBuilder() {
                 </div>
                 <div className="col-span-1 w-full h-full space-y-3">
                   <SpecialComponentsNotice formFields={formFields} />
-                  <FormPreview formFields={formFields} />
+                  <FormPreview formFields={formFields} setFileUrl={setFileUrl} />
                 </div>
               </div>
             )}
@@ -378,7 +397,7 @@ export default function FormBuilder() {
                 </div>
                 <div className="col-span-1 w-full h-full space-y-3">
                   <SpecialComponentsNotice formFields={formFields} />
-                  <FormPreview formFields={formFields} />
+                  <FormPreview formFields={formFields} setFileUrl={setFileUrl}/>
                 </div>
               </div>
             )}
