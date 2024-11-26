@@ -317,29 +317,22 @@ FileUploaderItem.displayName = 'FileUploaderItem'
 
 export const FileInput = forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, children, ...props }, ref) => {
+  React.HTMLAttributes<HTMLDivElement> & { disabled?: boolean }
+>(({ className, children, disabled, ...props }, ref) => {
   const { dropzoneState, isFileTooBig, isLOF } = useFileUpload()
   const rootProps = isLOF ? {} : dropzoneState.getRootProps()
+
   return (
     <div
       ref={ref}
       {...props}
-      className={`relative w-full ${
-        isLOF ? 'opacity-50 cursor-not-allowed ' : 'cursor-pointer '
-      }`}
+      className={`relative w-full ${disabled ? 'cursor-not-allowed opacity-50' : ''}`}
     >
       <div
         className={cn(
           `w-full rounded-lg duration-300 ease-in-out
-         ${
-           dropzoneState.isDragAccept
-             ? 'border-green-500'
-             : dropzoneState.isDragReject || isFileTooBig
-               ? 'border-red-500'
-               : 'border-gray-300'
-         }`,
-          className,
+           ${dropzoneState.isDragAccept ? 'border-green-500' : dropzoneState.isDragReject || isFileTooBig ? 'border-red-500' : 'border-gray-300'}`,
+          className
         )}
         {...rootProps}
       >
@@ -347,9 +340,9 @@ export const FileInput = forwardRef<
       </div>
       <Input
         ref={dropzoneState.inputRef}
-        disabled={isLOF}
+        disabled={disabled || isLOF}  // Apply disabled property to the input
         {...dropzoneState.getInputProps()}
-        className={`${isLOF ? 'cursor-not-allowed' : ''}`}
+        className={`${isLOF || disabled ? 'cursor-not-allowed' : ''}`}
       />
     </div>
   )

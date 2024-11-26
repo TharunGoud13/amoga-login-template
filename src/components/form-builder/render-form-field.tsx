@@ -471,6 +471,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
             >
               <FileInput
                 id="fileInput"
+                disabled={!currentPath}
                 className="outline-dashed outline-1 outline-slate-500"
               >
                 <div className="flex items-center justify-center flex-col pt-3 pb-4 w-full">
