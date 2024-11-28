@@ -1,26 +1,33 @@
 "use client";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { ADD_FORM_DATA, NEXT_PUBLIC_API_KEY, SAVE_FORM_DATA } from "@/constants/envConfig";
+import {
+  ADD_FORM_DATA,
+  NEXT_PUBLIC_API_KEY,
+  SAVE_FORM_DATA,
+} from "@/constants/envConfig";
 import React, { useEffect, useState } from "react";
 import If from "@/components/ui/if";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { generateDefaultValues, generateZodSchema } from "@/components/form-builder/generate-code-parts";
+import {
+  generateDefaultValues,
+  generateZodSchema,
+} from "@/components/form-builder/generate-code-parts";
 import { renderFormField } from "@/components/form-builder/render-form-field";
 import { z } from "zod";
 import { useSession } from "next-auth/react";
 
 const renderFormFields = (fields: any, form: any) => {
-  return fields.map((fieldOrGroup:any, index:any) => {
+  return fields.map((fieldOrGroup: any, index: any) => {
     if (Array.isArray(fieldOrGroup)) {
       const getColSpan = (totalFields: number) => {
         switch (totalFields) {
           case 2:
             return 6;
           case 3:
-            return 4; 
+            return 4;
           default:
             return 12;
         }
@@ -34,11 +41,16 @@ const renderFormFields = (fields: any, form: any) => {
               control={form.control}
               name={field.name}
               render={({ field: formField }) => (
-                <FormItem className={`col-span-${getColSpan(fieldOrGroup.length)}`}>
+                <FormItem
+                  className={`col-span-${getColSpan(fieldOrGroup.length)}`}
+                >
                   <FormControl>
-                    {React.cloneElement(renderFormField(field, form) as React.ReactElement, {
-                      ...formField,
-                    })}
+                    {React.cloneElement(
+                      renderFormField(field, form) as React.ReactElement,
+                      {
+                        ...formField,
+                      }
+                    )}
                   </FormControl>
                 </FormItem>
               )}
@@ -55,9 +67,12 @@ const renderFormFields = (fields: any, form: any) => {
           render={({ field: formField }) => (
             <FormItem className="col-span-12">
               <FormControl>
-                {React.cloneElement(renderFormField(fieldOrGroup, form) as React.ReactElement, {
-                  ...formField,
-                })}
+                {React.cloneElement(
+                  renderFormField(fieldOrGroup, form) as React.ReactElement,
+                  {
+                    ...formField,
+                  }
+                )}
               </FormControl>
             </FormItem>
           )}
@@ -70,15 +85,26 @@ const renderFormFields = (fields: any, form: any) => {
 const Page = (props: any) => {
   const [formData, setData] = useState<any>([]);
   const [formJsonData, setFormJsonData] = useState<any[]>([]);
-  const {data: session} = useSession();
+  const { data: session } = useSession();
   const pathName = props.params.share_url;
   const [loading, setLoading] = useState(false);
 
-  const formSchema = generateZodSchema(formJsonData);
-
-  const defaultVals = generateDefaultValues(formJsonData);
+  const hasExcludedVariants = formJsonData.some(
+    (item) => item.variant === "Media Card & Social Icons"
+  );
+  
+  // Conditionally generate the schema and default values
+  const formSchema = hasExcludedVariants
+    ? z.object({}) // Use an empty schema if excluded variants are present
+    : generateZodSchema(formJsonData);
+  
+  const defaultVals = hasExcludedVariants
+    ? {} // Use empty default values if excluded variants are present
+    : generateDefaultValues(formJsonData);
+  
+  // Use the schema only if it's not empty
   const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+    resolver: hasExcludedVariants ? undefined : zodResolver(formSchema),
     defaultValues: defaultVals,
   });
 
@@ -133,11 +159,11 @@ const Page = (props: any) => {
     );
   }
 
-  console.log("formJsonData----",formJsonData);
-
+  console.log("formJsonData----", formJsonData);
 
   async function onSubmit(data: any) {
-    console.log("formdata-----",formData)
+    console.log("formdata-----", formData);
+    console.log("data-----", data);
     const headers = new Headers();
     headers.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
     headers.append("Content-Type", "application/json");
@@ -145,15 +171,19 @@ const Page = (props: any) => {
     const formUrl = `${process.env.NEXT_PUBLIC_API_URL}/submit/${pathName}`;
     setLoading(true);
 
-    const isFileUploadVariant = formJsonData.some((item) => item.variant === "File Upload");
+    const isFileUploadVariant = formJsonData.some(
+      (item) => item.variant === "File Upload"
+    );
 
-    if(isFileUploadVariant){
+    if (isFileUploadVariant) {
       const uploadedFileUrl = localStorage.getItem("uploadedFileUrl");
       if (uploadedFileUrl) {
-        
-        data.file_url = uploadedFileUrl; 
+        data.file_url = uploadedFileUrl;
         Object.keys(data).forEach((key) => {
-          if (typeof data[key] === "string" && data[key].startsWith("C:\\fakepath\\")) {
+          if (
+            typeof data[key] === "string" &&
+            data[key].startsWith("C:\\fakepath\\")
+          ) {
             // Extract file name from path (split on backslash and take the last part)
             const fileName = data[key].split("\\").pop();
             data[key] = fileName;
@@ -164,6 +194,16 @@ const Page = (props: any) => {
       }
     }
 
+    const mediaCardVariant = formJsonData.find(
+      (item) => item.variant === "Media Card & Social Icons"
+    );
+
+    if (mediaCardVariant) {
+      data.imageUrl = mediaCardVariant.value.url;
+      data.title = mediaCardVariant.value.title;
+      data.description = mediaCardVariant.value.description;
+    }
+
     const payload = {
       form_id: formData[0].form_id,
       form_name: formData[0].form_name,
@@ -172,27 +212,34 @@ const Page = (props: any) => {
       created_date: formatDateToCustomFormat(date),
       form_data: data,
       form_data_row_api: formUrl,
-
-    }
+    };
     const requestOptions = {
       method: "POST",
       headers: headers,
       body: JSON.stringify(payload),
     };
     try {
-      const response = await fetch(ADD_FORM_DATA, requestOptions)
-      if(response.ok){
-        toast({ description: "Form submitted successfully", variant: "default" });
+      const response = await fetch(ADD_FORM_DATA, requestOptions);
+      if (response.ok) {
+        toast({
+          description: "Form submitted successfully",
+          variant: "default",
+        });
         form.reset();
         setLoading(false);
-      }
-      else{
-        toast({ description: "Failed to submit the form. Please try again.", variant: "destructive" });
+      } else {
+        toast({
+          description: "Failed to submit the form. Please try again.",
+          variant: "destructive",
+        });
         form.reset();
         setLoading(false);
       }
     } catch (error) {
-      toast({ description: "Failed to submit the form. Please try again.", variant: "destructive" });
+      toast({
+        description: "Failed to submit the form. Please try again.",
+        variant: "destructive",
+      });
       form.reset();
       setLoading(false);
     }
@@ -209,7 +256,9 @@ const Page = (props: any) => {
               className="space-y-4 border-gray-400 md:w-[50%] border p-5 rounded shadow-lg shadow-gray-500 py-5 max-w-lg mx-auto"
             >
               {renderFormFields(formJsonData, form)}
-              <Button className="w-full" type="submit">{loading?"Submitting..." : "Submit"}</Button>
+              <Button className="w-full" type="submit">
+                {loading ? "Submitting..." : "Submit"}
+              </Button>
             </form>
           </Form>
         )}

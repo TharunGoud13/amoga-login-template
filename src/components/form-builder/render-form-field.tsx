@@ -90,6 +90,7 @@ import {
 import { Progress } from "../ui/progress";
 import { MediaCard } from "../ui/media-card";
 import { usePathname } from "next/navigation";
+import MediaSocialPage from "../ui/media-social-page";
 
 const languages = [
   { label: "English", value: "en" },
@@ -729,6 +730,26 @@ export const renderFormField = (field: FormFieldType, form: any) => {
             }}
           />
         </div>
+      );
+    case "Media Card & Social Icons":
+      return (
+        <MediaSocialPage
+          title={field.label || ""}
+          description={field.description || ""}
+          value={field.value}
+          onTitleChange={(newTitle) => {
+            field.label = newTitle;
+            form.setValue(`${field.name}`, newTitle);
+          }}
+          onDescriptionChange={(newDescription) => {
+            field.description = newDescription;
+            form.setValue(`${field.name}`, newDescription);
+          }}
+          onMediaChange={(media: any) => {
+            field.value = media;
+            form.setValue(field.name, media);
+          }}
+        />
       );
     case "Signature Input":
       return (
