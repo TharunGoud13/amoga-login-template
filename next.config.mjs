@@ -13,7 +13,10 @@ const nextConfig = {
       "avatars.githubusercontent.com",
       "lh3.googleusercontent.com",
       "secure.gravatar.com",
-      "images.tmcnet.com"
+      "images.tmcnet.com",
+      "amoga-login-template.vercel.app",
+      "d8pvobupkiop1vno.public.blob.vercel-storage.com"
+      
     ],
   },
   reactStrictMode: true,
