@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { FormFieldType } from "@/types";
 import { defaultFieldConfig } from "@/constants";
@@ -71,6 +71,7 @@ export default function FormBuilder() {
       type: "",
       value: "",
       variant,
+      id: undefined
     };
     setFormFields([...formFields, newField]);
   };
@@ -149,6 +150,10 @@ export default function FormBuilder() {
 
     try {
       let response;
+      if (!formInput.trim() && !currentPath) {
+        toast({ description: "Form name is required", variant: "destructive" });
+        return;
+      }
 
       if (currentPath && editModeData) {
         const updatePayload = {
@@ -189,7 +194,7 @@ export default function FormBuilder() {
     }
   };
 
-  const findFieldPath = (
+  const findFieldPath = useCallback((
     fields: FormFieldOrGroup[],
     name: string
   ): number[] | null => {
@@ -209,7 +214,7 @@ export default function FormBuilder() {
       return null;
     };
     return search(fields, []);
-  };
+  },[]);
 
   const updateFormField = (path: number[], updates: Partial<FormFieldType>) => {
     const updatedFields = JSON.parse(JSON.stringify(formFields)); // Deep clone
@@ -229,7 +234,7 @@ export default function FormBuilder() {
     setIsDialogOpen(true);
   };
 
-  const handleSaveField = (updatedField: FormFieldType) => {
+  const handleSaveField = useCallback((updatedField: FormFieldType) => {
     if (selectedField) {
       const path = findFieldPath(formFields, selectedField.name);
       if (path) {
@@ -237,7 +242,7 @@ export default function FormBuilder() {
       }
     }
     setIsDialogOpen(false);
-  };
+  }, [selectedField, formFields]);
 
   const FieldSelectorWithSeparator = ({
     addFormField,

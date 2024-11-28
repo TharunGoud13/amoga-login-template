@@ -34,6 +34,7 @@ export type MainNavItem = NavItemWithOptionalChildren;
 export type SidebarNavItem = NavItemWithChildren;
 
 export type FormFieldType = {
+  id: any;
   type: string
   variant: string
   name: string
