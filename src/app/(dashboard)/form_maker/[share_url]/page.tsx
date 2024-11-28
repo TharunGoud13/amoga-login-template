@@ -24,7 +24,12 @@ const Page = (props: any) => {
         </div>
         <div className='md:w-[500px] space-y-3'>
         <Input  readOnly value={`${process.env.NEXT_PUBLIC_API_URL}/submit/${pathName}`}/> 
-        <Button className='md:w-[500px] w-full' onClick={handleClick}>Copy Link</Button>
+        <div className='flex gap-3'>
+        <Button className=' w-full' onClick={handleClick}>Copy Link</Button>
+        <a className='w-full' href={`${process.env.NEXT_PUBLIC_API_URL}/submit/${pathName}`} target='_blank'>
+        <Button className=' w-full'>View Form</Button>
+        </a>
+        </div>
         </div>
     </div>
   )
