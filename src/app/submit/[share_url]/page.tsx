@@ -18,6 +18,7 @@ import {
 import { renderFormField } from "@/components/form-builder/render-form-field";
 import { z } from "zod";
 import { useSession } from "next-auth/react";
+import { trackPageView } from "@/utils/tracking";
 
 const renderFormFields = (fields: any, form: any) => {
   return fields.map((fieldOrGroup: any, index: any) => {
@@ -108,6 +109,23 @@ const Page = (props: any) => {
     defaultValues: defaultVals,
   });
 
+  useEffect(() => {
+    trackPageView({
+      description: "Form Page Viewed",
+      http_method: "GET",
+      http_url: `${SAVE_FORM_DATA}?share_url=eq.${pathName}`,
+      response_status_code: 200,
+      response_status: "SUCCESS",
+      share_url: pathName,
+      user_id: session?.user?.id,
+      user_email: session?.user?.email,
+      user_name: session?.user?.name,
+      session_id: session?.user?.id
+
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[])
+
   const getDataFromUrl = async (url: string) => {
     try {
       const headers = new Headers();
@@ -159,11 +177,11 @@ const Page = (props: any) => {
     );
   }
 
-  console.log("formJsonData----", formJsonData);
+  // console.log("formJsonData----", formJsonData);
 
   async function onSubmit(data: any) {
-    console.log("formdata-----", formData);
-    console.log("data-----", data);
+    // console.log("formdata-----", formData);
+    // console.log("data-----", data);
     const headers = new Headers();
     headers.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
     headers.append("Content-Type", "application/json");
@@ -225,9 +243,36 @@ const Page = (props: any) => {
           description: "Form submitted successfully",
           variant: "default",
         });
+        trackPageView({
+          description: "Form Submitted Successfully",
+          http_method: "POST",
+          http_url: ADD_FORM_DATA,
+          response_status_code: 201,
+          response_status: "SUCCESS",
+          response_payload: JSON.stringify(payload),
+          share_url: pathName,
+          user_id: session?.user?.id,
+          user_email: session?.user?.email,
+          user_name: session?.user?.name,
+          session_id: session?.user?.id
+    
+        })
         form.reset();
         setLoading(false);
       } else {
+        trackPageView({
+          description: "Form Submission Failed",
+          http_method: "POST",
+          http_url: ADD_FORM_DATA,
+          response_status_code: 400,
+          response_status: "FAILURE",
+          share_url: pathName,
+          user_id: session?.user?.id,
+          user_email: session?.user?.email,
+          user_name: session?.user?.name,
+          session_id: session?.user?.id
+    
+        })
         toast({
           description: "Failed to submit the form. Please try again.",
           variant: "destructive",
@@ -240,6 +285,19 @@ const Page = (props: any) => {
         description: "Failed to submit the form. Please try again.",
         variant: "destructive",
       });
+      trackPageView({
+        description: "Form Submission Failed",
+        http_method: "POST",
+        http_url: ADD_FORM_DATA,
+        response_status_code:400,
+        response_status: "FAILED",
+        share_url: pathName,
+        user_id: session?.user?.id,
+        user_email: session?.user?.email,
+        user_name: session?.user?.name,
+        session_id: session?.user?.id
+  
+      })
       form.reset();
       setLoading(false);
     }
