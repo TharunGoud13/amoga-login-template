@@ -71,7 +71,7 @@ export const FieldItem = ({
       checked: true,
       description: description || '',
       disabled: false,
-      label: label || newFieldName,
+      label: label,
       name: newFieldName,
       onChange: () => { },
       onSelect: () => { },

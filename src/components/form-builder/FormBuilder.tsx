@@ -60,7 +60,7 @@ export default function FormBuilder() {
       checked: true,
       description: description || "",
       disabled: false,
-      label: label || newFieldName,
+      label: label,
       name: newFieldName,
       onChange: () => { },
       onSelect: () => { },
