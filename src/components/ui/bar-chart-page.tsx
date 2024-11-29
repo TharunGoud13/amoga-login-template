@@ -1,15 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { MediaCard } from "./media-social-card";
+import { BarChartCard } from "./bar-chart-card";
 
-const initialMediaCardConfig = {
+const initialBarCardConfig = {
   title: "Exciting New Product",
   description:
     "Discover our latest innovation that will revolutionize your daily life.",
-  mediaSource: "/placeholder.svg?height=180&width=320",
-  mediaType: "image" as const,
-  customCss: "",
   customHtml:
     '<p class="text-sm">This is <strong>custom HTML</strong> content.</p>',
   actions: [
@@ -36,35 +33,32 @@ const initialMediaCardConfig = {
   ],
 };
 
-interface MediaSocialPage {
+interface BarChartSocialPage {
   title: string;
   description: string;
   value: any;
-  onMediaChange: (media: { url: string; name: string }) => void;
   onTitleChange: (title: string) => void;
   onDescriptionChange: (description: string) => void;
 }
 
-export default function Home({
+export default function BarChartPage({
   title,
   description,
   value,
-  onMediaChange,
   onTitleChange,
   onDescriptionChange,
-}: MediaSocialPage) {
+}: BarChartSocialPage) {
   const [mediaCardConfig, setMediaCardConfig] = useState(
-    initialMediaCardConfig
+    initialBarCardConfig
   );
 
   return (
-    <main className="min-h-screen bg-background">
-      <MediaCard
+    <main className="min-h-screen bg-background p-8">
+      <BarChartCard
         config={mediaCardConfig}
         title={title}
         description={description}
         value={value}
-        onMediaChange={onMediaChange}
         onTitleChange={onTitleChange}
         onDescriptionChange={onDescriptionChange}
       />

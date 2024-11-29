@@ -90,7 +90,7 @@ const Page = (props: any) => {
   const [loading, setLoading] = useState(false);
 
   const hasExcludedVariants = formJsonData.some(
-    (item) => item.variant === "Media Card & Social Icons"
+    (item) => (item.variant === "Media Card & Social Icons" || item.variant === "Bar Chart with Social")
   );
   
   // Conditionally generate the schema and default values

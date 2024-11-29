@@ -28,6 +28,7 @@ export const fieldTypes: FieldType[] = [
   { name: 'Progress', isNew: true },
   { name: 'Media Card', isNew: true },
   { name: 'Media Card & Social Icons', isNew: true },
+  { name: 'Bar Chart with Social', isNew: true },
   // { name: 'Search Lookup', isNew: false },
   { name: 'Tab Seperator', isNew: false },
   { name: "Iframe", isNew: false },

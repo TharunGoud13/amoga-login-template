@@ -91,6 +91,7 @@ import { Progress } from "../ui/progress";
 import { MediaCard } from "../ui/media-card";
 import { usePathname } from "next/navigation";
 import MediaSocialPage from "../ui/media-social-page";
+import BarChartPage from "../ui/bar-chart-page";
 
 const languages = [
   { label: "English", value: "en" },
@@ -751,6 +752,21 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           }}
         />
       );
+      case "Bar Chart with Social":
+        return(
+          <BarChartPage 
+          title={field.label || ""}
+          description={field.description || ""}
+          value={field.value}
+          onTitleChange={(newTitle) => {
+            field.label = newTitle;
+            form.setValue(`${field.name}`, newTitle);
+          }}
+          onDescriptionChange={(newDescription) => {
+            field.description = newDescription;
+            form.setValue(`${field.name}`, newDescription);
+          }}/>
+        )
     case "Signature Input":
       return (
         <FormItem>
