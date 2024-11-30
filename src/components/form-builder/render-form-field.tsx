@@ -546,7 +546,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
     case "Text Box":
       return (
         <FormItem>
-          <FormLabel>{t(field.label) }</FormLabel> {field.required && "*"}
+          <FormLabel>{field.label}</FormLabel> {field.required && "*"}
           <FormControl>
             <Input
               placeholder={field.placeholder}

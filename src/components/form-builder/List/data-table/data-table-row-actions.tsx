@@ -28,7 +28,9 @@ const DataTableRowActions = ({formId, shareUrl}:DataTableRowProps) => {
             <a href={`/submit/${shareUrl}`} target='_blank'>
             <DropdownMenuItem>View form</DropdownMenuItem>
             </a>
-
+            <Link href={`/form_maker/view/${formId}`}>
+            <DropdownMenuItem>View Data</DropdownMenuItem>
+            </Link>
           </DropdownMenuContent>
         </DropdownMenu>
     </div>

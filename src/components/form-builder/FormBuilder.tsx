@@ -24,6 +24,7 @@ import { v4 as uuidv4 } from "uuid";
 import { toast } from "../ui/use-toast";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
+import View from "./View/View";
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[];
 
@@ -36,7 +37,8 @@ export default function FormBuilder() {
   const [isLoading, setIsLoading] = useState(false);
 
   const currentPath = path.includes("edit");
-  const currentId = path.split("/").at(-1)
+  const currentId = path.split("/").at(-1);
+  const viewPath = path.includes("view");
 
   const [formFields, setFormFields] = useState<FormFieldOrGroup[]>([]);
   const [selectedField, setSelectedField] = useState<FormFieldType | null>(
@@ -134,11 +136,13 @@ export default function FormBuilder() {
   }, [currentPath, editModeData]);
 
   const handleSave = async () => {
+    console.log("formFields-----",formFields)
     const headers = new Headers();
     headers.append("Content-Type", "application/json");
     headers.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
     const date = new Date();
     setIsLoading(true);
+    const nameFields = formFields && formFields.map((field:any) => field.name)
 
 
     const payload = {
@@ -150,6 +154,7 @@ export default function FormBuilder() {
       form_json: formFields,
       version_no: 1,
       share_url: uuidv4(),
+      custom_one: nameFields
     };
 
     try {
@@ -258,18 +263,19 @@ export default function FormBuilder() {
   return (
     <section className="p-2.5 space-y-8">
       <Tabs
-        defaultValue={currentPath ? "edit" : "form"}
+        defaultValue={currentPath ? "edit" : viewPath ? "view" : "form"}
         className=" pt-5 pr-5 pl-5"
       >
         <TabsList
           className={`grid md:w-[400px] ${
-            currentPath ? "grid-cols-4" : "grid-cols-3"
+            currentPath ? "grid-cols-4" : viewPath ? "grid-cols-4" : "grid-cols-3"
           }`}
         >
           <TabsTrigger value="form">Form</TabsTrigger>
           <TabsTrigger value="list">Forms</TabsTrigger>
           <TabsTrigger value="entries">Entries</TabsTrigger>
           {currentPath && <TabsTrigger value="edit">Edit</TabsTrigger>}
+          {viewPath && <TabsTrigger value="view">Form Data</TabsTrigger>}
         </TabsList>
         <TabsContent value="form">
           <div className="flex flex-col items-end">
@@ -341,6 +347,10 @@ export default function FormBuilder() {
         <TabsContent value="list">
           <List />
         </TabsContent>
+        <TabsContent value="view">
+          <View/>
+        </TabsContent>
+
         <TabsContent value="entries">
           <Entries />
         </TabsContent>
