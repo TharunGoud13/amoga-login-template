@@ -311,7 +311,7 @@ const Page = (props: any) => {
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4 border-gray-400 md:w-[50%] border p-5 rounded shadow-lg shadow-gray-500 py-5 max-w-lg mx-auto"
+              className="space-y-4  md:w-[50%] md:border p-5 rounded  py-5 max-w-lg mx-auto"
             >
               {renderFormFields(formJsonData, form)}
               <Button className="w-full" type="submit">
