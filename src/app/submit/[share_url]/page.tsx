@@ -304,7 +304,7 @@ const Page = (props: any) => {
   }
 
   return (
-    <div className="p-6 flex flex-col justify-center items-center">
+    <div className="md:p-6 flex flex-col justify-center items-center">
       <If
         condition={formJsonData.length > 0}
         render={() => (
