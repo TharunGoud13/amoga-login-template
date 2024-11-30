@@ -23,10 +23,12 @@ import { useSession } from "next-auth/react";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "../ui/use-toast";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[];
 
 export default function FormBuilder() {
+  const  t  = useTranslations();
   const { data: session } = useSession();
   const path = usePathname();
   const isDesktop = useMediaQuery("(min-width: 768px)");
@@ -51,7 +53,7 @@ export default function FormBuilder() {
     const newFieldName = `name_${Math.random().toString().slice(-10)}`;
 
     const { label, description, placeholder } = defaultFieldConfig[variant] || {
-      label: "",
+      label: t(`FormLabels.${variant}`, { fallback: variant }),
       description: "",
       placeholder: "",
     };
@@ -71,6 +73,9 @@ export default function FormBuilder() {
       type: "",
       value: "",
       variant,
+      options: [],
+      combobox: [],
+      multiselect: []
     };
     setFormFields([...formFields, newField]);
   };

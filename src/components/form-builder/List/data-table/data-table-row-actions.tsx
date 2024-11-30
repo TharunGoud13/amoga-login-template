@@ -4,7 +4,12 @@ import { MoreHorizontal } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
 
-const DataTableRowActions = ({formId}:any) => {
+interface DataTableRowProps {
+  formId: string;
+  shareUrl: string;
+}
+
+const DataTableRowActions = ({formId, shareUrl}:DataTableRowProps) => {
   return (
     <div>
         <DropdownMenu>
@@ -20,7 +25,10 @@ const DataTableRowActions = ({formId}:any) => {
             <Link href={`/form_maker/edit/${formId}`}>
             <DropdownMenuItem>Edit form</DropdownMenuItem>
             </Link>
-            
+            <a href={`/submit/${shareUrl}`} target='_blank'>
+            <DropdownMenuItem>View form</DropdownMenuItem>
+            </a>
+
           </DropdownMenuContent>
         </DropdownMenu>
     </div>

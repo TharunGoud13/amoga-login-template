@@ -12,5 +12,9 @@
       "te": "Telugu",
       "hi": "Hindi",
       "label": "Language"
+    },
+    "FormLabel": {
+      "Username": "Username",
+      "Email": "Email"
     }
-}
+    }

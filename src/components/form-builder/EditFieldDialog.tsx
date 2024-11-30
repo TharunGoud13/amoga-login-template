@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import * as Locales from 'date-fns/locale'
+import React, { useState, useEffect } from "react";
+import * as Locales from "date-fns/locale";
 
 import {
   Dialog,
@@ -7,27 +7,28 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import { FormFieldType } from '@/types'
-import If from '@/components/ui/if'
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { FormFieldType } from "@/types";
+import If from "@/components/ui/if";
 import {
   Select,
   SelectTrigger,
   SelectValue,
   SelectContent,
   SelectItem,
-} from '@/components/ui/select' // Import Select components
+} from "@/components/ui/select"; // Import Select components
+import {  X } from "lucide-react";
 
 type EditFieldDialogProps = {
-  isOpen: boolean
-  onClose: () => void
-  field: FormFieldType | null
-  onSave: (updatedField: FormFieldType) => void
-}
+  isOpen: boolean;
+  onClose: () => void;
+  field: FormFieldType | null;
+  onSave: (updatedField: FormFieldType) => void;
+};
 
 export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
   isOpen,
@@ -35,25 +36,39 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
   field,
   onSave,
 }) => {
-  const [editedField, setEditedField] = useState<FormFieldType | null>(null)
-  const [fieldType, setFieldType] = useState<string>()
+  const [editedField, setEditedField] = useState<FormFieldType | null>(null);
+  const [fieldType, setFieldType] = useState<string>();
+  const [newOption, setNewOption] = useState("");
+  const [comboboxOptions, setComboboxOptions] = useState("");
+  const [multiSelect, setMultiSelect] = useState("");
 
   useEffect(() => {
-    setEditedField(field)
-  }, [field])
+    setEditedField(field);
+  }, [field]);
 
   const handleSave = () => {
     if (editedField) {
-      onSave(editedField)
-      onClose()
+      onSave(editedField);
+      onClose();
+    }
+  };
+
+  const handleRemoveItem = (index: number | string) => {
+    if(editedField) {
+      setEditedField({
+        ...editedField,
+        options:editedField?.options?.filter((_,i) => i !== index)
+      })
     }
   }
 
-  if (!editedField) return null
+  if (!editedField) return null;
+
+  console.log("editedField----",editedField?.options)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-xl max-h-[70vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit {editedField.variant} Field</DialogTitle>
         </DialogHeader>
@@ -109,9 +124,8 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
               }
             />
           </div>
-          
           <If
-            condition={field?.variant === 'Input'}
+            condition={field?.variant === "Input"}
             render={() => (
               <div>
                 <Label htmlFor="type">Type</Label>
@@ -119,8 +133,8 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                   // id="type"
                   value={editedField.type}
                   onValueChange={(value) => {
-                    setFieldType(value)
-                    setEditedField({ ...editedField, type: value })
+                    setFieldType(value);
+                    setEditedField({ ...editedField, type: value });
                   }}
                 >
                   <SelectTrigger>
@@ -137,7 +151,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
             )}
           />
           <If
-            condition={fieldType === 'number' || fieldType === 'text'}
+            condition={fieldType === "number" || fieldType === "text"}
             render={() => (
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-1 flex flex-col gap-1 ">
@@ -172,7 +186,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
             )}
           />
           <If
-            condition={field?.variant === 'Slider'}
+            condition={field?.variant === "Slider"}
             render={() => (
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-1 flex flex-col gap-1 ">
@@ -221,19 +235,162 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
             )}
           />
           <If
-            condition={field?.variant === 'Smart Datetime Input'}
+            condition={field?.variant === "Dropdown"}
+            render={() => (
+              <div>
+                <Label>Dropdown Options</Label>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      value={newOption}
+                      onChange={(e) => setNewOption(e.target.value)}
+                      placeholder="Add new option"
+                    />
+                    <Button
+                      onClick={() => {
+                        if (newOption && editedField) {
+                          setEditedField({
+                            ...editedField,
+                            options: [
+                              ...(editedField.options || []),
+                              newOption,
+                            ],
+                          });
+                          setNewOption("");
+                        }
+                      }}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                  {editedField?.options?.map((item,index) => (
+                    <div key={index} className="p-2.5 bg-secondary rounded flex justify-between items-center">
+                      <span>{item}</span>
+                      <span className="cursor-pointer"
+                      onClick={() => handleRemoveItem(index)}
+                      
+                      ><X/></span>
+                    </div>
+                  ))}
+                  
+                </div>
+              </div>
+            )}
+          />
+          <If
+            condition={field?.variant === "Combobox"}
+            render={() => (
+              <div>
+                <Label>ComboBox Options</Label>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      value={comboboxOptions}
+                      onChange={(e) => setComboboxOptions(e.target.value)}
+                      placeholder="Add new option"
+                    />
+                    <Button
+                      onClick={() => {
+                        if (comboboxOptions && editedField) {
+                          setEditedField({
+                            ...editedField,
+                            combobox: [
+                              ...(editedField.combobox || []),
+                              comboboxOptions,
+                            ],
+                          });
+                          setComboboxOptions("");
+                        }
+                      }}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                  {editedField?.combobox?.map((item,index) => (
+                    <div key={index} className="p-2.5 bg-secondary rounded flex justify-between items-center">
+                      <span>{item}</span>
+                      <span className="cursor-pointer"
+                      onClick={() => {
+                        if(editedField){
+                          setEditedField({
+                            ...editedField,
+                            combobox: editedField.combobox?.filter((_,i) => i !== index)
+                          })
+                        }
+                      }
+                    }
+                      ><X/></span>
+                    </div>
+                  ))}
+                  
+                </div>
+              </div>
+            )}
+          />
+          <If
+            condition={field?.variant === "Multi Select"}
+            render={() => (
+              <div>
+                <Label>Multi Select Options</Label>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      value={multiSelect}
+                      onChange={(e) => setMultiSelect(e.target.value)}
+                      placeholder="Add new option"
+                    />
+                    <Button
+                      onClick={() => {
+                        if (multiSelect && editedField) {
+                          setEditedField({
+                            ...editedField,
+                            multiselect: [
+                              ...(editedField.multiselect || []),
+                              multiSelect,
+                            ],
+                          });
+                          setMultiSelect("");
+                        }
+                      }}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                  {editedField?.multiselect?.map((item,index) => (
+                    <div key={index} className="p-2.5 bg-secondary rounded flex justify-between items-center">
+                      <span>{item}</span>
+                      <span className="cursor-pointer"
+                      onClick={() => {
+                        if(editedField){
+                          setEditedField({
+                            ...editedField,
+                            multiselect: editedField.multiselect?.filter((_,i) => i !== index)
+                          })
+                        }
+                      }
+                    }
+                      ><X/></span>
+                    </div>
+                  ))}
+                  
+                </div>
+              </div>
+            )}
+          />
+          <If
+            condition={field?.variant === "Smart Datetime Input"}
             render={() => (
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-1 flex flex-col gap-1 ">
                   <Label htmlFor="locale">Locale</Label>
                   <Select
                     // id="locale"
-                    value={editedField.locale ?? ''}
+                    value={editedField.locale ?? ""}
                     onValueChange={(value) => {
                       setEditedField({
                         ...editedField,
                         locale: value as keyof typeof Locales,
-                      })
+                      });
                     }}
                   >
                     <SelectTrigger>
@@ -296,5 +453,5 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
-}
+  );
+};

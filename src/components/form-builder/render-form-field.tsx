@@ -92,6 +92,7 @@ import { MediaCard } from "../ui/media-card";
 import { usePathname } from "next/navigation";
 import MediaSocialPage from "../ui/media-social-page";
 import BarChartPage from "../ui/bar-chart-page";
+import { useTranslations } from "next-intl";
 
 const languages = [
   { label: "English", value: "en" },
@@ -135,9 +136,11 @@ const FileSvgDraw = () => {
 };
 
 export const renderFormField = (field: FormFieldType, form: any) => {
+  console.log('field.....',field)
+  const t = useTranslations('FormLabel')
   const [checked, setChecked] = useState<boolean>(field.checked);
   const [value, setValue] = useState<any>(field.value);
-  const [selectedValues, setSelectedValues] = useState<string[]>(["React"]);
+  const [selectedValues, setSelectedValues] = useState<string[]>([]);
   const [tagsValue, setTagsValue] = useState<string[]>([]);
   const [files, setFiles] = useState<File[] | null>(null);
   const [images, setImages] = useState<File[] | null>(null);
@@ -352,9 +355,8 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                   )}
                 >
                   {value
-                    ? languages.find((language) => language.value === value)
-                        ?.label
-                    : "Select language"}
+                ? field.combobox?.find((item) => item === value)
+                : "Select option"}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </FormControl>
@@ -363,26 +365,26 @@ export const renderFormField = (field: FormFieldType, form: any) => {
               <Command>
                 <CommandInput placeholder="Search language..." />
                 <CommandList>
-                  <CommandEmpty>No language found.</CommandEmpty>
+                  <CommandEmpty>No option found.</CommandEmpty>
                   <CommandGroup>
-                    {languages.map((language) => (
-                      <CommandItem
-                        value={language.label}
-                        key={language.value}
-                        onSelect={() => {
-                          setValue(language.value);
-                          form.setValue(field.name, language.value);
-                        }}
+                  {field.combobox?.map((item) => (
+                  <CommandItem
+                    value={item}
+                    key={item}
+                    onSelect={() => {
+                      setValue(item);
+                      form.setValue(field.name, item);
+                    }}
                       >
                         <Check
                           className={cn(
                             "mr-2 h-4 w-4",
-                            language.value === value
+                            item === value
                               ? "opacity-100"
                               : "opacity-0"
                           )}
                         />
-                        {language.label}
+                        {item}
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -544,7 +546,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
     case "Text Box":
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel> {field.required && "*"}
+          <FormLabel>{t(field.label) }</FormLabel> {field.required && "*"}
           <FormControl>
             <Input
               placeholder={field.placeholder}
@@ -644,13 +646,15 @@ export const renderFormField = (field: FormFieldType, form: any) => {
               className="max-w-xs"
             >
               <MultiSelectorTrigger>
-                <MultiSelectorInput placeholder="Select languages" />
+                <MultiSelectorInput placeholder={field.placeholder} />
               </MultiSelectorTrigger>
               <MultiSelectorContent>
                 <MultiSelectorList>
-                  <MultiSelectorItem value={"React"}>React</MultiSelectorItem>
-                  <MultiSelectorItem value={"Vue"}>Vue</MultiSelectorItem>
-                  <MultiSelectorItem value={"Svelte"}>Svelte</MultiSelectorItem>
+                  {field?.multiselect?.map((item,index) => (
+                    <MultiSelectorItem key={index} value={item}>
+                      {item}
+                    </MultiSelectorItem>
+                  ))}
                 </MultiSelectorList>
               </MultiSelectorContent>
             </MultiSelector>
@@ -663,16 +667,18 @@ export const renderFormField = (field: FormFieldType, form: any) => {
       return (
         <FormItem>
           <FormLabel>{field.label}</FormLabel> {field.required && "*"}
-          <Select onValueChange={field.onChange} defaultValue="m@example.com">
+          <Select onValueChange={field.onChange} defaultValue={field?.options && field?.options[0]}>
             <FormControl>
               <SelectTrigger>
-                <SelectValue placeholder="Select a verified email to display" />
+                <SelectValue placeholder={field.placeholder}/>
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              <SelectItem value="m@example.com">m@example.com</SelectItem>
-              <SelectItem value="m@google.com">m@google.com</SelectItem>
-              <SelectItem value="m@support.com">m@support.com</SelectItem>
+            {field.options?.map((option) => (
+            <SelectItem key={option} value={option}>
+              {option}
+            </SelectItem>
+          ))}
             </SelectContent>
           </Select>
           <FormDescription>{field.description}</FormDescription>
@@ -947,7 +953,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
     case "Number":
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel>
+          <FormLabel>{t(field.label)}</FormLabel>
           <FormControl>
             <PhoneInput
               defaultCountry="IN"

@@ -67,8 +67,9 @@ export const columns: ColumnDef<any>[] = [
     id: "actions",
     cell: ({ row }) => {
       const formId = row.getValue("form_id") as string;
+      const shareUrl = row.getValue("share_url") as string;
       return (
-        <DataTableRowActions formId={formId}/>
+        <DataTableRowActions formId={formId} shareUrl={shareUrl}/>
       )
     },
   },
