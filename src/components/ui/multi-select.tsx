@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/command'
 import { cn } from '@/lib/utils'
 import { Command as CommandPrimitive } from 'cmdk'
-import { X as RemoveIcon, Check } from 'lucide-react'
+import { X as RemoveIcon, Check, Search } from 'lucide-react'
 import React, {
   KeyboardEvent,
   createContext,
@@ -282,6 +282,8 @@ const MultiSelectorInput = forwardRef<
   } = useMultiSelect()
 
   return (
+    <div className='flex'>
+    <Search className='text-muted-foreground bg-transparent ml-2'/>
     <CommandPrimitive.Input
       {...props}
       tabIndex={0}
@@ -298,6 +300,7 @@ const MultiSelectorInput = forwardRef<
         activeIndex !== -1 && 'caret-transparent',
       )}
     />
+    </div>
   )
 })
 
