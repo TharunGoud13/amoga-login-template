@@ -98,6 +98,31 @@ export default function FormBuilder() {
     setFormFields([...formFields, newField]);
   };
 
+  const createDefaultTextArea = () => {
+    return {
+      checked: true,
+      description: "Enter your text here",
+      disabled: false,
+      label: "Text Area",
+      name: `name_${Math.random().toString().slice(-10)}`,
+      onChange: () => {},
+      onSelect: () => {},
+      placeholder: "Type your text...",
+      required: true,
+      rowIndex: formFields.length,
+      setValue: () => {},
+      type: "textarea",
+      value: "",
+      variant: "Text Area",
+    };
+  };
+
+  useEffect(() => {
+    if (formFields.length === 0) {
+      setFormFields([createDefaultTextArea()]);
+    }
+  }, []);
+
 
   function formatDateToCustomFormat(date: Date) {
     const pad = (num: any, size = 2) => String(num).padStart(size, "0"); // Helper to pad numbers

@@ -22,6 +22,7 @@ import {
   SelectItem,
 } from "@/components/ui/select"; // Import Select components
 import {  X } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 type EditFieldDialogProps = {
   isOpen: boolean;
@@ -41,6 +42,8 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
   const [newOption, setNewOption] = useState("");
   const [comboboxOptions, setComboboxOptions] = useState("");
   const [multiSelect, setMultiSelect] = useState("");
+
+  console.log("field----",field)
 
   useEffect(() => {
     setEditedField(field);
@@ -70,8 +73,16 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-xl max-h-[70vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit {editedField.variant} Field</DialogTitle>
+          <DialogTitle>Field ID: {editedField.name} </DialogTitle>
         </DialogHeader>
+        <Tabs defaultValue="settings">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+            <TabsTrigger value="cards">Cards</TabsTrigger>
+            <TabsTrigger value="connection">Connection</TabsTrigger>
+            <TabsTrigger value="actions">Actions</TabsTrigger>
+          </TabsList>
+          <TabsContent value="settings">
         <div className="py-4 space-y-4">
           <div>
             <Label htmlFor="label">Label</Label>
@@ -448,6 +459,17 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
             </div>
           </div>
         </div>
+        </TabsContent>
+        <TabsContent value="cards">
+          Card content goes here.
+        </TabsContent>
+        <TabsContent value="connection">
+        Connection content goes here.
+        </TabsContent>
+        <TabsContent value="actions">
+        Actions content goes here.
+        </TabsContent>
+        </Tabs>
         <DialogFooter>
           <Button onClick={handleSave}>Save changes</Button>
         </DialogFooter>

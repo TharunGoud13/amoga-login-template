@@ -39,72 +39,7 @@ export const FieldItem = ({
   updateFormField,
   openEditDialog,
 }: Props) => {
-  const showColumnButton =
-    subIndex === undefined ||
-    subIndex === (formFields[index] as FormFieldType[]).length - 1
-
   const path = subIndex !== undefined ? [index, subIndex] : [index]
-  const [columnCount, setColumnCount] = useState(() =>
-    Array.isArray(formFields[index]) ? formFields[index].length : 1,
-  )
-
-  const addNewColumn = (variant: string, index: number) => {
-    const newFieldName = `name_${Math.random().toString().slice(-10)}`
-
-    // Check for duplicates
-    const existingFields = Array.isArray(formFields[index])
-      ? (formFields[index] as FormFieldType[]).map((field) => field.name)
-      : [formFields[index]?.name]
-
-    // Check if the new field name already exists in the existing fields
-    if (existingFields.includes(newFieldName)) {
-      // If a field with the same name exists, do not add a new field
-      return
-    }
-
-    const { label, description, placeholder } = defaultFieldConfig[variant] || {
-      label: '',
-      description: '',
-      placeholder: '',
-    }
-
-    const newField: FormFieldType = {
-      checked: true,
-      description: description || '',
-      disabled: false,
-      label: label,
-      name: newFieldName,
-      onChange: () => { },
-      onSelect: () => { },
-      placeholder: placeholder || 'Placeholder',
-      required: true,
-      rowIndex: index,
-      setValue: () => { },
-      type: '',
-      value: '',
-      variant,
-    }
-
-    setFormFields((prevFields) => {
-      const newFields = [...prevFields]
-      if (Array.isArray(newFields[index])) {
-        // If it's already an array, check for duplicates before adding
-        const currentFieldNames = (newFields[index] as FormFieldType[]).map(
-          (field) => field.name,
-        )
-        if (!currentFieldNames.includes(newFieldName)) {
-          ;(newFields[index] as FormFieldType[]).push(newField)
-        }
-      } else if (newFields[index]) {
-        // If it's a single field, convert it to an array with the existing field and the new one
-        newFields[index] = [newFields[index] as FormFieldType, newField]
-      } else {
-        // If the index doesn't exist, just add the new field
-        newFields[index] = newField
-      }
-      return newFields
-    })
-  }
 
   const removeColumn = () => {
     const rowIndex = path[0]
@@ -121,28 +56,17 @@ export const FieldItem = ({
 
           if (row.length > 0) {
             newFields[rowIndex] = row
-            // Update column count immediately after removal
-            setColumnCount(row.length)
           } else {
             newFields.splice(rowIndex, 1)
-            setColumnCount(1)
           }
         }
       } else {
         newFields.splice(rowIndex, 1)
-        setColumnCount(1)
       }
 
       return newFields
     })
   }
-
-  useEffect(() => {
-    const newColumnCount = Array.isArray(formFields[index])
-      ? formFields[index].length
-      : 1
-    setColumnCount(newColumnCount)
-  }, [formFields, index])
 
   return (
     <Reorder.Item
@@ -156,18 +80,13 @@ export const FieldItem = ({
       }}
       exit={{ opacity: 0, y: 20, transition: { duration: 0.3 } }}
       whileDrag={{ backgroundColor: '#9ca3af', borderRadius: '12px' }}
-      className={cn('w-full', {
-        'col-span-12': columnCount === 1,
-        'col-span-6': columnCount === 2,
-        'col-span-4': columnCount === 3,
-      })}
-      key={`${field.name}-${columnCount}`}
+      className="w-full"
+      key={field.name}
     >
-      {/* Rest of your component JSX */}
       <motion.div
         layout="position"
         className="flex items-center gap-3"
-        key={`${field.name}-${columnCount}`}
+        key={field.name}
       >
         <div className="flex items-center gap-1 border rounded-xl px-3 py-1.5 w-full">
           <If
@@ -188,39 +107,61 @@ export const FieldItem = ({
             </Button>
           </div>
         </div>
-        <If
-          condition={showColumnButton}
-          render={() => (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="min-w-9 w-9 h-9 rounded-full"
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              className="min-w-9 w-9 h-9 rounded-full"
+            >
+              +
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>Select Component</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <ScrollArea className="h-72 w-48 rounded-md border">
+              {fieldTypes.map((fieldType) => (
+                <DropdownMenuItem
+                  key={fieldType.name}
+                  onClick={() => {
+                    const newFieldName = `name_${Math.random()
+                      .toString()
+                      .slice(-10)}`;
+
+                    const { label, description, placeholder } =
+                      defaultFieldConfig[fieldType.name] || {
+                        label: '',
+                        description: '',
+                        placeholder: '',
+                      };
+
+                    const newField: FormFieldType = {
+                      checked: true,
+                      description: description || '',
+                      disabled: false,
+                      label: label,
+                      name: newFieldName,
+                      onChange: () => {},
+                      onSelect: () => {},
+                      placeholder: placeholder || 'Placeholder',
+                      required: true,
+                      rowIndex: formFields.length, // Add as a new row
+                      setValue: () => {},
+                      type: '',
+                      value: '',
+                      variant: fieldType.name,
+                    };
+
+                    setFormFields((prevFields) => [...prevFields, newField]); // Append to formFields
+                  }}
                 >
-                  +
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>Select Component</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <ScrollArea className='h-72 w-48 rounded-md border'>
-                {fieldTypes.map((fieldType) => (
-                  <DropdownMenuItem
-                    key={fieldType.name}
-                    onClick={() => {
-                      addNewColumn(fieldType.name, index)
-                      setColumnCount((prev) => prev + 1)
-                    }}
-                  >
-                    {fieldType.name}
-                  </DropdownMenuItem>
-                ))}
-                </ScrollArea>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        />
+                  {fieldType.name}
+                </DropdownMenuItem>
+              ))}
+            </ScrollArea>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </motion.div>
     </Reorder.Item>
   )
