@@ -1,4 +1,5 @@
-import Form from "next/form"
+// import Form from "next/form"
+import Form from "@/types/form"
 
 // import { Input } from './ui/input';
 import { Input } from '../ui/input';

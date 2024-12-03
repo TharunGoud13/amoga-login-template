@@ -1,5 +1,5 @@
 // import Form from 'next/form';
-import Form from "next/form"
+import Form from "@/types/form"
 
 // import { signOut } from '@/app/(auth)/auth';
 import { signOut } from '@/auth';
