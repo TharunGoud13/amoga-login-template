@@ -38,6 +38,7 @@ import {
 import FormCode from "./FormCode";
 import { MultiSelector, MultiSelectorContent, MultiSelectorInput, MultiSelectorItem, MultiSelectorList, MultiSelectorTrigger } from "../ui/multi-select";
 
+
 export type FormFieldOrGroup = FormFieldType | FormFieldType[];
 
 export default function FormBuilder() {
@@ -59,7 +60,7 @@ export default function FormBuilder() {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [filteredFields, setFilteredFields] = useState(fieldTypes);
   const [activeTab, setActiveTab] = React.useState("maker");
-  const tabs = ["maker", "preview", "json", "code"];
+  const tabs = ["maker", "preview","chat", "json", "code"];
 
   console.log("formFields----", formFields);
 
@@ -397,6 +398,12 @@ export default function FormBuilder() {
             {activeTab === "preview" && (
               <div className=" w-full h-full">
                 <FormPreview formFields={formFields} />
+              </div>
+            )}
+
+            {activeTab === "chat" && (
+              <div className=" w-full h-full">
+                Chat Preview
               </div>
             )}
 

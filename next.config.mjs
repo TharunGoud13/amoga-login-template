@@ -18,6 +18,11 @@ const nextConfig = {
       "d8pvobupkiop1vno.public.blob.vercel-storage.com"
       
     ],
+    remotePatterns: [
+      {
+        hostname: 'avatar.vercel.sh',
+      },
+    ],
   },
   reactStrictMode: true,
   compiler: {
