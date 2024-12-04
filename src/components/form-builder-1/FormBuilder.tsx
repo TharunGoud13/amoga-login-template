@@ -37,6 +37,7 @@ import {
 } from "../ui/select";
 import FormCode from "./FormCode";
 import { MultiSelector, MultiSelectorContent, MultiSelectorInput, MultiSelectorItem, MultiSelectorList, MultiSelectorTrigger } from "../ui/multi-select";
+import { ChatForm } from "./ChatPreview";
 
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[];
@@ -60,9 +61,7 @@ export default function FormBuilder() {
   const [searchTerm, setSearchTerm] = React.useState("");
   const [filteredFields, setFilteredFields] = useState(fieldTypes);
   const [activeTab, setActiveTab] = React.useState("maker");
-  const tabs = ["maker", "preview","chat", "json", "code"];
-
-  console.log("formFields----", formFields);
+  const tabs = ["maker", "preview", "chat preview", "json", "code"];
 
   const currentPath = path.includes("edit");
   const currentId = path.split("/").at(-1);
@@ -124,7 +123,6 @@ export default function FormBuilder() {
     }
   }, []);
 
-
   function formatDateToCustomFormat(date: Date) {
     const pad = (num: any, size = 2) => String(num).padStart(size, "0"); // Helper to pad numbers
     return (
@@ -178,7 +176,6 @@ export default function FormBuilder() {
   }, [currentPath, editModeData]);
 
   const handleSave = async () => {
-    console.log("formFields-----", formFields);
     const headers = new Headers();
     headers.append("Content-Type", "application/json");
     headers.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
@@ -288,7 +285,6 @@ export default function FormBuilder() {
     }
     setIsDialogOpen(false);
   };
-
 
   return (
     <section className="p-2.5  space-y-8">
@@ -401,9 +397,9 @@ export default function FormBuilder() {
               </div>
             )}
 
-            {activeTab === "chat" && (
+            {formFields && activeTab === "chat preview" && (
               <div className=" w-full h-full">
-                Chat Preview
+                <ChatForm formFields={formFields} />
               </div>
             )}
 

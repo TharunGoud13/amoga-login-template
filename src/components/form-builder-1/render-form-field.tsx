@@ -92,7 +92,6 @@ import { MediaCard } from "../ui/media-card";
 import { usePathname } from "next/navigation";
 import MediaSocialPage from "../ui/media-social-page";
 import BarChartPage from "../ui/bar-chart-page";
-import { useTranslations } from "next-intl";
 
 const languages = [
   { label: "English", value: "en" },
@@ -137,7 +136,6 @@ const FileSvgDraw = () => {
 
 export const renderFormField = (field: FormFieldType, form: any) => {
   console.log('field.....',field)
-  const t = useTranslations('FormLabel')
   const [checked, setChecked] = useState<boolean>(field.checked);
   const [value, setValue] = useState<any>(field.value);
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
@@ -953,7 +951,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
     case "Number":
       return (
         <FormItem>
-          <FormLabel>{t(field.label)}</FormLabel>
+          <FormLabel>{field.label}</FormLabel>
           <FormControl>
             <PhoneInput
               defaultCountry="IN"
