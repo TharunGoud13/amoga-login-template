@@ -336,7 +336,8 @@
 
 /* For Firefox */
 * {
-  scrollbar-width: thin; /* Width of the scrollbar */
-  scrollbar-color: #888 #f1f1f1; /* Thumb color and track color */
+  scrollbar-width: thin;
+  scrollbar-width: 8px; /* Width of the scrollbar */
+  scrollbar-color: #888 transparent; /* Thumb color and track color */
 }
 

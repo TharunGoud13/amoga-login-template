@@ -19,5 +19,17 @@ export const navItems: NavItem[] = [
     icon: 'dashboard',
     label: 'Form Maker'
   },
+  {
+    title: 'Form Maker 1',
+    href: '/form_maker_1',
+    icon: 'dashboard',
+    label: 'Form Maker'
+  },
+  {
+    title: 'Form Maker 2',
+    href: '/form_maker_2',
+    icon: 'dashboard',
+    label: 'Form Maker'
+  },
   
 ];

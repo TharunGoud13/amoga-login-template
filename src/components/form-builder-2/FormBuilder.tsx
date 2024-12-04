@@ -24,21 +24,22 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import View from "./View/View";
 import { cn } from "@/lib/utils";
-import { Files, Search, Settings } from "lucide-react";
+import { Plus, Search, Settings } from "lucide-react";
 import { FormSettingsModal } from "./form-settings-modal";
 import { fieldTypes } from "@/constants";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import FormCode from "./FormCode";
-import { MultiSelector, MultiSelectorContent, MultiSelectorInput, MultiSelectorItem, MultiSelectorList, MultiSelectorTrigger } from "../ui/multi-select";
-import { ChatForm } from "./ChatPreview";
 
+import FormCode from "./FormCode";
+import {
+  MultiSelector,
+  MultiSelectorContent,
+  MultiSelectorInput,
+  MultiSelectorItem,
+  MultiSelectorList,
+  MultiSelectorTrigger,
+} from "../ui/multi-select";
+import { ChatForm } from "./ChatPreview";
+import { Card } from "../ui/card";
+import { ScrollArea } from "../ui/scroll-area";
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[];
 
@@ -60,12 +61,21 @@ export default function FormBuilder() {
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState("");
   const [filteredFields, setFilteredFields] = useState(fieldTypes);
-  const [activeTab, setActiveTab] = React.useState("maker");
-  const tabs = ["maker", "preview", "chat preview", "json", "code"];
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [activeTab, setActiveTab] = React.useState("Maker");
+  const tabs = ["Maker", "Form", "Chat", "JSON"];
 
   const currentPath = path.includes("edit");
   const currentId = path.split("/").at(-1);
   const viewPath = path.includes("view");
+
+  const filteredComponents = React.useMemo(
+    () =>
+      fieldTypes.filter((component) =>
+        component.name.toLowerCase().includes(searchQuery.toLowerCase())
+      ),
+    [searchQuery]
+  );
 
   const addFormField = (variant: string, index: number) => {
     const newFieldName = `name_${Math.random().toString().slice(-10)}`;
@@ -236,6 +246,7 @@ export default function FormBuilder() {
     }
   };
 
+  console.log("formFields----", formFields);
   const findFieldPath = (
     fields: FormFieldOrGroup[],
     name: string
@@ -257,6 +268,8 @@ export default function FormBuilder() {
     };
     return search(fields, []);
   };
+
+  console.log("fieldTypes----", fieldTypes);
 
   const updateFormField = (path: number[], updates: Partial<FormFieldType>) => {
     const updatedFields = JSON.parse(JSON.stringify(formFields)); // Deep clone
@@ -309,12 +322,161 @@ export default function FormBuilder() {
         </TabsList>
         <TabsContent value="form">
           <div className="w-full min-h-screen overflow-y-auto  max-w-[800px] mx-auto md:p-4 space-y-6">
+            <div className="border rounded-lg p-4 mb-8">
+              <div className="flex items-center gap-4">
+                <Input
+                  className="text-xl font-medium border-none bg-transparent focus-visible:ring-0 p-0 h-auto placeholder:text-muted-foreground"
+                  placeholder="Enter form name"
+                  value={formInput}
+                  onChange={(e) => setFormInput(e.target.value)}
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsSettingsOpen(true)}
+                >
+                  <Settings className="h-5 w-5" />
+                </Button>
+                <Button onClick={handleSave} className="px-8">
+                  {isLoading? "Saving..." : "Save"}
+                </Button>
+              </div>
+              <div className="mt-2 text-sm text-muted-foreground">
+                Version No. {4}. {"Dec 04"}
+              </div>
+            </div>
+
+            <Tabs defaultValue="maker" className="w-full">
+              <div className="flex justify-center mb-6">
+                <TabsList className="inline-flex h-10 items-center justify-center rounded-full bg-muted p-1 text-muted-foreground">
+                  <TabsTrigger
+                    value="maker"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                  >
+                    Maker
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="form"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                  >
+                    Form
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="chat"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                  >
+                    Chat
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="json"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                  >
+                    JSON
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+
+              <TabsContent value="maker">
+                <>
+                  <FormFieldList
+                    formFields={formFields}
+                    setFormFields={setFormFields}
+                    updateFormField={updateFormField}
+                    openEditDialog={openEditDialog}
+                  />
+                  <Card className="p-4 mt-5 ">
+                    <div className="space-y-4">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          className="pl-9"
+                          placeholder="Search components"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                      </div>
+                      <ScrollArea className="h-[300px]">
+                        {filteredComponents.map((component,index) => (
+                          <Button
+                            key={component.name}
+                            variant="ghost"
+                            className="w-full justify-start mb-2"
+                            onClick={() => addFormField(component.name,index)}
+                          >
+                            <Plus className="mr-2 h-4 w-4" />
+                            {component.name}
+                          </Button>
+                        ))}
+                      </ScrollArea>
+                    </div>
+                  </Card>
+                </>
+              </TabsContent>
+              <TabsContent value="form">
+                <div className=" w-full h-full">
+                  <FormPreview formFields={formFields} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="chat">
+                <div className=" w-full h-full">
+                  {/* {formFields?.length > 0 ? (
+                    <ChatForm formFields={formFields} />
+                  ) : (
+                    <div className="h-[50vh] flex justify-center items-center">
+                      <p>No form element selected yet.</p>
+                    </div>
+                  )} */}
+                  Chat
+                </div>
+              </TabsContent>
+              <TabsContent value="json">
+                <div className=" w-full h-full">
+                  <If
+                    condition={formFields.length > 0}
+                    render={() => (
+                      <pre className="p-4 text-sm bg-secondary rounded-lg h-full md:max-h-[70vh] overflow-auto">
+                        {JSON.stringify(formFields, null, 2)}
+                      </pre>
+                    )}
+                    otherwise={() => (
+                      <div className="h-[50vh] flex justify-center items-center">
+                        <p>No form element selected yet.</p>
+                      </div>
+                    )}
+                  />
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          <EditFieldDialog
+            isOpen={isDialogOpen}
+            onClose={() => setIsDialogOpen(false)}
+            field={selectedField}
+            onSave={handleSaveField}
+          />
+        </TabsContent>
+        <TabsContent value="list">
+          <List />
+        </TabsContent>
+        <TabsContent value="view">
+          <View />
+        </TabsContent>
+
+        <TabsContent value="entries">
+          <Entries />
+        </TabsContent>
+        <TabsContent value="edit">
+          <div className="w-full min-h-screen overflow-y-auto max-w-[800px] mx-auto p-4 space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <div className="w-full">
-                <Input placeholder="Enter form name" className=" mb-2" 
-                value={formInput}
-                type="text"
-                onChange={(e) => setFormInput(e.target.value)}/>
+                <Input
+                  type="text"
+                  value={editFormInput}
+                  onChange={(e) => setEditFormInput(e.target.value)}
+                  placeholder="Enter form name"
+                />
                 <div className="text-sm text-muted-foreground">
                   Version No. 19 Nov 2024
                 </div>
@@ -327,7 +489,9 @@ export default function FormBuilder() {
                 >
                   <Settings className="h-5 w-5" />
                 </Button>
-                <Button className="w-full sm:w-auto" onClick={handleSave}>Save</Button>
+                <Button className="w-full sm:w-auto" onClick={handleSave}>
+                  {isLoading ? "Saving..." : "Save"}
+                </Button>
               </div>
             </div>
 
@@ -360,11 +524,10 @@ export default function FormBuilder() {
 
                 <div className="relative">
                   <MultiSelector
-                  values={[]}
-                  
+                    values={[]}
                     onValuesChange={(value) => {
-                      const selectedField = filteredFields.find(
-                        (field) => value.includes(field.name)
+                      const selectedField = filteredFields.find((field) =>
+                        value.includes(field.name)
                       );
                       if (selectedField) {
                         const fieldIndex = filteredFields.findIndex(
@@ -381,7 +544,10 @@ export default function FormBuilder() {
                       <div className="px-2 py-1"></div>
                       <MultiSelectorList>
                         {filteredFields.map((field, index) => (
-                          <MultiSelectorItem key={field.name} value={field.name}>
+                          <MultiSelectorItem
+                            key={field.name}
+                            value={field.name}
+                          >
                             {field.name}
                           </MultiSelectorItem>
                         ))}
@@ -394,143 +560,6 @@ export default function FormBuilder() {
             {activeTab === "preview" && (
               <div className=" w-full h-full">
                 <FormPreview formFields={formFields} />
-              </div>
-            )}
-
-            {activeTab === "chat preview" && (
-              <div className=" w-full h-full">
-                {formFields?.length > 0 ? <ChatForm  /> :
-                <div className="h-[50vh] flex justify-center items-center">
-                  <p>No form element selected yet.</p>
-                </div>}
-              </div>
-            )}
-
-            {activeTab === "json" && (
-              <div className=" w-full h-full">
-                <If
-                  condition={formFields.length > 0}
-                  render={() => (
-                    <pre className="p-4 text-sm bg-secondary rounded-lg h-full md:max-h-[70vh] overflow-auto">
-                      {JSON.stringify(formFields, null, 2)}
-                    </pre>
-                  )}
-                  otherwise={() => (
-                    <div className="h-[50vh] flex justify-center items-center">
-                      <p>No form element selected yet.</p>
-                    </div>
-                  )}
-                />
-              </div>
-            )}
-
-            {activeTab === "code" && <FormCode formFields={formFields} />}
-          </div>
-
-          <EditFieldDialog
-            isOpen={isDialogOpen}
-            onClose={() => setIsDialogOpen(false)}
-            field={selectedField}
-            onSave={handleSaveField}
-          />
-        </TabsContent>
-        <TabsContent value="list">
-          <List />
-        </TabsContent>
-        <TabsContent value="view">
-          <View />
-        </TabsContent>
-
-        <TabsContent value="entries">
-          <Entries />
-        </TabsContent>
-        <TabsContent value="edit">
-          <div className="w-full min-h-screen overflow-y-auto max-w-[800px] mx-auto p-4 space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-              <div className="w-full">
-                <Input type="text"
-                value={editFormInput}
-                onChange={(e) => setEditFormInput(e.target.value)}
-                placeholder="Enter form name" />
-                <div className="text-sm text-muted-foreground">
-                  Version No. 19 Nov 2024
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsSettingsOpen(true)}
-                >
-                  <Settings className="h-5 w-5" />
-                </Button>
-                <Button className="w-full sm:w-auto"  onClick={handleSave}>{isLoading ? "Saving..." : "Save"}</Button>
-              </div>
-            </div>
-
-            <div className="border-b">
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={cn(
-                      "px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap",
-                      activeTab === tab
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted hover:bg-muted/80"
-                    )}
-                  >
-                    {tab}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {activeTab === "maker" && (
-              <>
-                <FormFieldList
-                  formFields={formFields}
-                  setFormFields={setFormFields}
-                  updateFormField={updateFormField}
-                  openEditDialog={openEditDialog}
-                />
-
-<div className="relative">
-                  <MultiSelector
-                  values={[]}
-                  
-                    onValuesChange={(value) => {
-                      const selectedField = filteredFields.find(
-                        (field) => value.includes(field.name)
-                      );
-                      if (selectedField) {
-                        const fieldIndex = filteredFields.findIndex(
-                          (field) => field.name === selectedField.name
-                        );
-                        addFormField(selectedField.name, fieldIndex);
-                      }
-                    }}
-                  >
-                    <MultiSelectorTrigger>
-                      <MultiSelectorInput placeholder="Add Component" />
-                    </MultiSelectorTrigger>
-                    <MultiSelectorContent>
-                      <div className="px-2 py-1"></div>
-                      <MultiSelectorList>
-                        {filteredFields.map((field, index) => (
-                          <MultiSelectorItem key={field.name} value={field.name}>
-                            {field.name}
-                          </MultiSelectorItem>
-                        ))}
-                      </MultiSelectorList>
-                    </MultiSelectorContent>
-                  </MultiSelector>
-                </div>
-              </>
-            )}
-            {activeTab === "preview" && (
-              <div className=" w-full h-full">
-                <FormPreview formFields={formFields}/>
               </div>
             )}
             {activeTab === "json" && (
