@@ -22,7 +22,7 @@ const DataTableRowActions = ({formId, shareUrl}:DataTableRowProps) => {
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem>View details</DropdownMenuItem>
-            <Link href={`/form_maker_1/edit/${formId}`}>
+            <Link href={`/form_maker_2/edit/${formId}`}>
             <DropdownMenuItem>Edit form</DropdownMenuItem>
             </Link>
             <a href={`/submit/${shareUrl}`} target='_blank'>

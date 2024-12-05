@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Calendar } from "../ui/calendar";
 import { Checkbox } from "../ui/checkbox";
@@ -36,6 +36,7 @@ import { MediaCard } from "../ui/media-card";
 import  MediaSocialPage  from "../ui/media-social-page";
 import BarChartPage from "../ui/bar-chart-page";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card";
+import { Badge } from "../ui/badge";
 
 const RenderInputField = ({
   currentField,
@@ -67,6 +68,13 @@ const RenderInputField = ({
     setIframeUrl(url);
     setInput(url);
   };
+
+  useEffect(() => {
+    if(currentField.variant === "Badge"){
+      setInput(currentField.name)
+    }
+
+  },[currentField.variant])
 
 
   console.log("currentField-----", currentField);
@@ -215,6 +223,22 @@ const RenderInputField = ({
           />
 
           <span>{currentField.label}</span>
+        </div>
+      );
+      case "Label":
+        return (
+         
+              <div className="flex items-center space-x-2">
+                <Checkbox id="terms" onCheckedChange={(value: any) => setInput(value)} />
+                <Label htmlFor="terms">Accept terms and conditions</Label>
+              </div>
+            
+        );
+        case "Badge":
+      return (
+        <div>
+          <Badge>{currentField.name}</Badge>
+          
         </div>
       );
     case "Radio Group":
