@@ -13,7 +13,7 @@ import { FormPreview } from "./FormPreview";
 import { EditFieldDialog } from "./EditFieldDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import List from "./List/List";
-import Entries from "./Entries";
+import { ConnectionTable } from "./connections";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { NEXT_PUBLIC_API_KEY, SAVE_FORM_DATA } from "@/constants/envConfig";
@@ -246,7 +246,7 @@ export default function FormBuilder() {
     }
   };
 
-  console.log("formFields----", formFields);
+  
   const findFieldPath = (
     fields: FormFieldOrGroup[],
     name: string
@@ -269,7 +269,7 @@ export default function FormBuilder() {
     return search(fields, []);
   };
 
-  console.log("fieldTypes----", fieldTypes);
+ 
 
   const updateFormField = (path: number[], updates: Partial<FormFieldType>) => {
     const updatedFields = JSON.parse(JSON.stringify(formFields)); // Deep clone
@@ -316,7 +316,7 @@ export default function FormBuilder() {
         >
           <TabsTrigger value="form">Form</TabsTrigger>
           <TabsTrigger value="list">Forms</TabsTrigger>
-          <TabsTrigger value="entries">Entries</TabsTrigger>
+          <TabsTrigger value="connections">Connections</TabsTrigger>
           {currentPath && <TabsTrigger value="edit">Edit</TabsTrigger>}
           {viewPath && <TabsTrigger value="view">Form Data</TabsTrigger>}
         </TabsList>
@@ -464,8 +464,8 @@ export default function FormBuilder() {
           <View />
         </TabsContent>
 
-        <TabsContent value="entries">
-          <Entries />
+        <TabsContent value="connections">
+          <ConnectionTable />
         </TabsContent>
         <TabsContent value="edit">
         <div className="w-full min-h-screen overflow-y-auto  max-w-[800px] mx-auto md:p-4 space-y-6">

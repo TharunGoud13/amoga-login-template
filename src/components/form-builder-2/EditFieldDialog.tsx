@@ -43,7 +43,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
   const [comboboxOptions, setComboboxOptions] = useState("");
   const [multiSelect, setMultiSelect] = useState("");
 
-  console.log("field----",field)
+
 
   useEffect(() => {
     setEditedField(field);
@@ -67,7 +67,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
 
   if (!editedField) return null;
 
-  console.log("editedField----",editedField?.options)
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
