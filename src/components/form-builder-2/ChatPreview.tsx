@@ -101,12 +101,12 @@ export function ChatForm({ formFields }: any) {
       } else {
         // Form completed
         addMessage("assistant", "Thank you for completing the form. Here's a summary of your inputs:")
-        setTimeout(() => 
-        addMessage("assistant", (
-          <div className="bg-gray-100 flex w-[400px] flex-wrap p-2 rounded">
-            {JSON.stringify(formData)}
-          </div>
-        )),100)
+        // setTimeout(() => 
+        // addMessage("assistant", (
+        //   <div className="bg-gray-100 flex w-[400px] flex-wrap p-2 rounded">
+        //     {JSON.stringify(formData)}
+        //   </div>
+        // )),100)
 
       }
     }
@@ -130,10 +130,10 @@ export function ChatForm({ formFields }: any) {
               )}
             </Avatar>
             <div
-              className={`relative p-4 max-w-[80%] rounded-[20px] ${
+              className={`relative p-4  max-w-[80%] rounded-[20px] ${
                 message.role === "user"
                   ? "bg-[#000000] text-white rounded-br-none shadow-[0_4px_8px_rgba(0,0,0,0.25)]"
-                  : "bg-background rounded-[5px]"
+                  : " w-[80%] rounded-[5px]"
               } transition-all duration-300 ease-in-out`}
             >
               {message.content}
@@ -151,7 +151,7 @@ export function ChatForm({ formFields }: any) {
               placeholder={formFields[currentStep].placeholder}
               className="flex-1"
             />
-            <Button type="submit" className="bg-primary text-white hover:bg-primary/90 transition-colors">
+            <Button type="submit" className="bg-primary  hover:bg-primary/90 transition-colors">
               <Send className="h-4 w-4" />
               <span className="sr-only">Send</span>
             </Button>

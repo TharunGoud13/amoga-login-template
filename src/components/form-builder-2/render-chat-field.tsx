@@ -239,21 +239,17 @@ const RenderInputField = ({
       );
 
     case "Slider":
-      const min = currentField.min || 0;
-      const max = currentField.max || 100;
-      const step = currentField.step || 1;
-      const defaultValue = 5;
+      
       return (
         <Slider
-          min={0}
-          max={100}
-          step={step}
-          defaultValue={[defaultValue]}
+          // max={60}
+          // step={1}
+          // defaultValue={[50]}
           onValueChange={(value: any) =>
             // setFormData((prev: any) => ({ ...prev, [currentField.name]: value }))s
-            setInput(value[0])
+            setInput(value[0].toString())
           }
-          className="text-black bg-black"
+          // className="text-black w-[500px] bg-red-500 "
 
         />
       );
