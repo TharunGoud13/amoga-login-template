@@ -1,107 +1,163 @@
-'use client';
+"use client"
+import * as React from "react"
+import { Bot, Send, User } from 'lucide-react'
+import { v4 as uuidv4 } from 'uuid'
+import { Avatar } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import RenderInputField from "./render-chat-field"
 
-import React, { useState } from "react";
-import { Bot } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import renderInputField from "./render-chat-field";
-
-interface Message {
-  id: string;
-  type: 'bot' | 'user';
-  content: string;
+type Message = {
+  id: string
+  role: "user" | "assistant"
+  content: React.ReactNode
+  componentType?: string
 }
 
 export function ChatForm({ formFields }: any) {
-  const [messages, setMessages] = useState<Message[]>([
-    { id: "1", type: "bot", content: "Hi! I'm here to help you. Let's get started with your information." },
-    { id: "2", type: "bot", content: `What's your value ${formFields[0].label}?` },
+  const [messages, setMessages] = React.useState<Message[]>([
+    { 
+      id: uuidv4(), 
+      role: "assistant", 
+      content: "Welcome! Let's go through the form together. We'll start with the first question:" 
+    },
   ]);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState<Record<string, any>>({});
-  const [inputValue, setInputValue] = useState<any>();
-  const [selectedImage, setSelectedImage] = React.useState<string | null>(null)
+  
+  const [input, setInput] = React.useState("")
+  const [currentStep, setCurrentStep] = React.useState(0)
+  const [formData, setFormData] = React.useState<Record<string, any>>({})
+  const [selectedImage, setSelectedImage] = React.useState(null)
+
+  const addMessage = React.useCallback((role: "user" | "assistant", content: React.ReactNode, componentType?: string) => {
+    setMessages((prev) => [
+      ...prev,
+      { id: uuidv4(), role, content, componentType },
+    ])
+  }, [])
+
+  React.useEffect(() => {
+    // Add first field's question
+    if (formFields.length > 0) {
+      const firstField = formFields[0];
+      addMessage("assistant", `${firstField.variant}`);
+      // Add the first field's input component
+      addMessage("assistant", (
+        <RenderInputField
+          currentField={firstField}
+          input={input}
+          setInput={setInput}
+          formData={formData}
+          setFormData={setFormData}
+          setSelectedImage={setSelectedImage}
+          
+        />
+      ), firstField.type);
+  
+    }
+  }, []);
 
   console.log("formData------",formData)
-  console.log("inputValue------",inputValue)
+  console.log("inputValue------",input)
 
-  const currentField = formFields[currentStep];
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    
+    const currentField = formFields[currentStep];
 
-  const handleUserInput = (input: any) => {
-    const updatedMessages: Message[] = [
-      ...messages,
-      { id: `${Date.now()}`, type: "user", content: input },
-    //   { id: `${Date.now() + 1}`, type: "bot", content: `Got it, thanks for the ${currentField.label}.` },
-    ];
+    if (input.trim()) {
+      // Add user's message
+      addMessage("user", input.trim() || "Submitted");
+      
+      setInput("");
+      // Update form data
+      setFormData((prev) => ({ 
+        ...prev, 
+        [currentField.name]:   input 
+      }));
 
-    setMessages(updatedMessages);
-    setFormData((prev) => ({ ...prev, [currentField.name]: input }));
-    setInputValue("");
-    setCurrentStep((prev) => prev + 1);
+      // Reset input and image
 
-    if (formFields[currentStep + 1]) {
-      setMessages((prev) => [
-        ...prev,
-        { id: `${Date.now() + 2}`, type: "bot", content: `What's your value for ${formFields[currentStep + 1].label}?` },
-      ]);
-    } else {
-      // All fields are completed
-      setMessages((prev) => [
-        ...prev,
-        { id: `${Date.now() + 2}`, type: "bot", content: "Thank you! Here's the information you provided:" },
-       
-        // { id: `${Date.now() + 3}`, type: "bot", content: JSON.stringify(formData, null, 2) },
-      ]);
+      // Move to next step
+      const nextStep = currentStep + 1;
+      setCurrentStep(nextStep);
+
+      if (nextStep < formFields.length) {
+        const firstField = formFields[nextStep];
+        // Add next field's prompt
+        addMessage("assistant", `Great! Now, let's move on to the next question. ${formFields[nextStep].label}`);
+        // Add the next field's input component
+        addMessage("assistant", (
+          <RenderInputField
+            currentField={firstField}
+            input={input}
+            setInput={setInput}
+            formData={formData}
+            setFormData={setFormData}
+            setSelectedImage={setSelectedImage}
+            
+          />
+        ), firstField.type);
+      } else {
+        // Form completed
+        addMessage("assistant", "Thank you for completing the form. Here's a summary of your inputs:")
+        setTimeout(() => 
+        addMessage("assistant", (
+          <div className="bg-gray-100 flex w-[400px] flex-wrap p-2 rounded">
+            {JSON.stringify(formData)}
+          </div>
+        )),100)
+
+      }
     }
-  };
-
-  
+  }
 
   return (
-    <Card className="h-[600px] bg-[#0f1117] w-full hover:bg-[#0f1117] text-white overflow-hidden flex flex-col">
-      <div className="p-4 border-b border-gray-800">
-        <h2 className="text-xl font-semibold">Chat Preview</h2>
-      </div>
-      <div className="flex-1 overflow-auto p-4 space-y-4">
+    <Card className="w-full max-w-2xl mx-auto mt-8 shadow-lg">
+      <CardContent className="space-y-4 max-h-[60vh] overflow-y-auto p-4">
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
+            className={`flex ${
+              message.role === "user" ? "justify-end" : "justify-start"
+            } items-end space-x-2 animate-move-up`}
           >
-            <div className="flex items-start max-w-[80%] space-x-2">
-              {message.type === "bot" && (
-                <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center">
-                  <Bot className="w-4 h-4" />
-                </div>
+            <Avatar>
+              {message.role === "assistant" ? (
+                <Bot className="h-5 w-5" />
+              ) : (
+                <User className="h-5 w-5" />
               )}
-              <div
-                className={`rounded-lg p-3 ${
-                  message.type === "user" ? "bg-blue-600" : "bg-[#1a1d27]"
-                }`}
-              >
-                {message.content}
-              </div>
+            </Avatar>
+            <div
+              className={`relative p-4 max-w-[80%] rounded-[20px] ${
+                message.role === "user"
+                  ? "bg-[#000000] text-white rounded-br-none shadow-[0_4px_8px_rgba(0,0,0,0.25)]"
+                  : "bg-background rounded-[5px]"
+              } transition-all duration-300 ease-in-out`}
+            >
+              {message.content}
             </div>
           </div>
         ))}
-      </div>
-      {currentField && (
-        <div className="p-4 border-t border-gray-800">
-          {/* <div className="mb-2 text-gray-300">{currentField.description}</div> */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleUserInput(inputValue || "No input");
-            }}
-            className=" flex gap-2 items-center"
-          >
-            {renderInputField({currentField, inputValue, setInputValue,formData, setFormData, setSelectedImage})}
-            <Button type="submit" className=" bg-blue-600 hover:bg-blue-700">
-              Next
+      </CardContent>
+      
+      {currentStep < formFields.length && (
+        <CardFooter className="bg-background px-4 py-3">
+          <form onSubmit={handleSubmit} className="flex space-x-2 w-full">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={formFields[currentStep].placeholder}
+              className="flex-1"
+            />
+            <Button type="submit" className="bg-primary text-white hover:bg-primary/90 transition-colors">
+              <Send className="h-4 w-4" />
+              <span className="sr-only">Send</span>
             </Button>
           </form>
-        </div>
+        </CardFooter>
       )}
     </Card>
-  );
+  )
 }

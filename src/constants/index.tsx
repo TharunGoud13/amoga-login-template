@@ -29,7 +29,7 @@ export const fieldTypes: FieldType[] = [
   { name: 'Media Card', isNew: true },
   { name: 'Media Card & Social Icons', isNew: true },
   { name: 'Bar Chart with Social', isNew: true },
-  { name: 'Tab Seperator', isNew: false },
+  // { name: 'Tab Seperator', isNew: false },
   { name: "Iframe", isNew: false },
 ]
 

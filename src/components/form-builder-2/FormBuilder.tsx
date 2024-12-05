@@ -420,14 +420,14 @@ export default function FormBuilder() {
 
               <TabsContent value="chat">
                 <div className=" w-full h-full">
-                  {/* {formFields?.length > 0 ? (
+                  {formFields?.length > 0 ? (
                     <ChatForm formFields={formFields} />
                   ) : (
                     <div className="h-[50vh] flex justify-center items-center">
                       <p>No form element selected yet.</p>
                     </div>
-                  )} */}
-                  Chat
+                  )}
+                  
                 </div>
               </TabsContent>
               <TabsContent value="json">
