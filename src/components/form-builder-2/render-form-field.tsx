@@ -544,7 +544,11 @@ export const renderFormField = (field: FormFieldType, form: any) => {
     case "Text Box":
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel> {field.required && "*"}
+          <div className="flex justify-between">
+            <div>
+          <FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+          </div>
           <FormControl>
             <Input
               placeholder={field.placeholder}
@@ -553,7 +557,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
             />
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
+          
         </FormItem>
       );
     case "Email":
@@ -571,19 +575,29 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormMessage />
         </FormItem>
       );
-    case "Label":
+    case "Check box label":
       return (
         <FormItem>
           <FormControl>
             <div className="flex items-center space-x-2">
-              <Checkbox id="terms" />
-              <Label htmlFor="terms">Accept terms and conditions</Label>
+              <Checkbox id="terms" /> 
+              <Label htmlFor="terms">{field.label}</Label>
+              <span className="text-red-500">{field.required && "*"}</span>
             </div>
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
           <FormMessage />
         </FormItem>
       );
+      case "Label":
+        return (
+          <FormItem>
+            <FormLabel>{field.label}</FormLabel>
+            <Input className="bg-gray-100" value={field.label} readOnly/>
+            <FormDescription>{field.description}</FormDescription>
+          </FormItem>
+        );
+    case "Radio Group":
     case "OTP":
       return (
         <FormItem>

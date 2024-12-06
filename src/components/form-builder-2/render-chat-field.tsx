@@ -225,7 +225,7 @@ const RenderInputField = ({
           <span>{currentField.label}</span>
         </div>
       );
-      case "Label":
+      case "Check box label":
         return (
          
               <div className="flex items-center space-x-2">

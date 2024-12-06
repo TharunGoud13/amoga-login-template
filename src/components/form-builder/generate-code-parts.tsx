@@ -25,10 +25,26 @@ export const generateZodSchema = (
           break
         } else {
           fieldSchema = z.string()
-          break
+          
         }
+        if (field.required) {
+          fieldSchema = (fieldSchema as z.ZodString).min(1, {
+            message: `${field.label} is required`,
+          });
+        }
+        break
       case 'Check Box':
+     
         fieldSchema = z.boolean().default(true)
+        break
+      case 'Check box label':
+        fieldSchema = z.boolean();
+      if (field.required) {
+        fieldSchema = fieldSchema.refine((val) => val === true, {
+          message: `${field.label} must be checked`,
+        });
+      }
+      
         break
       case 'Radio Box':
         fieldSchema = z.boolean().default(true)

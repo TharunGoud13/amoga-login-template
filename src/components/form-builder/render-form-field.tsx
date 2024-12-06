@@ -546,18 +546,32 @@ export const renderFormField = (field: FormFieldType, form: any) => {
     case "Text Box":
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel> {field.required && "*"}
-          <FormControl>
+          <div className="flex justify-between">
+            <div>
+          <FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+          </div>
+
+          <FormControl className="flex justify-between">
             <Input
+            className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
               placeholder={field.placeholder}
               disabled={field.disabled}
               type={field?.type}
             />
+
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
         </FormItem>
       );
+      case "Label":
+        return (
+          <FormItem>
+            <FormLabel>{field.label}</FormLabel>
+            <Input className="bg-gray-100" value={field.label} readOnly/>
+            <FormDescription>{field.description}</FormDescription>
+          </FormItem>
+        );
     case "Email":
       return (
         <FormItem>
@@ -573,17 +587,20 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormMessage />
         </FormItem>
       );
-    case "Label":
+    case "Check box label":
       return (
         <FormItem>
           <FormControl>
+            <div className="flex justify-between">
             <div className="flex items-center space-x-2">
               <Checkbox id="terms" />
-              <Label htmlFor="terms">Accept terms and conditions</Label>
+              <Label htmlFor="terms">{field.label}</Label>
+              <span className="text-red-500">{field.required && "*"}</span>
             </div>
+              <FormMessage />
+              </div>
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
         </FormItem>
       );
     case "OTP":
@@ -917,7 +934,11 @@ export const renderFormField = (field: FormFieldType, form: any) => {
     case "Text Area":
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel>
+          <div className="flex justify-between">
+            <div>
+          <FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+          </div>
           <FormControl>
             <Textarea
               placeholder={field.placeholder}
@@ -926,7 +947,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
             />
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
+         
         </FormItem>
       );
     case "Password":
@@ -953,7 +974,11 @@ export const renderFormField = (field: FormFieldType, form: any) => {
     case "Number":
       return (
         <FormItem>
-          <FormLabel>{t(field.label)}</FormLabel>
+          <div className="flex justify-between">
+            <div>
+          <FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+          </div>
           <FormControl>
             <PhoneInput
               defaultCountry="IN"
@@ -966,7 +991,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
             />
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
+          {/* <FormMessage /> */}
         </FormItem>
       );
     case "Mobile":

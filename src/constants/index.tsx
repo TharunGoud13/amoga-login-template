@@ -3,6 +3,7 @@ import { Area } from 'recharts';
 
 export const fieldTypes: FieldType[] = [
   { name: 'Text Area', isNew: false },
+  { name: 'Check box label', isNew: false },
   { name: 'Label', isNew: false },
   { name: 'Text Box', isNew: false },
   { name: 'Number', isNew: false },

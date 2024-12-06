@@ -571,7 +571,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormMessage />
         </FormItem>
       );
-    case "Label":
+    case "Check box label":
       return (
         <FormItem>
           <FormControl>
