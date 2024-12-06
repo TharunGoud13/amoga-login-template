@@ -150,6 +150,8 @@ export const FieldItem = ({
                       type: '',
                       value: '',
                       variant: fieldType.name,
+                      variant_code: newFieldName,
+                      validation_message: ''
                     };
 
                     setFormFields((prevFields) => [...prevFields, newField]); // Append to formFields

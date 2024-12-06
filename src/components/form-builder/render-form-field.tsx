@@ -942,7 +942,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormControl>
             <Textarea
               placeholder={field.placeholder}
-              className="resize-none"
+              className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
               // {...field}
             />
           </FormControl>
@@ -988,6 +988,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                   shouldDirty: true,
                 });
               }}
+              className={form.formState.errors?.[field.name] ? "border-red-500 border rounded" : ""}
             />
           </FormControl>
           <FormDescription>{field.description}</FormDescription>

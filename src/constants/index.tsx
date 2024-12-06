@@ -86,9 +86,9 @@ export const defaultFieldConfig: Record<
     description: 'Upload your profile picture.',
   },
   'Text Box': {
-    label: 'Username',
+    label: 'Text Box',
     description: '',
-    placeholder: 'Username',
+    placeholder: 'Text Box',
   },
   'Email': {
     label: 'Email',

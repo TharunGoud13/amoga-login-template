@@ -104,6 +104,8 @@ export default function FormBuilder() {
       options: [],
       combobox: [],
       multiselect: [],
+      validation_message: '',
+      variant_code: newFieldName
     };
     setFormFields([...formFields, newField]);
   };
@@ -124,6 +126,8 @@ export default function FormBuilder() {
       type: "textarea",
       value: "",
       variant: "Text Area",
+      validation_message: '',
+      variant_code: `name_${Math.random().toString().slice(-10)}`
     };
   };
 
@@ -192,6 +196,12 @@ export default function FormBuilder() {
     const date = new Date();
     setIsLoading(true);
     const nameFields = formFields && formFields.map((field: any) => field.name);
+
+    if(formInput === "") {
+      toast({ description: "Form name cannot be empty", variant: "destructive" });
+      setIsLoading(false);
+      return;
+    }
 
     const payload = {
       status: "active",
@@ -455,6 +465,7 @@ export default function FormBuilder() {
             onClose={() => setIsDialogOpen(false)}
             field={selectedField}
             onSave={handleSaveField}
+            existingField={formFields.map((field:any) => field?.name)}
           />
         </TabsContent>
         <TabsContent value="list">
@@ -601,6 +612,7 @@ export default function FormBuilder() {
             onClose={() => setIsDialogOpen(false)}
             field={selectedField}
             onSave={handleSaveField}
+            existingField={formFields.map((field:any) => field?.name)}
           />
         </TabsContent>
         <FormSettingsModal

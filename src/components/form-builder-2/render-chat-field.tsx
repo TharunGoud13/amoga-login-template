@@ -99,6 +99,18 @@ const RenderInputField = ({
           className=" border-gray-700 placeholder:text-gray-400"
         />
       );
+      case "Label":
+      return (
+        <Input
+          type="text"
+          placeholder={currentField.placeholder}
+          readOnly
+          value={currentField.label}
+          
+          onChange={(e) => setInput(e.target.value)}
+          className=" border-gray-700 bg-gray-100 placeholder:text-gray-400"
+        />
+      );
     case "Number":
       return (
         <Input

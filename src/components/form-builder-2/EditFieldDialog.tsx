@@ -23,12 +23,14 @@ import {
 } from "@/components/ui/select"; // Import Select components
 import {  X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { toast } from "../ui/use-toast";
 
 type EditFieldDialogProps = {
   isOpen: boolean;
   onClose: () => void;
   field: FormFieldType | null;
   onSave: (updatedField: FormFieldType) => void;
+  existingField: string[]
 };
 
 export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
@@ -36,12 +38,15 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
   onClose,
   field,
   onSave,
+  existingField
 }) => {
   const [editedField, setEditedField] = useState<FormFieldType | null>(null);
   const [fieldType, setFieldType] = useState<string>();
   const [newOption, setNewOption] = useState("");
   const [comboboxOptions, setComboboxOptions] = useState("");
   const [multiSelect, setMultiSelect] = useState("");
+  const [error, setError] = useState(false);
+
 
 
 
@@ -51,6 +56,20 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
 
   const handleSave = () => {
     if (editedField) {
+      if(existingField.includes(editedField.name)){
+        toast({description: "Name already exists", variant: "destructive"})
+        let error:any = document.getElementById("error_msg");
+        error.textContent = "Name already exists";
+        setError(true)
+        return
+      }
+      if(editedField.name === ""){
+        toast({description: "Name cannot be empty", variant: "destructive"})
+        let error:any = document.getElementById("error_msg");
+        error.textContent = "Name cannot be empty";
+        setError(true)
+        return
+      }
       onSave(editedField);
       onClose();
     }
@@ -84,6 +103,20 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
           </TabsList>
           <TabsContent value="settings">
         <div className="py-4 space-y-4">
+        <div>
+            <Label htmlFor="label" className={`${error && "text-red-500"}`}>Name *</Label>
+            <Input
+              id="name"
+              type={field?.type}
+              required
+              className={`${error && "border"}`}
+              value={editedField.name}
+              onChange={(e) =>
+                setEditedField({ ...editedField, name: e.target.value })
+              }
+            />
+          </div>
+          <span className="text-red-500 text-sm" id="error_msg"></span>
           <div>
             <Label htmlFor="label">Label</Label>
             <Input
@@ -95,13 +128,24 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
             />
           </div>
           <div>
-            <Label htmlFor="label">Name</Label>
+            <Label htmlFor="label">Variant Code</Label>
             <Input
-              id="name"
-              type={field?.type}
-              value={editedField.name}
+              id="variant_code"
+              // type={field?.type}
+              value={editedField.variant_code}
               onChange={(e) =>
-                setEditedField({ ...editedField, name: e.target.value })
+                setEditedField({ ...editedField, variant_code: e.target.value })
+              }
+            />
+          </div>
+          <div>
+            <Label htmlFor="label">Validation  Message</Label>
+            <Input
+              id="validation_message"
+              // type={field?.type}
+              value={editedField.validation_message}
+              onChange={(e) =>
+                setEditedField({ ...editedField, variant_code: e.target.value })
               }
             />
           </div>

@@ -37,6 +37,8 @@ export type FormFieldType = {
   type: string
   variant: string
   name: string
+  variant_code?: string
+  validation_message?: string
   label: string
   placeholder?: string
   description?: string
