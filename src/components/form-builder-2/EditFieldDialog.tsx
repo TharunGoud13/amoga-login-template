@@ -45,6 +45,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
   const [newOption, setNewOption] = useState("");
   const [comboboxOptions, setComboboxOptions] = useState("");
   const [multiSelect, setMultiSelect] = useState("");
+  const [radioGroup, setRadioGroup] = useState("");
   const [error, setError] = useState(false);
 
 
@@ -56,13 +57,17 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
 
   const handleSave = () => {
     if (editedField) {
-      if(existingField.includes(editedField.name)){
-        toast({description: "Name already exists", variant: "destructive"})
-        let error:any = document.getElementById("error_msg");
-        error.textContent = "Name already exists";
-        setError(true)
-        return
-      }
+      const isDuplicate =
+      existingField.includes(editedField.name) &&
+      editedField.name !== field?.name;
+
+    if (isDuplicate) {
+      toast({ description: "Name already exists", variant: "destructive" });
+      const error = document.getElementById("error_msg");
+      if (error) error.textContent = "Name already exists";
+      setError(true);
+      return;
+    }
       if(editedField.name === ""){
         toast({description: "Name cannot be empty", variant: "destructive"})
         let error:any = document.getElementById("error_msg");
@@ -104,7 +109,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
           <TabsContent value="settings">
         <div className="py-4 space-y-4">
         <div>
-            <Label htmlFor="label" className={`${error && "text-red-500"}`}>Name *</Label>
+            <Label htmlFor="label">Name *</Label>
             <Input
               id="name"
               type={field?.type}
@@ -424,6 +429,56 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                         }
                       }
                     }
+                      ><X/></span>
+                    </div>
+                  ))}
+                  
+                </div>
+              </div>
+            )}
+          />
+          <If
+            condition={field?.variant === "Radio Group"}
+            render={() => (
+              <div>
+                <Label>Radio Group Options</Label>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      value={radioGroup}
+                      onChange={(e) => setRadioGroup(e.target.value)}
+                      placeholder="Add new option"
+                    />
+                    <Button
+                      onClick={() => {
+                        if (radioGroup && editedField) {
+                          setEditedField({
+                            ...editedField,
+                            radiogroup: [
+                              ...(editedField.radiogroup || []),
+                              radioGroup,
+                            ],
+                          });
+                          setRadioGroup("");
+                        }
+                      }}
+                    >
+                      Add
+                    </Button>
+                  </div>
+                  {editedField?.radiogroup?.map((item,index) => (
+                    <div key={index} className="p-2.5 bg-secondary rounded flex justify-between items-center">
+                      <span>{item}</span>
+                      <span className="cursor-pointer"
+                      onClick={() => {
+                        if(editedField){
+                          setEditedField({
+                            ...editedField,
+                            radiogroup: editedField.radiogroup?.filter((_,i) => i !== index)
+                          })
+                        }
+                      }}
+                      
                       ><X/></span>
                     </div>
                   ))}

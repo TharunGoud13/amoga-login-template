@@ -77,6 +77,9 @@ const RenderInputField = ({
     if(currentField.variant === "Badge"){
       setInput(currentField.name)
     }
+    else if(currentField.variant === "Label"){
+      setInput(currentField.label)
+    }
 
   },[currentField.variant])
 
@@ -109,7 +112,7 @@ const RenderInputField = ({
           type="text"
           placeholder={currentField.placeholder}
           readOnly
-          value={currentField.label}
+          value={currentField.placeholder}
           
           onChange={(e) => setInput(e.target.value)}
           className=" border-gray-700 bg-gray-100 placeholder:text-gray-400"
@@ -264,19 +267,15 @@ const RenderInputField = ({
         <RadioGroup
         value={formData.preference}
         onValueChange={(value) => setInput(value)}
-        className="flex items-center"
+        className="flex w-full items-center"
       >
-          <div className="flex border p-2.5 rounded-full items-center space-x-2">
-            <RadioGroupItem value="option 1" id="r1" className="text-primary" />
-            <Label htmlFor="r1">option 1</Label>
-          </div>
-          <div className="flex border p-2.5 rounded-full items-center space-x-2">
-            <RadioGroupItem value="option 2" id="r2" />
-            <Label htmlFor="r2">option 2</Label>
-          </div>
-          <div className="flex border p-2.5 rounded-full items-center space-x-2">
-            <RadioGroupItem value="option 3" id="r3" />
-            <Label htmlFor="r3">option 3</Label>
+        <div className="flex items-center gap-2.5">
+          {currentField.radiogroup?.map((item: any,index: any) => (
+            <div key={index} className="flex border rounded-full p-2.5  items-center gap-2">
+              <RadioGroupItem value={item} id={index}/>
+              <Label htmlFor={index}>{item}</Label>
+            </div>
+          ))}
           </div>
         </RadioGroup>
       );

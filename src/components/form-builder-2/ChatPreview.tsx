@@ -47,7 +47,7 @@ export function ChatForm({ formFields }: any) {
     // Add first field's question
     if (formFields.length > 0) {
       const firstField = formFields[0];
-      addMessage("assistant", `${firstField.variant}`);
+      addMessage("assistant", `${firstField.label}`);
       // Add the first field's input component
       // addMessage(
       //   "assistant",

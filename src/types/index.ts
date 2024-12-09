@@ -45,6 +45,7 @@ export type FormFieldType = {
   options?: string[]
   combobox?: string[]
   multiselect?: string[]
+  radiogroup?: string[]
   disabled: boolean
   value: string | boolean | Date | number | string[]
   setValue: (value: string | boolean) => void

@@ -593,7 +593,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
         return (
           <FormItem>
             <FormLabel>{field.label}</FormLabel>
-            <Input className="bg-gray-100" value={field.label} readOnly/>
+            <Input className="bg-gray-100" value={field.placeholder} readOnly/>
             <FormDescription>{field.description}</FormDescription>
           </FormItem>
         );

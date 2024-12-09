@@ -94,6 +94,7 @@ export default function FormBuilder() {
       options: [],
       combobox: [],
       multiselect: [],
+      radiogroup: []
     };
     setFormFields([...formFields, newField]);
   };
