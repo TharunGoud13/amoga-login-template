@@ -56,6 +56,10 @@ const RenderInputField = ({
 
   const [selectedValues, setSelectedValues] = useState<any>([]);
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
+  const [value, setValue] = useState(currentField.value)
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [multiSelectedItems, setMultiSelectedItems] = useState<string[]>([]);
 
 
   const handleChange = (
@@ -84,9 +88,9 @@ const RenderInputField = ({
       return (
         <Textarea
           placeholder={currentField.placeholder}
-          
+          value={input}
           onChange={(e) => setInput(e.target.value)}
-          className=" border-gray-700 md:w-[500px] placeholder:text-gray-400"
+          className=" border-gray-700 w-full placeholder:text-gray-400"
         />
       );
     case "Text Box":
@@ -94,9 +98,9 @@ const RenderInputField = ({
         <Input
           type="text"
           placeholder={currentField.placeholder}
-          
+          value={input}
           onChange={(e) => setInput(e.target.value)}
-          className=" border-gray-700 md:w-[500px] placeholder:text-gray-400"
+          className=" border-gray-700 w-full placeholder:text-gray-400"
         />
       );
       case "Label":
@@ -116,7 +120,7 @@ const RenderInputField = ({
         <Input
           type="number"
           placeholder={currentField.placeholder}
-         
+          value={input}
           onChange={(e) => setInput(e.target.value)}
           className=" border-gray-700 placeholder:text-gray-400"
         />
@@ -126,7 +130,7 @@ const RenderInputField = ({
         <Input
           type="number"
           placeholder={currentField.placeholder}
-         
+          value={input}
           onChange={(e) => setInput(e.target.value)}
           className=" border-gray-700 placeholder:text-gray-400"
         />
@@ -137,7 +141,7 @@ const RenderInputField = ({
           type="text"
           maxLength={6}
           placeholder={currentField.placeholder}
-          
+          value={input}
           onChange={(e) => setInput(e.target.value)}
           className=" border-gray-700 placeholder:text-gray-400"
         />
@@ -147,7 +151,7 @@ const RenderInputField = ({
         <Input
           type="email"
           placeholder={currentField.placeholder}
-          
+          value={input}
           onChange={(e) => setInput(e.target.value)}
           className=" border-gray-700 placeholder:text-gray-400"
         />
@@ -166,11 +170,11 @@ const RenderInputField = ({
       return (
         <Calendar
           mode="single"
-          // selected={formData[currentField.name]}
-          // onSelect={(date:any) =>
-          //   setFormData((prev:any) => ({ ...prev, [currentField.name]: new Date(date).toDateString() }))
-          // }
-          onSelect={(date: any) => setInput(new Date(date).toDateString())}
+          selected={selectedDate}
+          onSelect={(date: any) => {
+            setSelectedDate(date)
+            setInput(new Date(date).toDateString())
+          }}
           className="rounded-md border"
         />
       );
@@ -187,62 +191,64 @@ const RenderInputField = ({
           ]}
         />
       );
-    case "Dropdown":
-      return (
-        <Select
-          onValueChange={(value) => {
-            currentField.onChange;
-            setInput(value);
-          }}
-          defaultValue={currentField?.options && currentField?.options[0]}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder={currentField.placeholder} />
-          </SelectTrigger>
+    // case "Dropdown":
+    //   return (
+    //     <Select
+    //       onValueChange={(value) => {
+    //         currentField.onChange;
+    //         setInput(value);
+    //       }}
+    //       defaultValue={currentField?.options && currentField?.options[0]}
+    //     >
+    //       <SelectTrigger>
+    //         <SelectValue placeholder={currentField.placeholder} />
+    //       </SelectTrigger>
 
-          <SelectContent>
-            {currentField.options?.map((option: any) => (
-              <SelectItem key={option} value={option}>
-                {option}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      );
+    //       <SelectContent>
+    //         {currentField.options?.map((option: any) => (
+    //           <SelectItem key={option} value={option}>
+    //             {option}
+    //           </SelectItem>
+    //         ))}
+    //       </SelectContent>
+    //     </Select>
+    //   );
+    case "Dropdown":
+      return(
+        <div className="flex gap-2.5 items-center w-full">
+          {currentField.options?.map((option:any,index:number) => (
+            <div key={index} className={`flex ${selectedOption === option ? "bg-primary text-secondary" : "bg-background"} cursor-pointer  border rounded-full p-2.5`}
+            onClick={() => {
+              setInput(option)
+              setSelectedOption(option)
+              }}>
+              <span>{option}</span>
+            </div>
+          ))}
+        </div>
+      )
     case "Check Box":
       return (
-        <div className="flex items-center gap-2.5">
-          <Checkbox
-            checked={formData[currentField.name]}
-            // onChange={(value:any) => {
-            //   setFormData((prev: any) => ({ ...prev, [currentField.name]: value }))
-            //   setInput(`Selected Services: ${value}`)
-            // }
+        <div className="flex w-full items-center gap-2.5">
+          <div className="flex  w-full items-center space-x-2">
+                <div className="border rounded-full flex gap-2 items-center p-2.5">
+                <Checkbox id="terms" onCheckedChange={(value: any) => setInput(currentField.label)} />
+                <Label htmlFor="terms">{currentField.label}</Label>
+                </div>
+              </div>
+            
 
-            // }
-            onCheckedChange={(value: any) => {
-              setFormData((prev: any) => ({
-                ...prev,
-                [currentField.name]: value,
-              }));
-              if (value) {
-                setInput(currentField.label); // Set the label only if the checkbox is checked
-              } else {
-                setInput(""); // Optionally clear the input when unchecked
-              }
-            }}
-            className="text-primary border border-primary"
-          />
-
-          <span>{currentField.label}</span>
+          {/* <span>{currentField.label}</span> */}
         </div>
       );
       case "Check box label":
         return (
          
-              <div className="flex items-center space-x-2">
-                <Checkbox id="terms" onCheckedChange={(value: any) => setInput(value)} />
-                <Label htmlFor="terms">Accept terms and conditions</Label>
+              <div className="flex  w-full items-center space-x-2">
+                <div className="border rounded-full flex gap-2 items-center p-2.5">
+                <Checkbox id="terms" onCheckedChange={(value: any) => setInput(currentField.label)} />
+                <Label htmlFor="terms">{currentField.label}</Label>
+                </div>
               </div>
             
         );
@@ -256,18 +262,19 @@ const RenderInputField = ({
     case "Radio Group":
       return (
         <RadioGroup
-          defaultValue="comfortable"
-          onValueChange={(value) => setInput(value)}
-        >
-          <div className="flex items-center space-x-2">
+        value={formData.preference}
+        onValueChange={(value) => setInput(value)}
+        className="flex items-center"
+      >
+          <div className="flex border p-2.5 rounded-full items-center space-x-2">
             <RadioGroupItem value="option 1" id="r1" className="text-primary" />
             <Label htmlFor="r1">option 1</Label>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex border p-2.5 rounded-full items-center space-x-2">
             <RadioGroupItem value="option 2" id="r2" />
             <Label htmlFor="r2">option 2</Label>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex border p-2.5 rounded-full items-center space-x-2">
             <RadioGroupItem value="option 3" id="r3" />
             <Label htmlFor="r3">option 3</Label>
           </div>
@@ -310,7 +317,7 @@ const RenderInputField = ({
       );
     case "Image Upload":
       return (
-        <div className="space-y-4  p-4 rounded-lg">
+        <div className="space-y-4 w-full  p-4 rounded-lg">
           <Input
             type="file"
             accept="image/*"
@@ -333,7 +340,7 @@ const RenderInputField = ({
       );
     case "File Upload":
       return (
-        <div className="space-y-4  p-4 rounded-lg">
+        <div className="space-y-4 w-full  p-4 rounded-lg">
           <Input
             type="file"
             onChange={(e) => {
@@ -369,8 +376,8 @@ const RenderInputField = ({
                     !currentField.value && "text-muted-foreground"
                   )}
                 >
-                  {currentField.value
-                ? currentField.combobox?.find((item:any) => item === currentField.value)
+                  {value
+                ? currentField.combobox?.find((item:any) => item === value)
                 : "Select option"}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
@@ -388,7 +395,7 @@ const RenderInputField = ({
                     key={item}
                     onSelect={() => {
                       setInput(item)
-                      // setValue(item);
+                      setValue(item);
                     }}
                       >
                         <Check
@@ -410,38 +417,68 @@ const RenderInputField = ({
         
       );
 
-      case "Multi Select":
-      return (
+      // case "Multi Select":
+      // return (
         
           
-            <MultiSelector
-              values={selectedValues}
-              onValuesChange={(newValues:any) => {
-                setSelectedValues(newValues);
-                setInput(newValues)
+      //       <MultiSelector
+      //         values={selectedValues}
+      //         onValuesChange={(newValues:any) => {
+      //           setSelectedValues(newValues);
+      //           setInput(newValues)
                 
-              }}
-              className="max-w-xs"
-            >
-              <MultiSelectorTrigger>
-                <MultiSelectorInput placeholder={currentField.placeholder} />
-              </MultiSelectorTrigger>
-              <MultiSelectorContent>
-                <MultiSelectorList>
-                  {currentField?.multiselect?.map((item:any,index:any) => (
-                    <MultiSelectorItem key={index} value={item}>
-                      {item}
-                    </MultiSelectorItem>
-                  ))}
-                </MultiSelectorList>
-              </MultiSelectorContent>
-            </MultiSelector>
+      //         }}
+      //         className="max-w-xs"
+      //       >
+      //         <MultiSelectorTrigger>
+      //           <MultiSelectorInput placeholder={currentField.placeholder} />
+      //         </MultiSelectorTrigger>
+      //         <MultiSelectorContent>
+      //           <MultiSelectorList>
+      //             {currentField?.multiselect?.map((item:any,index:any) => (
+      //               <MultiSelectorItem key={index} value={item}>
+      //                 {item}
+      //               </MultiSelectorItem>
+      //             ))}
+      //           </MultiSelectorList>
+      //         </MultiSelectorContent>
+      //       </MultiSelector>
           
-      );
+      // );
+    case "Multi Select":
+      const toggleItem = (item: string) => {
+        const updatedSelection = multiSelectedItems.includes(item)
+          ? multiSelectedItems.filter((selected) => selected !== item) // Remove item if already selected
+          : [...multiSelectedItems, item]; // Add item if not selected
+    
+        setMultiSelectedItems(updatedSelection);
+        setInput(updatedSelection.join(","));
+      };
+      return (
+        <div className="w-full flex gap-2.5 items-center flex-wrap">
+        {currentField?.multiselect?.map((item: string, index: number) => (
+          <div
+            key={index}
+            className={`border cursor-pointer gap-3 rounded-full flex  items-center p-2.5 ${
+              multiSelectedItems.includes(item) ? "bg-primary text-secondary" : ""
+            }`}
+            onClick={() => toggleItem(item)}
+          >
+            <Checkbox
+              checked={multiSelectedItems.includes(item)}
+              // onChange={() => toggleItem(item)}
+              onCheckedChange={() => toggleItem(item)}
+              className="cursor-pointer"
+            />
+            <span>{item}</span>
+          </div>
+        ))}
+      </div>
+    )
 
     case "Location Select":
       return (
-        <>
+        <div className="w-full">
           <LocationSelector
             onCountryChange={(country) => {
               setFormData((prev: any) => ({
@@ -458,7 +495,7 @@ const RenderInputField = ({
               setInput(currentField.name);
             }}
           />
-        </>
+        </div>
       );
       case "Progress":
         const timer = setTimeout(() => setInput("50"), 500);

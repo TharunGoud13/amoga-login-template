@@ -39,22 +39,22 @@ export const defaultFieldConfig: Record<
   { label: string; description: string; placeholder?: any }
 > = {
   'Check Box': {
-    label: 'Use different settings for my mobile devices',
+    label: 'Check Box',
     description:
       'You can manage your mobile notifications in the mobile settings page.',
   },
   
   'Radio Group': {
-    label: 'Use different settings for my mobile devices',
+    label: 'Radio Group',
     description:
       'You can manage your mobile notifications in the mobile settings page.',
   },
   'Badge': {
-    label: 'Select your framework',
+    label: 'Badge',
     description: 'Select from the options below.',
   },
   'Progress': {
-    label: 'Select your framework',
+    label: 'Progress',
     description: 'Select from the options below.'
   },
   'Search Lookup': {
@@ -66,15 +66,15 @@ export const defaultFieldConfig: Record<
     description: 'Select from the options below.',
   },
   Combobox: {
-    label: 'Language',
+    label: 'Combobox',
     description: 'This is the language that will be used in the dashboard.',
   },
   'Date': {
-    label: 'Date of birth',
+    label: 'Date',
     description: 'Your date of birth is used to calculate your age.',
   },
   'Date Time': {
-    label: 'Submission Date',
+    label: 'Date Time',
     description: 'Add the date of submission with detailly.',
   },
   'File Upload': {
@@ -105,16 +105,16 @@ export const defaultFieldConfig: Record<
       'If your country has states, it will be appear after selecting country',
   },
   'Multi Select': {
-    label: 'Select your framework',
+    label: 'Multi Select',
     description: 'Select multiple options.',
   },
   Dropdown: {
-    label: 'Email',
+    label: 'Dropdown',
     description: 'You can manage email addresses in your email settings.',
     placeholder: 'Select a verified email to display',
   },
   Slider: {
-    label: 'Set Price Range',
+    label: 'Slider',
     description: 'Adjust the price by sliding.',
   },
   'Signature Input': {
@@ -126,12 +126,12 @@ export const defaultFieldConfig: Record<
     description: 'Please select the full time',
   },
   Switch: {
-    label: 'Marketing emails',
+    label: 'Switch',
     description: 'Receive emails about new products, features, and more.',
   },
   'Tags Input': { label: 'Enter your tech stack.', description: 'Add tags.' },
   'Text Area': {
-    label: 'Bio',
+    label: 'Text Area',
     description: '',
   },
   Password: {

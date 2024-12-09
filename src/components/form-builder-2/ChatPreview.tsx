@@ -25,7 +25,7 @@ export function ChatForm({ formFields }: any) {
     },
   ]);
   
-  const [input, setInput] = React.useState("")
+  const [input, setInput] = React.useState<any>()
   const [currentStep, setCurrentStep] = React.useState(0)
   const [formData, setFormData] = React.useState<Record<string, any>>({})
   const [selectedImage, setSelectedImage] = React.useState(null)
@@ -58,6 +58,7 @@ export function ChatForm({ formFields }: any) {
       //   firstField.type
       // );
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   console.log("formData------", formData);
@@ -68,9 +69,9 @@ export function ChatForm({ formFields }: any) {
 
     const currentField = formFields[currentStep];
 
-    if (input.trim()) {
+    if (input) {
       // Add user's message
-      addMessage("user", input.trim() || "Submitted");
+      addMessage("user", input || "Submitted");
 
       setInput("");
       // Update form data
@@ -87,11 +88,13 @@ export function ChatForm({ formFields }: any) {
 
       if (nextStep < formFields.length) {
         const firstField = formFields[nextStep];
+        setInput("")
         // Add next field's prompt
         addMessage(
           "assistant",
           `Great! Now, let's move on to the next question. ${formFields[nextStep].label}`
         );
+        setInput("")
         // Add the next field's input component
         // addMessage(
         //   "assistant",
