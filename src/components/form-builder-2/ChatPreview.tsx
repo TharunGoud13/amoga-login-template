@@ -47,7 +47,11 @@ export function ChatForm({ formFields }: any) {
     // Add first field's question
     if (formFields.length > 0) {
       const firstField = formFields[0];
-      addMessage("assistant", `${firstField.label}`);
+      addMessage("assistant",
+        <div className="flex flex-col"> 
+        <span>{firstField.label}</span>
+        <span className="text-sm text-gray-400">{firstField.description}</span>
+        </div>);
       // Add the first field's input component
       // addMessage(
       //   "assistant",
@@ -98,7 +102,15 @@ export function ChatForm({ formFields }: any) {
         // Add next field's prompt
         addMessage(
           "assistant",
-          `Great! Now, let's move on to the next question. ${formFields[nextStep].label}`
+         <div>
+           <span>Great! Now, let's move on to the next question.</span>
+           <br/>
+           <span className="label">{formFields[nextStep].label}</span>
+           <br/>
+           <span className="text-sm text-gray-400">{formFields[nextStep].description}</span>
+         </div>
+         
+          
         );
         setInput("")
         // Add the next field's input component
