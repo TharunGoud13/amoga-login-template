@@ -78,7 +78,7 @@ const RenderInputField = ({
       setInput(currentField.name)
     }
     else if(currentField.variant === "Label"){
-      setInput(currentField.label)
+      setInput(currentField.placeholder)
     }
 
   },[currentField.variant])
@@ -114,7 +114,6 @@ const RenderInputField = ({
           readOnly
           value={currentField.placeholder}
           
-          onChange={(e) => setInput(e.target.value)}
           className=" border-gray-700 bg-gray-100 placeholder:text-gray-400"
         />
       );
