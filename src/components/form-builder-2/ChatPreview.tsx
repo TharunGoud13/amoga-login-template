@@ -29,12 +29,18 @@ export function ChatForm({ formFields }: any) {
   const [currentStep, setCurrentStep] = React.useState(0)
   const [formData, setFormData] = React.useState<Record<string, any>>({})
   const [selectedImage, setSelectedImage] = React.useState(null)
+  const messagesEndRef = React.useRef<HTMLDivElement>(null)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" })
+  }
 
   const addMessage = React.useCallback((role: "user" | "assistant", content: React.ReactNode, componentType?: string) => {
     setMessages((prev) => [
       ...prev,
       { id: uuidv4(), role, content, componentType },
     ])
+    setTimeout(scrollToBottom, 50)
   }, [])
 
   React.useEffect(() => {
@@ -134,7 +140,7 @@ export function ChatForm({ formFields }: any) {
             key={message.id}
             className={`flex ${
               message.role === "user" ? "justify-end" : "justify-start"
-            } items-end space-x-2 animate-move-up`}
+            } items-end  animate-move-up`}
           >
             {message.role === "assistant" && (
               <Avatar>
@@ -142,16 +148,16 @@ export function ChatForm({ formFields }: any) {
               </Avatar>
             )}
             <div
-              className={`relative p-4  max-w-[80%] rounded-[20px] ${
+              className={`relative py-4  max-w-[80%] rounded-[20px] ${
                 message.role === "user"
-                  ? "bg-[#000000] text-white rounded-br-none shadow-[0_4px_8px_rgba(0,0,0,0.25)]"
+                  ? "bg-[#000000] px-4 text-white rounded-br-none shadow-[0_4px_8px_rgba(0,0,0,0.25)]"
                   : " w-[80%] rounded-[5px]"
               } transition-all duration-300 ease-in-out`}
             >
               {message.content}
             </div>
             {message.role === "user" && (
-              <Avatar>
+              <Avatar className="ml-4">
                 <User className="h-5 w-5" />
               </Avatar>
             )}
@@ -182,6 +188,7 @@ export function ChatForm({ formFields }: any) {
           </div>
         </CardFooter>
       )}
+        <div ref={messagesEndRef} />
     </Card>
   );
 }
