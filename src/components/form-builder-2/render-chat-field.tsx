@@ -86,7 +86,7 @@ const RenderInputField = ({
           placeholder={currentField.placeholder}
           
           onChange={(e) => setInput(e.target.value)}
-          className=" border-gray-700 placeholder:text-gray-400"
+          className=" border-gray-700 md:w-[500px] placeholder:text-gray-400"
         />
       );
     case "Text Box":
@@ -96,7 +96,7 @@ const RenderInputField = ({
           placeholder={currentField.placeholder}
           
           onChange={(e) => setInput(e.target.value)}
-          className=" border-gray-700 placeholder:text-gray-400"
+          className=" border-gray-700 md:w-[500px] placeholder:text-gray-400"
         />
       );
       case "Label":

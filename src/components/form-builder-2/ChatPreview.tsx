@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import RenderInputField from "./render-chat-field"
+import { FaArrowUp } from "react-icons/fa6";
 
 type Message = {
   id: string
@@ -42,38 +43,40 @@ export function ChatForm({ formFields }: any) {
       const firstField = formFields[0];
       addMessage("assistant", `${firstField.variant}`);
       // Add the first field's input component
-      addMessage("assistant", (
-        <RenderInputField
-          currentField={firstField}
-          input={input}
-          setInput={setInput}
-          formData={formData}
-          setFormData={setFormData}
-          setSelectedImage={setSelectedImage}
+      // addMessage(
+      //   "assistant",
+      //   <RenderInputField
+      //     currentField={firstField}
+      //     input={input}
+      //     setInput={setInput}
+      //     formData={formData}
+      //     setFormData={setFormData}
+      //     setSelectedImage={setSelectedImage}
+      //     onSubmit={handleSubmit}
           
-        />
-      ), firstField.type);
-  
+      //   />,
+      //   firstField.type
+      // );
     }
   }, []);
 
-  console.log("formData------",formData)
-  console.log("inputValue------",input)
+  console.log("formData------", formData);
+  console.log("inputValue------", input);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    
+  const handleSubmit = () => {
+    console.log("rendered--")
+
     const currentField = formFields[currentStep];
 
     if (input.trim()) {
       // Add user's message
       addMessage("user", input.trim() || "Submitted");
-      
+
       setInput("");
       // Update form data
-      setFormData((prev) => ({ 
-        ...prev, 
-        [currentField.name]:   input 
+      setFormData((prev) => ({
+        ...prev,
+        [currentField.name]: input,
       }));
 
       // Reset input and image
@@ -85,32 +88,40 @@ export function ChatForm({ formFields }: any) {
       if (nextStep < formFields.length) {
         const firstField = formFields[nextStep];
         // Add next field's prompt
-        addMessage("assistant", `Great! Now, let's move on to the next question. ${formFields[nextStep].label}`);
+        addMessage(
+          "assistant",
+          `Great! Now, let's move on to the next question. ${formFields[nextStep].label}`
+        );
         // Add the next field's input component
-        addMessage("assistant", (
-          <RenderInputField
-            currentField={firstField}
-            input={input}
-            setInput={setInput}
-            formData={formData}
-            setFormData={setFormData}
-            setSelectedImage={setSelectedImage}
-            
-          />
-        ), firstField.type);
+        // addMessage(
+        //   "assistant",
+        //   <RenderInputField
+        //     currentField={firstField}
+        //     input={input}
+        //     setInput={setInput}
+        //     formData={formData}
+        //     setFormData={setFormData}
+        //     setSelectedImage={setSelectedImage}
+        //     onSubmit={handleSubmit}
+           
+        //   />,
+        //   firstField.type
+        // );
       } else {
         // Form completed
-        addMessage("assistant", "Thank you for completing the form. Here's a summary of your inputs:")
-        // setTimeout(() => 
+        addMessage(
+          "assistant",
+          "Thank you for completing the form. Here's a summary of your inputs:"
+        );
+        // setTimeout(() =>
         // addMessage("assistant", (
         //   <div className="bg-gray-100 flex w-[400px] flex-wrap p-2 rounded">
         //     {JSON.stringify(formData)}
         //   </div>
         // )),100)
-
       }
     }
-  }
+  };
 
   return (
     <Card className="w-full max-w-2xl mx-auto mt-8 shadow-lg">
@@ -122,13 +133,11 @@ export function ChatForm({ formFields }: any) {
               message.role === "user" ? "justify-end" : "justify-start"
             } items-end space-x-2 animate-move-up`}
           >
-            <Avatar>
-              {message.role === "assistant" ? (
+            {message.role === "assistant" && (
+              <Avatar>
                 <Bot className="h-5 w-5" />
-              ) : (
-                <User className="h-5 w-5" />
-              )}
-            </Avatar>
+              </Avatar>
+            )}
             <div
               className={`relative p-4  max-w-[80%] rounded-[20px] ${
                 message.role === "user"
@@ -138,26 +147,38 @@ export function ChatForm({ formFields }: any) {
             >
               {message.content}
             </div>
+            {message.role === "user" && (
+              <Avatar>
+                <User className="h-5 w-5" />
+              </Avatar>
+            )}
           </div>
         ))}
       </CardContent>
-      
+
       {currentStep < formFields.length && (
         <CardFooter className="bg-background px-4 py-3">
-          <form onSubmit={handleSubmit} className="flex space-x-2 w-full">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder={formFields[currentStep].placeholder}
-              className="flex-1"
-            />
-            <Button type="submit" className="bg-primary  hover:bg-primary/90 transition-colors">
-              <Send className="h-4 w-4" />
+          <div  className="flex items-center space-x-2 w-full">
+          <RenderInputField
+          currentField={formFields[currentStep]}
+          input={input}
+          setInput={setInput}
+          formData={formData}
+          setFormData={setFormData}
+          setSelectedImage={setSelectedImage}
+ 
+          
+        />
+            <Button
+              onClick={handleSubmit}
+              className="bg-primary  hover:bg-primary/90 transition-colors"
+            >
+              <FaArrowUp className="h-4 w-4" />
               <span className="sr-only">Send</span>
             </Button>
-          </form>
+          </div>
         </CardFooter>
       )}
     </Card>
-  )
+  );
 }
