@@ -19,6 +19,8 @@ import { renderFormField } from "@/components/form-builder/render-form-field";
 import { z } from "zod";
 import { useSession } from "next-auth/react";
 import { trackPageView } from "@/utils/tracking";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ChatPreview from "@/components/form-builder-2/ChatPreview";
 
 const renderFormFields = (fields: any, form: any) => {
   return fields.map((fieldOrGroup: any, index: any) => {
@@ -305,27 +307,54 @@ const Page = (props: any) => {
 
   return (
     <div className="md:p-6 flex flex-col justify-center items-center">
-      <If
-        condition={formJsonData.length > 0}
-        render={() => (
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-4  md:w-[50%] md:border p-5 rounded  py-5 max-w-lg mx-auto"
+      <Tabs defaultValue="form" className="w-full">
+        <div className="flex justify-center mb-6">
+          <TabsList className="inline-flex h-10 items-center justify-center rounded-full bg-muted p-1 text-muted-foreground">
+            
+            <TabsTrigger
+              value="form"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
             >
-              {renderFormFields(formJsonData, form)}
-              <Button className="w-full" type="submit">
-                {loading ? "Submitting..." : "Submit"}
-              </Button>
-            </form>
-          </Form>
-        )}
-        otherwise={() => (
-          <div className="h-[50vh] flex justify-center items-center">
-            <p>No form element selected yet.</p>
+              Form
+            </TabsTrigger>
+            <TabsTrigger
+              value="chat"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+            >
+              Chat
+            </TabsTrigger>
+            
+          </TabsList>
+        </div>
+    <TabsContent value="form">
+        <If
+          condition={formJsonData.length > 0}
+          render={() => (
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4  md:w-[50%] md:border p-5 rounded  py-5 max-w-lg mx-auto"
+              >
+                {renderFormFields(formJsonData, form)}
+                <Button className="w-full" type="submit">
+                  {loading ? "Submitting..." : "Submit"}
+                </Button>
+              </form>
+            </Form>
+          )}
+          otherwise={() => (
+            <div className="h-[50vh] flex justify-center items-center">
+              <p>No form element selected yet.</p>
+            </div>
+          )}
+        />
+        </TabsContent>
+        <TabsContent value="chat">
+          <div className=" flex justify-center items-center">
+            <ChatPreview formFields={formJsonData} />
           </div>
-        )}
-      />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
