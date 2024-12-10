@@ -253,27 +253,43 @@ export const renderFormField = (field: FormFieldType, form: any) => {
               onCheckedChange={() => {
                 setChecked(!checked);
               }}
+              className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
               disabled={field.disabled}
             />
           </FormControl>
           <div className="space-y-1 leading-none">
-            <FormLabel>{field.label}</FormLabel> {field.required && "*"}
+          <div className="flex justify-between items-center">
+          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+
+          </div>
             <FormDescription>{field.description}</FormDescription>
           </div>
-          <FormMessage />
         </FormItem>
       );
     case "Radio Group":
       return (
+        <>
+        <div className="flex justify-between items-center">
+          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          </div>
         <FormItem
           className={cn(
             "flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4",
             field.className
           )}
         >
+          
+          <FormMessage />
           <FormControl>
             <RadioGroup defaultValue="comfortable">
-              <div className="flex items-center space-x-2">
+              {field?.radiogroup?.map((item:any,index: any) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <RadioGroupItem value={item} id={index} />
+                  <Label htmlFor={index}>{item}</Label>
+                </div>
+              ))}
+              {/* <div className="flex items-center space-x-2">
                 <RadioGroupItem value="default" id="r1" />
                 <Label htmlFor="r1">{field.name}</Label>
               </div>
@@ -284,7 +300,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="compact" id="r3" />
                 <Label htmlFor="r3">{field.name}</Label>
-              </div>
+              </div> */}
             </RadioGroup>
           </FormControl>
           <div className="space-y-1 leading-none">
@@ -293,6 +309,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           </div>
           <FormMessage />
         </FormItem>
+        </>
       );
     case "Search Lookup":
       return <div></div>;
@@ -338,9 +355,11 @@ export const renderFormField = (field: FormFieldType, form: any) => {
     case "Combobox":
       return (
         <FormItem className="flex flex-col">
-          <div>
-            <FormLabel>{field.label}</FormLabel> {field.required && "*"}
-          </div>{" "}
+          <div className="flex justify-between items-center">
+          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+
+          </div>
           <Popover>
             <PopoverTrigger asChild>
               <FormControl>
@@ -367,6 +386,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                   <CommandGroup>
                   {field.combobox?.map((item) => (
                   <CommandItem
+                  className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
                     value={item}
                     key={item}
                     onSelect={() => {
@@ -391,14 +411,16 @@ export const renderFormField = (field: FormFieldType, form: any) => {
             </PopoverContent>
           </Popover>
           <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
+          
         </FormItem>
       );
     case "Date":
       return (
         <FormItem className="flex flex-col">
-          <div>
-            <FormLabel>{field.label}</FormLabel> {field.required && "*"}
+         <div className="flex justify-between items-center">
+          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+
           </div>
           <Popover>
             <PopoverTrigger asChild>
@@ -427,18 +449,21 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                   });
                 }}
                 initialFocus
+                className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
               />
             </PopoverContent>
           </Popover>
           <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
+          
         </FormItem>
       );
     case "Date Time":
       return (
         <FormItem className="flex flex-col">
-          <div>
-            <FormLabel>{field.label}</FormLabel> {field.required && "*"}
+          <div className="flex justify-between items-center">
+          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+
           </div>
           <DatetimePicker
             {...field}
@@ -451,19 +476,24 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                 shouldDirty: true,
               });
             }}
+            className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
             format={[
               ["months", "days", "years"],
               ["hours", "minutes", "am/pm"],
             ]}
           />
           <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
+          
         </FormItem>
       );
     case "File Upload":
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel> {field.required && "*"}
+          <div className="flex justify-between items-center">
+          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+
+          </div>
           <FormControl>
             <FileUploader
               value={files}
@@ -480,7 +510,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                   <FileSvgDraw />
                 </div>
               </FileInput>
-              <FileUploaderContent>
+              <FileUploaderContent  className={form.formState.errors?.[field.name] ? "border-red-500" : ""}>
                 {files &&
                   files.length > 0 &&
                   files.map((file, i) => (
@@ -510,7 +540,11 @@ export const renderFormField = (field: FormFieldType, form: any) => {
     case "Image Upload":
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel> {field.required && "*"}
+          <div className="flex justify-between items-center">
+          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+
+          </div>
           <FormControl>
             <FileUploader
               value={images}
@@ -520,7 +554,8 @@ export const renderFormField = (field: FormFieldType, form: any) => {
             >
               <FileInput
                 id="fileInput"
-                className="outline-dashed outline-1 outline-slate-500"
+                // className=""
+                className={`${form.formState.errors?.[field.name] ? "border-red-500" : ""}outline-dashed outline-1 outline-slate-500` }
               >
                 <div className="flex items-center justify-center flex-col pt-3 pb-4 w-full ">
                   <FileSvgDraw />
@@ -544,66 +579,82 @@ export const renderFormField = (field: FormFieldType, form: any) => {
     case "Text Box":
       return (
         <FormItem>
-          <div className="flex justify-between">
-            <div>
-          <FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <div className="flex justify-between items-center">
+          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
           <FormMessage />
+
+          </div>
+
+          <FormControl className="flex justify-between">
+            <Input
+            className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
+              placeholder={field.placeholder}
+              disabled={field.disabled}
+              type={field?.type}
+            />
+
+          </FormControl>
+          <FormDescription>{field.description}</FormDescription>
+        </FormItem>
+      );
+      case "Label":
+        return (
+          <FormItem>
+            <div className="flex justify-between items-center">
+          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+
+          </div>
+            <Input className="bg-gray-100" value={field.label} readOnly/>
+            <FormDescription>{field.description}</FormDescription>
+          </FormItem>
+        );
+    case "Email":
+      return (
+        <FormItem>
+         <div className="flex justify-between items-center">
+          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+
           </div>
           <FormControl>
             <Input
               placeholder={field.placeholder}
               disabled={field.disabled}
               type={field?.type}
+              className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
             />
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
           
         </FormItem>
       );
-    case "Email":
-      return (
-        <FormItem>
-          <FormLabel>{field.label}</FormLabel> {field.required && "*"}
-          <FormControl>
-            <Input
-              placeholder={field.placeholder}
-              disabled={field.disabled}
-              type={field?.type}
-            />
-          </FormControl>
-          <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
-        </FormItem>
-      );
     case "Check box label":
       return (
         <FormItem>
           <FormControl>
+            <div className="flex justify-between">
             <div className="flex items-center space-x-2">
-              <Checkbox id="terms" /> 
+              <Checkbox id="terms" className={form.formState.errors?.[field.name] ? "border-red-500" : ""} />
               <Label htmlFor="terms">{field.label}</Label>
               <span className="text-red-500">{field.required && "*"}</span>
             </div>
+              <FormMessage />
+              </div>
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
         </FormItem>
       );
-      case "Label":
-        return (
-          <FormItem>
-            <FormLabel>{field.label}</FormLabel>
-            <Input className="bg-gray-100" value={field.placeholder} readOnly/>
-            <FormDescription>{field.description}</FormDescription>
-          </FormItem>
-        );
-    case "Radio Group":
     case "OTP":
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel> {field.required && "*"}
+          <div className="flex justify-between items-center">
+          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+
+          </div>
           <FormControl>
-            <InputOTP maxLength={6}>
+            <InputOTP maxLength={6} className={form.formState.errors?.[field.name] ? "border-red-500" : ""}>
               <InputOTPGroup>
                 <InputOTPSlot index={0} />
                 <InputOTPSlot index={1} />
@@ -618,14 +669,16 @@ export const renderFormField = (field: FormFieldType, form: any) => {
             </InputOTP>
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
+         
         </FormItem>
       );
     case "Location Select":
       return (
         <FormItem className="flex flex-col">
-          <div>
-            <FormLabel>{field.label}</FormLabel> {field.required && "*"}
+          <div className="flex justify-between items-center">
+          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+
           </div>
           <LocationSelector
             onCountryChange={(country) => {
@@ -638,13 +691,17 @@ export const renderFormField = (field: FormFieldType, form: any) => {
             }}
           />
           <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
+         
         </FormItem>
       );
     case "Multi Select":
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel>
+          <div className="flex justify-between items-center">
+          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+
+          </div>
           <FormControl>
             <MultiSelector
               values={selectedValues}
@@ -655,13 +712,13 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                   shouldDirty: true,
                 });
               }}
-              className="max-w-xs"
+              className="w-full"
             >
               <MultiSelectorTrigger>
                 <MultiSelectorInput placeholder={field.placeholder} />
               </MultiSelectorTrigger>
               <MultiSelectorContent>
-                <MultiSelectorList>
+                <MultiSelectorList className={form.formState.errors?.[field.name] ? "border-red-500" : ""}>
                   {field?.multiselect?.map((item,index) => (
                     <MultiSelectorItem key={index} value={item}>
                       {item}
@@ -672,29 +729,34 @@ export const renderFormField = (field: FormFieldType, form: any) => {
             </MultiSelector>
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
+          
         </FormItem>
       );
     case "Dropdown":
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel> {field.required && "*"}
-          <Select onValueChange={field.onChange} defaultValue={field?.options && field?.options[0]}>
+          <div className="flex justify-between items-center">
+          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+
+          </div>
+          <Select onValueChange={field.onChange} defaultValue={field?.options && field?.options[0]}
+          >
             <FormControl>
-              <SelectTrigger>
+              <SelectTrigger className={form.formState.errors?.[field.name] ? "border-red-500" : ""}>
                 <SelectValue placeholder={field.placeholder}/>
               </SelectTrigger>
             </FormControl>
             <SelectContent>
             {field.options?.map((option) => (
-            <SelectItem key={option} value={option}>
+            <SelectItem key={option} value={option} className={form.formState.errors?.[field.name] ? "border-red-500" : ""}>
               {option}
             </SelectItem>
           ))}
             </SelectContent>
           </Select>
           <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
+          
         </FormItem>
       );
     case "Slider":
@@ -705,7 +767,11 @@ export const renderFormField = (field: FormFieldType, form: any) => {
 
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel>
+          <div className="flex justify-between items-center">
+          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+
+          </div>
           <FormControl>
             <Slider
               min={min}
@@ -721,7 +787,7 @@ export const renderFormField = (field: FormFieldType, form: any) => {
             {field.description} Selected value is {value || defaultValue},
             minimun valus is {min}, maximim values is {max}, step size is {step}
           </FormDescription>
-          <FormMessage />
+          
         </FormItem>
       );
     case "Media Card":
@@ -862,10 +928,15 @@ export const renderFormField = (field: FormFieldType, form: any) => {
     case "Smart Datetime Input":
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel>
+          <div className="flex justify-between items-center">
+          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+
+          </div>
           <FormControl>
             <SmartDatetimeInput
               locale={field.locale as any}
+              className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
               hour12={field.hour12}
               value={smartDatetime}
               onValueChange={(newDate) => {
@@ -881,18 +952,23 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormDescription className="py-3">
             {field.description}
           </FormDescription>
-          <FormMessage />
+         
         </FormItem>
       );
     case "Switch":
       return (
         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
           <div className="space-y-0.5">
-            <FormLabel>{field.label}</FormLabel> {field.required && "*"}
+          <div className="flex justify-between items-center">
+          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+
+          </div>
             <FormDescription>{field.description}</FormDescription>
           </div>
           <FormControl>
             <Switch
+            className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
               checked={checked}
               onCheckedChange={() => {
                 setChecked(!checked);
@@ -929,26 +1005,35 @@ export const renderFormField = (field: FormFieldType, form: any) => {
     case "Text Area":
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel>
+          <div className="flex justify-between">
+            <div>
+          <FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+          </div>
           <FormControl>
             <Textarea
               placeholder={field.placeholder}
-              className="resize-none"
+              className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
               // {...field}
             />
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
+         
         </FormItem>
       );
     case "Password":
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel>
+          <div className="flex justify-between items-center">
+          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+
+          </div>
           <FormControl>
             <PasswordInput
               value={password}
               placeholder="password"
+              className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
               onChange={(e: ChangeEvent<HTMLInputElement>) => {
                 setPassword(e.target.value);
                 form.setValue(field.name, e.target.value, {
@@ -959,13 +1044,17 @@ export const renderFormField = (field: FormFieldType, form: any) => {
             />
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
+        
         </FormItem>
       );
     case "Number":
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel>
+          <div className="flex justify-between">
+            <div>
+          <FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+          </div>
           <FormControl>
             <PhoneInput
               defaultCountry="IN"
@@ -975,16 +1064,21 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                   shouldDirty: true,
                 });
               }}
+              className={form.formState.errors?.[field.name] ? "border-red-500 border rounded" : ""}
             />
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
+          {/* <FormMessage /> */}
         </FormItem>
       );
     case "Mobile":
       return (
         <FormItem>
-          <FormLabel>{field.label}</FormLabel>
+          <div className="flex justify-between items-center">
+          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <FormMessage />
+
+          </div>
           <FormControl>
             <PhoneInput
               defaultCountry="IN"
@@ -994,10 +1088,10 @@ export const renderFormField = (field: FormFieldType, form: any) => {
                   shouldDirty: true,
                 });
               }}
+              className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
             />
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
-          <FormMessage />
         </FormItem>
       );
     default:

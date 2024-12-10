@@ -18,11 +18,11 @@ type Message = {
 
 export function ChatForm({ formFields }: any) {
   const [messages, setMessages] = React.useState<Message[]>([
-    { 
-      id: uuidv4(), 
-      role: "assistant", 
-      content: "Welcome! Let's go through the form together. We'll start with the first question:" 
-    },
+    // { 
+    //   id: uuidv4(), 
+    //   role: "assistant", 
+    //   // content: "Welcome! Let's go through the form together. We'll start with the first question:" 
+    // },
   ]);
   
   const [input, setInput] = React.useState<any>()
@@ -49,7 +49,9 @@ export function ChatForm({ formFields }: any) {
       const firstField = formFields[0];
       addMessage("assistant",
         <div className="flex flex-col"> 
-        <span>{firstField.label}</span>
+        <div className="flex gap-2 items-center">
+        <span>{firstField.label}</span> {firstField.required && <span className="text-red-500">*</span>}
+        </div>
         <span className="text-sm text-gray-400">{firstField.description}</span>
         </div>);
       // Add the first field's input component
@@ -103,9 +105,9 @@ export function ChatForm({ formFields }: any) {
         addMessage(
           "assistant",
          <div>
-           <span>Great! Now, let`&apos;`s move on to the next question.</span>
+           {/* <span>Great! Now, let`&apos;`s move on to the next question.</span> */}
            <br/>
-           <span className="label">{formFields[nextStep].label}</span>
+           <span className="label">{formFields[nextStep].label}</span> {formFields[nextStep].required && <span className="text-red-500">*</span>}
            <br/>
            <span className="text-sm text-gray-400">{formFields[nextStep].description}</span>
          </div>

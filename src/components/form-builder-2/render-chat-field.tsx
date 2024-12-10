@@ -62,12 +62,6 @@ const RenderInputField = ({
   const [multiSelectedItems, setMultiSelectedItems] = useState<string[]>([]);
 
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setInput(e.target.value);
-  };
-
   const handleIframeUrlChange = (url: string) => {
     setIframeUrl(url);
     setInput(url);
