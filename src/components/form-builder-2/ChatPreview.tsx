@@ -103,7 +103,7 @@ export function ChatForm({ formFields }: any) {
         addMessage(
           "assistant",
          <div>
-           <span>Great! Now, let's move on to the next question.</span>
+           <span>Great! Now, let`&apos;`s move on to the next question.</span>
            <br/>
            <span className="label">{formFields[nextStep].label}</span>
            <br/>
