@@ -45,6 +45,7 @@ const RenderInputField = ({
   formData,
   setFormData,
   setSelectedImage,
+  apiFieldData
 }: {
   currentField: any;
   input: string;
@@ -52,6 +53,7 @@ const RenderInputField = ({
   formData: Record<string, any>;
   setFormData: (formData: Record<string, any>) => void;
   setSelectedImage: any;
+  apiFieldData: any
 }) => {
 
   const [selectedValues, setSelectedValues] = useState<any>([]);
@@ -260,15 +262,23 @@ const RenderInputField = ({
         <RadioGroup
         value={formData.preference}
         onValueChange={(value) => setInput(value)}
-        className="flex w-full items-center"
+        className="flex w-full flex-wrap items-center"
       >
-        <div className="flex items-center gap-2.5">
-          {currentField.radiogroup?.map((item: any,index: any) => (
+        <div className="flex flex-wrap items-center gap-2.5">
+          {apiFieldData?.length > 0 ? 
+          apiFieldData?.map((item: any,index: any) => (
             <div key={index} className="flex border rounded-full p-2.5  items-center gap-2">
               <RadioGroupItem value={item} id={index}/>
               <Label htmlFor={index}>{item}</Label>
             </div>
-          ))}
+          )):
+          currentField.radiogroup?.map((item: any,index: any) => (
+            <div key={index} className="flex border rounded-full p-2.5  items-center gap-2">
+              <RadioGroupItem value={item} id={index}/>
+              <Label htmlFor={index}>{item}</Label>
+            </div>
+          ))
+        }
           </div>
         </RadioGroup>
       );

@@ -24,13 +24,15 @@ import {
 import {  X } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { toast } from "../ui/use-toast";
+import { ADD_CONNECTIONS, NEXT_PUBLIC_API_KEY } from "@/constants/envConfig";
 
 type EditFieldDialogProps = {
   isOpen: boolean;
   onClose: () => void;
   field: FormFieldType | null;
   onSave: (updatedField: FormFieldType) => void;
-  existingField: string[]
+  existingField: string[];
+  setApiFieldData: any
 };
 
 export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
@@ -38,7 +40,8 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
   onClose,
   field,
   onSave,
-  existingField
+  existingField,
+  setApiFieldData
 }) => {
   const [editedField, setEditedField] = useState<FormFieldType | null>(null);
   const [fieldType, setFieldType] = useState<string>();
@@ -47,7 +50,9 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
   const [multiSelect, setMultiSelect] = useState("");
   const [radioGroup, setRadioGroup] = useState("");
   const [error, setError] = useState(false);
-
+  const [useAPI, setUseAPI] = useState(false);
+  const [apiURL, setAPIURL] = useState("");
+  const [apiField, setApiField] = useState("");
 
 
 
@@ -55,7 +60,88 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
     setEditedField(field);
   }, [field]);
 
-  const handleSave = () => {
+  
+
+  const fetchValidApi = async() => {
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        'Authorization': `Bearer ${NEXT_PUBLIC_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    }
+    try{
+    const response = await fetch(ADD_CONNECTIONS,requestOptions)
+    if(!response.ok){
+      toast({description: "Failed to fetch data", variant: "destructive"})
+    }
+
+    const result = await response.json()
+    const validApis = result.filter((item: any) => item?.test_status === "passed");
+    return validApis;
+  }catch(error){
+    toast({ description: "Error fetching valid APIs", variant: "destructive" });
+    return [];
+  }
+
+  }
+
+  const handleSave = async() => {
+    if(useAPI){
+      setRadioGroup("")
+      
+      
+    const validApis = await fetchValidApi();
+    
+
+    const isValid = validApis.filter((item:any) => item.api_url === apiURL)
+   
+
+    if(isValid.length === 0){
+      toast({description: "Invalid API URL", variant: "destructive"})
+    }
+
+    if(!isValid || !apiURL || !apiField){
+      toast({description: "Something went wrong", variant: "destructive"})
+    }
+
+    if(isValid && isValid.length > 0 && apiURL && apiField){
+      const {key, secret} = isValid && isValid[0];
+
+      try{
+        const requestOptions = {
+          method: "GET",
+          headers: {
+            [key]: secret,
+            'Content-Type': 'application/json'
+          }
+        }
+        const response = await fetch(apiURL, requestOptions)
+        if(!response.ok){
+          toast({description: "Failed to fetch data", variant: "destructive"})
+        }
+        const data = await response.json()
+        const firstNameValues = data.map((item: any) => item[apiField]);
+        setApiFieldData(firstNameValues)
+      
+        if(firstNameValues) {
+          toast({
+            description: "Options added from API successfully",
+            variant: "default",
+          });
+        } else {
+          toast({
+            description: "No valid `firstName` values found",
+            variant: "destructive",
+          });
+        }
+      }
+      catch(error){
+        toast({ description: "Failed to fetch data", variant: "destructive" })
+
+      }
+    }
+  } 
     if (editedField) {
       const isDuplicate =
       existingField.includes(editedField.name) &&
@@ -67,6 +153,24 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
       if (error) error.textContent = "Name already exists";
       setError(true);
       return;
+    }
+    if(useAPI){
+      if(useAPI){
+        if(!apiURL){
+          toast({description: "API URL is required", variant: "destructive"})
+          let error:any = document.getElementById("api_url_error_msg");
+          error.textContent = "URL cannot be empty";
+          setError(true)
+          return
+        }
+        if(!apiField){
+          toast({description: "API URL Field required", variant: "destructive"})
+          let error:any = document.getElementById("api_field_error_msg");
+          error.textContent = "Api cannot be empty";
+          setError(true)
+          return
+        }
+      }
     }
       if(editedField.name === ""){
         toast({description: "Name cannot be empty", variant: "destructive"})
@@ -183,6 +287,35 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                 setEditedField({ ...editedField, className: e.target.value })
               }
             />
+          </div>
+          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 border p-3 rounded">
+              <Checkbox
+                checked={editedField.disabled}
+                onCheckedChange={(checked) =>
+                  setEditedField({
+                    ...editedField,
+                    disabled: checked as boolean,
+                    required: checked ? false : editedField.required,
+                  })
+                }
+              />
+              <Label>Hide</Label>
+            </div>
+            <div className="flex items-center gap-1 border p-3 rounded">
+              <Checkbox
+                checked={editedField.required}
+                onCheckedChange={(checked) =>
+                  setEditedField({
+                    ...editedField,
+                    required: checked as boolean,
+                    disabled: checked ? false : editedField.disabled,
+                  })
+                }
+              />
+              <Label>Required</Label>
+            </div>
+            
           </div>
           <If
             condition={field?.variant === "Input"}
@@ -446,10 +579,12 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                   <div className="flex gap-2">
                     <Input
                       value={radioGroup}
+                      disabled={useAPI}
                       onChange={(e) => setRadioGroup(e.target.value)}
                       placeholder="Add new option"
                     />
                     <Button
+                    disabled={useAPI}
                       onClick={() => {
                         if (radioGroup && editedField) {
                           setEditedField({
@@ -531,7 +666,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
               </div>
             )}
           />
-          <div className="flex items-center gap-3">
+          {/* <div className="flex items-center gap-3">
             <div className="flex items-center gap-1 border p-3 rounded">
               <Checkbox
                 checked={editedField.required}
@@ -556,7 +691,69 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
               />
               <Label>Disabled</Label>
             </div>
-          </div>
+          </div> */}
+          <If 
+            condition={[
+              "Combobox",
+              "Multi Select",
+              "Image Upload",
+              "File Upload",
+              "Location Select",
+              "Radio Group",
+              "Text Box",
+              "Number",
+              "Mobile",
+              "OTP",
+              "Email",
+              "Password",
+              "Date",
+              "Date Time",
+              "Dropdown",
+              "Check Box",
+              "Text Area",
+              "Radio Group"
+            ].includes(field?.variant ?? "")}
+            render={() => (
+              <div>
+          
+            <div className="flex w-fit items-center gap-1 border p-3 rounded">
+              <Checkbox
+                checked={useAPI}
+                onCheckedChange={() =>
+                  setUseAPI(!useAPI)
+                }
+              />
+              <Label>Use API</Label>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="apiURL">API URL</Label>
+              <Input
+                id="apiURL"
+                type="text"
+                value={apiURL}
+                onChange={(e) => setAPIURL(e.target.value)}
+                placeholder="Enter API URL"
+                
+                disabled={!useAPI}
+              />
+            </div>
+            <span className="text-red-500 text-sm" id="api_url_error_msg"></span>
+            <div className="space-y-2">
+              <Label htmlFor="apiURL">API Field</Label>
+              <Input
+                id="apiURL"
+                type="text"
+                value={apiField}
+                onChange={(e) => setApiField(e.target.value)}
+                placeholder="Enter API Field"
+                
+                disabled={!useAPI}
+              />
+            </div>
+            <span className="text-red-500 text-sm" id="api_field_error_msg"></span>
+            </div>
+            )}
+          />
         </div>
         </TabsContent>
         <TabsContent value="cards">

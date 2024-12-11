@@ -134,8 +134,7 @@ const FileSvgDraw = () => {
   );
 };
 
-export const renderFormField = (field: FormFieldType, form: any) => {
-  console.log('field.....',field)
+export const renderFormField = (field: FormFieldType, form: any,apiFieldData: any) => {
   const [checked, setChecked] = useState<boolean>(field.checked);
   const [value, setValue] = useState<any>(field.value);
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
@@ -283,12 +282,19 @@ export const renderFormField = (field: FormFieldType, form: any) => {
           <FormMessage />
           <FormControl>
             <RadioGroup defaultValue="comfortable">
-              {field?.radiogroup?.map((item:any,index: any) => (
+              {apiFieldData?.length > 0 ? apiFieldData?.map((item:any,index: any) => (
                 <div key={index} className="flex items-center space-x-2">
                   <RadioGroupItem value={item} id={index} />
                   <Label htmlFor={index}>{item}</Label>
                 </div>
-              ))}
+              )):
+              field?.radiogroup?.map((item:any,index: any) => (
+                <div key={index} className="flex items-center space-x-2">
+                  <RadioGroupItem value={item} id={index} />
+                  <Label htmlFor={index}>{item}</Label>
+                </div>
+              ))
+            }
               {/* <div className="flex items-center space-x-2">
                 <RadioGroupItem value="default" id="r1" />
                 <Label htmlFor="r1">{field.name}</Label>

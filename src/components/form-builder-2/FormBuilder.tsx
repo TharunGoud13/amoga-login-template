@@ -64,6 +64,7 @@ export default function FormBuilder() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [activeTab, setActiveTab] = React.useState("Maker");
   const tabs = ["Maker", "Form", "Chat", "JSON"];
+  const [apiFieldData, setApiFieldData] = React.useState<any>([])
 
   const currentPath = path.includes("edit");
   const currentId = path.split("/").at(-1);
@@ -104,6 +105,7 @@ export default function FormBuilder() {
       options: [],
       combobox: [],
       multiselect: [],
+      radiogroup: [],
       validation_message: '',
       variant_code: newFieldName
     };
@@ -424,14 +426,14 @@ export default function FormBuilder() {
               </TabsContent>
               <TabsContent value="form">
                 <div className=" w-full h-full">
-                  <FormPreview formFields={formFields} />
+                  <FormPreview formFields={formFields} apiFieldData={apiFieldData}/>
                 </div>
               </TabsContent>
 
               <TabsContent value="chat">
                 <div className=" w-full h-full">
                   {formFields?.length > 0 ? (
-                    <ChatForm formFields={formFields} />
+                    <ChatForm formFields={formFields} apiFieldData={apiFieldData} />
                   ) : (
                     <div className="h-[50vh] flex justify-center items-center">
                       <p>No form element selected yet.</p>
@@ -466,6 +468,7 @@ export default function FormBuilder() {
             field={selectedField}
             onSave={handleSaveField}
             existingField={formFields.map((field:any) => field?.name)}
+            setApiFieldData={setApiFieldData}
           />
         </TabsContent>
         <TabsContent value="list">
@@ -572,14 +575,14 @@ export default function FormBuilder() {
               </TabsContent>
               <TabsContent value="form">
                 <div className=" w-full h-full">
-                  <FormPreview formFields={formFields} />
+                  <FormPreview formFields={formFields} apiFieldData={apiFieldData} />
                 </div>
               </TabsContent>
 
               <TabsContent value="chat">
                 <div className=" w-full h-full">
                   {formFields?.length > 0 ? (
-                    <ChatForm formFields={formFields} />
+                    <ChatForm formFields={formFields} apiFieldData={apiFieldData}/>
                   ) : (
                     <div className="h-[50vh] flex justify-center items-center">
                       <p>No form element selected yet.</p>
@@ -613,6 +616,7 @@ export default function FormBuilder() {
             field={selectedField}
             onSave={handleSaveField}
             existingField={formFields.map((field:any) => field?.name)}
+            setApiFieldData={setApiFieldData}
           />
         </TabsContent>
         <FormSettingsModal

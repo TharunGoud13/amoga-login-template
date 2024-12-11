@@ -15,7 +15,7 @@ type Message = {
   componentType?: string
 }
 
-export function ChatForm({ formFields }: any) {
+export function ChatForm({ formFields,apiFieldData }: any) {
   const [messages, setMessages] = React.useState<Message[]>([
     // { 
     //   id: uuidv4(), 
@@ -218,6 +218,7 @@ export function ChatForm({ formFields }: any) {
                   formData={formData}
                   setFormData={setFormData}
                   setSelectedImage={setSelectedImage}
+                  apiFieldData={apiFieldData}
                 />
                 {validationError && (
                   <p className="text-red-500 text-sm mt-1">{validationError}</p>

@@ -30,9 +30,10 @@ export type FormFieldOrGroup = FormFieldType | FormFieldType[];
 
 export type FormPreviewProps = {
   formFields: FormFieldOrGroup[];
+  apiFieldData?: any
 };
 
-const renderFormFields = (fields: FormFieldOrGroup[], form: any) => {
+const renderFormFields = (fields: FormFieldOrGroup[], form: any, apiFieldData?: any) => {
   return fields.map((fieldOrGroup, index) => {
     if (Array.isArray(fieldOrGroup)) {
       // Calculate column span based on number of fields in the group
@@ -60,7 +61,7 @@ const renderFormFields = (fields: FormFieldOrGroup[], form: any) => {
                 >
                   <FormControl>
                     {React.cloneElement(
-                      renderFormField(field, form) as React.ReactElement,
+                      renderFormField(field, form, apiFieldData) as React.ReactElement,
                       {
                         ...formField,
                       }
@@ -82,7 +83,7 @@ const renderFormFields = (fields: FormFieldOrGroup[], form: any) => {
             <FormItem className="col-span-12">
               <FormControl>
                 {React.cloneElement(
-                  renderFormField(fieldOrGroup, form) as React.ReactElement,
+                  renderFormField(fieldOrGroup, form, apiFieldData) as React.ReactElement,
                   {
                     ...formField,
                   }
@@ -98,6 +99,7 @@ const renderFormFields = (fields: FormFieldOrGroup[], form: any) => {
 
 export const FormPreview: React.FC<FormPreviewProps> = ({
   formFields,
+  apiFieldData
   
 }) => {
   const formSchema = generateZodSchema(formFields);
@@ -133,7 +135,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
               onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4 py-5 w-full md:w-[90%] mx-auto"
             >
-              {renderFormFields(formFields, form)}
+              {renderFormFields(formFields, form, apiFieldData)}
               {/* <Button type="submit">Submit</Button> */}
             </form>
           </Form>
