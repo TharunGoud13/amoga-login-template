@@ -43,9 +43,17 @@ export function ChatForm({ formFields,apiFieldData }: any) {
     setTimeout(scrollToBottom, 50)
   }, [])
 
+  // Find the first non-disabled field
+  const findFirstActiveField = () => {
+    return formFields.findIndex((field: { disabled: any }) => !field.disabled);
+  }
+
   React.useEffect(() => {
-    if (formFields.length > 0) {
-      const firstField = formFields[0];
+    // Find the first non-disabled field
+    const firstActiveFieldIndex = findFirstActiveField();
+    
+    if (firstActiveFieldIndex !== -1) {
+      const firstField = formFields[firstActiveFieldIndex];
       addMessage("assistant",
         <div className="flex flex-col"> 
         <div className="flex gap-2 items-center">
@@ -53,6 +61,9 @@ export function ChatForm({ formFields,apiFieldData }: any) {
         </div>
         <span className="text-sm text-gray-400">{firstField.description}</span>
         </div>);
+      
+      // Update current step to the first active field
+      setCurrentStep(firstActiveFieldIndex);
     }
   }, []);
 
@@ -103,6 +114,15 @@ export function ChatForm({ formFields,apiFieldData }: any) {
     return null;
   }
 
+  const findNextActiveField = (currentIndex: number) => {
+    for (let i = currentIndex + 1; i < formFields.length; i++) {
+      if (!formFields[i].disabled) {
+        return i;
+      }
+    }
+    return -1; // No more active fields
+  }
+
   const handleSubmit = () => {
     const currentField = formFields[currentStep];
 
@@ -130,11 +150,11 @@ export function ChatForm({ formFields,apiFieldData }: any) {
 
       setInput("");
 
-      // Move to next step
-      const nextStep = currentStep + 1;
+      // Find the next active field
+      const nextStep = findNextActiveField(currentStep);
       setCurrentStep(nextStep);
 
-      if (nextStep < formFields.length) {
+      if (nextStep !== -1) {
         const nextField = formFields[nextStep];
         
         // Add next field's prompt
@@ -154,18 +174,6 @@ export function ChatForm({ formFields,apiFieldData }: any) {
           "assistant",
           "Thank you for completing the form. Here's a summary of your inputs:"
         );
-        
-        // Optional: Add a summary of form data
-        // addMessage(
-        //   "assistant", 
-        //   <div className="bg-gray-100 p-4 rounded">
-        //     {Object.entries(formData).map(([key, value]) => (
-        //       <div key={key} className="mb-2">
-        //         <strong>{key}:</strong> {value}
-        //       </div>
-        //     ))}
-        //   </div>
-        // );
       }
     }
   };
@@ -203,7 +211,7 @@ export function ChatForm({ formFields,apiFieldData }: any) {
         ))}
       </CardContent>
 
-      {currentStep < formFields.length && (
+      {currentStep !== -1 && (
         <CardFooter className="bg-background px-4 py-3">
           <div className="flex flex-col w-full">
             <div className="flex items-center space-x-2 w-full">

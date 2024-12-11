@@ -197,7 +197,29 @@ export default function FormBuilder() {
     headers.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
     const date = new Date();
     setIsLoading(true);
-    const nameFields = formFields && formFields.map((field: any) => field.name);
+
+    // Filter out disabled fields from formFields
+    const activeFormFields = formFields.filter((field: any) => {
+      // If field is an array (grouped fields), filter out disabled fields within the group
+      if (Array.isArray(field)) {
+        return field.some((subField: any) => !subField.disabled);
+      }
+      // For individual fields, check if not disabled
+      return !field.disabled;
+    }).map((field: any) => {
+      // If it's a grouped field, filter out disabled subfields
+      if (Array.isArray(field)) {
+        return field.filter((subField: any) => !subField.disabled);
+      }
+      return field;
+    });
+
+    // Get name fields from active form fields
+    const nameFields = activeFormFields && activeFormFields.flatMap((field: any) => 
+      Array.isArray(field) 
+        ? field.map((subField: any) => subField.name)
+        : field.name
+    );
 
     if(formInput === "") {
       toast({ description: "Form name cannot be empty", variant: "destructive" });
@@ -211,7 +233,7 @@ export default function FormBuilder() {
       created_user_name: session?.user?.name,
       created_date: formatDateToCustomFormat(date),
       form_name: formInput,
-      form_json: formFields,
+      form_json: activeFormFields,
       version_no: 1,
       share_url: uuidv4(),
       custom_one: nameFields,
@@ -223,7 +245,7 @@ export default function FormBuilder() {
       if (currentPath && editModeData) {
         const updatePayload = {
           ...payload,
-          form_json: formFields,
+          form_json: activeFormFields, // Use filtered form fields
           form_name: editFormInput,
           version_no: editModeData?.version_no + 1,
         };

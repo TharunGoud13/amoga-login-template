@@ -4,21 +4,12 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-// import { toast } from '../ui/use-toast'
-// import { renderFormField } from '@/screens/render-form-field'
 import { renderFormField } from "./render-form-field";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
 import If from "@/components/ui/if";
 import { FormFieldType } from "@/types";
 
-import { Files } from "lucide-react";
-// import {
-//   generateZodSchema,
-//   generateFormCode,
-//   generateDefaultValues,
-// } from '@/screens/generate-code-parts'
 import {
   generateZodSchema,
   generateFormCode,
@@ -34,9 +25,19 @@ export type FormPreviewProps = {
 };
 
 const renderFormFields = (fields: FormFieldOrGroup[], form: any, apiFieldData?: any) => {
-  return fields.map((fieldOrGroup, index) => {
+  // Filter out completely disabled fields
+  const activeFields = fields.filter(fieldOrGroup => 
+    Array.isArray(fieldOrGroup) 
+      ? fieldOrGroup.some(field => !field.disabled)
+      : !fieldOrGroup.disabled
+  );
+
+  return activeFields.map((fieldOrGroup, index) => {
     if (Array.isArray(fieldOrGroup)) {
-      // Calculate column span based on number of fields in the group
+      // Filter out disabled fields within the group
+      const activeGroupFields = fieldOrGroup.filter(field => !field.disabled);
+
+      // Calculate column span based on number of active fields in the group
       const getColSpan = (totalFields: number) => {
         switch (totalFields) {
           case 2:
@@ -50,25 +51,31 @@ const renderFormFields = (fields: FormFieldOrGroup[], form: any, apiFieldData?: 
 
       return (
         <div key={index} className="grid grid-cols-12 gap-4">
-          {fieldOrGroup.map((field, subIndex) => (
+          {activeGroupFields.map((field, subIndex) => (
             <FormField
               key={field.name}
               control={form.control}
               name={field.name}
-              render={({ field: formField }) => (
-                <FormItem
-                  className={`col-span-${getColSpan(fieldOrGroup.length)}`}
-                >
-                  <FormControl>
-                    {React.cloneElement(
-                      renderFormField(field, form, apiFieldData) as React.ReactElement,
-                      {
-                        ...formField,
-                      }
-                    )}
-                  </FormControl>
-                </FormItem>
-              )}
+              render={({ field: formField }) => {
+                // Clone the field and conditionally apply disabled prop
+                const formFieldElement = React.cloneElement(
+                  renderFormField(field, form, apiFieldData) as React.ReactElement,
+                  {
+                    ...formField,
+                    disabled: field.disabled || formField.disabled
+                  }
+                );
+
+                return (
+                  <FormItem
+                    className={`col-span-${getColSpan(activeGroupFields.length)}`}
+                  >
+                    <FormControl>
+                      {formFieldElement}
+                    </FormControl>
+                  </FormItem>
+                );
+              }}
             />
           ))}
         </div>
@@ -76,21 +83,27 @@ const renderFormFields = (fields: FormFieldOrGroup[], form: any, apiFieldData?: 
     } else {
       return (
         <FormField
-          key={index}
+          key={fieldOrGroup.name}
           control={form.control}
           name={fieldOrGroup.name}
-          render={({ field: formField }) => (
-            <FormItem className="col-span-12">
-              <FormControl>
-                {React.cloneElement(
-                  renderFormField(fieldOrGroup, form, apiFieldData) as React.ReactElement,
-                  {
-                    ...formField,
-                  }
-                )}
-              </FormControl>
-            </FormItem>
-          )}
+          render={({ field: formField }) => {
+            // Clone the field and conditionally apply disabled prop
+            const formFieldElement = React.cloneElement(
+              renderFormField(fieldOrGroup, form, apiFieldData) as React.ReactElement,
+              {
+                ...formField,
+                disabled: fieldOrGroup.disabled || formField.disabled
+              }
+            );
+
+            return (
+              <FormItem className="col-span-12">
+                <FormControl>
+                  {formFieldElement}
+                </FormControl>
+              </FormItem>
+            );
+          }}
         />
       );
     }
@@ -100,43 +113,32 @@ const renderFormFields = (fields: FormFieldOrGroup[], form: any, apiFieldData?: 
 export const FormPreview: React.FC<FormPreviewProps> = ({
   formFields,
   apiFieldData
-  
 }) => {
-  const formSchema = generateZodSchema(formFields);
+  // Filter out all disabled fields when generating schema and default values
+  const activeFormFields = formFields.flatMap(field => 
+    Array.isArray(field) 
+      ? field.filter(f => !f.disabled) 
+      : (!field.disabled ? field : [])
+  );
 
-  const defaultVals = generateDefaultValues(formFields);
+  const formSchema = generateZodSchema(activeFormFields);
+  const defaultVals = generateDefaultValues(activeFormFields);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: defaultVals,
   });
 
-  function onSubmit(data: any) {
-    try {
-      toast(
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      );
-    } catch (error) {
-      console.error("Form submission error", error);
-      toast.error("Failed to submit the form. Please try again.");
-    }
-  }
-
-
   return (
-    <div className="w-full  h-full rounded-xl flex justify-center">
+    <div className="w-full h-full rounded-xl flex justify-center">
       <If
-        condition={formFields.length > 0}
+        condition={activeFormFields.length > 0}
         render={() => (
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit(onSubmit)}
               className="space-y-4 py-5 w-full md:w-[90%] mx-auto"
             >
               {renderFormFields(formFields, form, apiFieldData)}
-              {/* <Button type="submit">Submit</Button> */}
             </form>
           </Form>
         )}
@@ -149,3 +151,5 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
     </div>
   );
 };
+
+export default FormPreview;
