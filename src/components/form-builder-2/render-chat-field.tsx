@@ -29,7 +29,7 @@ import {
 } from "../ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { cn } from "@/lib/utils";
-import { Check, ChevronsUpDown, ExternalLink } from "lucide-react";
+import { Check, ChevronsUpDown, ExternalLink, ImageIcon } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
 import { MultiSelector, MultiSelectorContent, MultiSelectorInput, MultiSelectorItem, MultiSelectorList, MultiSelectorTrigger } from "../ui/multi-select";
 import { MediaCard } from "../ui/media-card";
@@ -45,6 +45,7 @@ const RenderInputField = ({
   formData,
   setFormData,
   setSelectedImage,
+  setSelectedFile,
   apiFieldData
 }: {
   currentField: any;
@@ -53,6 +54,7 @@ const RenderInputField = ({
   formData: Record<string, any>;
   setFormData: (formData: Record<string, any>) => void;
   setSelectedImage: any;
+  setSelectedFile: any;
   apiFieldData: any
 }) => {
 
@@ -80,8 +82,7 @@ const RenderInputField = ({
   },[currentField.variant])
 
 
-  console.log("currentField-----", currentField);
-  console.log("input-----", input);
+  
   switch (currentField.variant) {
     case "Text Area":
       return (
@@ -322,16 +323,16 @@ const RenderInputField = ({
         <div className="space-y-4 w-full  p-4 rounded-lg">
           <Input
             type="file"
-            accept="image/*"
+            accept=".jpg,.jpeg,.png,.gif"
             onChange={(e) => {
               const file: any = e.target.files?.[0];
               if (file) {
-                console.log("file----", file);
+                
                 const reader = new FileReader();
                 setInput(file.name);
-
+                setSelectedImage(file);
                 reader.onloadend = () => {
-                  setSelectedImage(file.name);
+                  // No need to set the selected image here, we'll handle it in the `handleSubmit` function
                 };
                 reader.readAsDataURL(file);
               }
@@ -348,12 +349,11 @@ const RenderInputField = ({
             onChange={(e) => {
               const file: any = e.target.files?.[0];
               if (file) {
-                console.log("file----", file);
                 const reader = new FileReader();
                 setInput(file.name);
 
+                setSelectedFile(file);
                 reader.onloadend = () => {
-                  setSelectedImage(file.name);
                 };
                 reader.readAsDataURL(file);
               }

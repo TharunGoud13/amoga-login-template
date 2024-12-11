@@ -15,7 +15,8 @@ import {
   generateDefaultValues,
   generateZodSchema,
 } from "@/components/form-builder/generate-code-parts";
-import { renderFormField } from "@/components/form-builder/render-form-field";
+// import { renderFormField } from "@/components/form-builder/render-form-field";
+import { renderFormField } from "@/components/form-builder-2/render-form-field";
 import { z } from "zod";
 import { useSession } from "next-auth/react";
 import { trackPageView } from "@/utils/tracking";
@@ -23,6 +24,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ChatPreview from "@/components/form-builder-2/ChatPreview";
 
 const renderFormFields = (fields: any, form: any) => {
+  const apiFieldData = ""
   return fields.map((fieldOrGroup: any, index: any) => {
     if (Array.isArray(fieldOrGroup)) {
       const getColSpan = (totalFields: number) => {
@@ -49,7 +51,7 @@ const renderFormFields = (fields: any, form: any) => {
                 >
                   <FormControl>
                     {React.cloneElement(
-                      renderFormField(field, form) as React.ReactElement,
+                      renderFormField(field, form,apiFieldData) as React.ReactElement,
                       {
                         ...formField,
                       }
@@ -71,7 +73,7 @@ const renderFormFields = (fields: any, form: any) => {
             <FormItem className="col-span-12">
               <FormControl>
                 {React.cloneElement(
-                  renderFormField(fieldOrGroup, form) as React.ReactElement,
+                  renderFormField(fieldOrGroup, form,apiFieldData) as React.ReactElement,
                   {
                     ...formField,
                   }

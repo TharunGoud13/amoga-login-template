@@ -62,7 +62,14 @@ import {
   Check,
   ChevronsUpDown,
   ExternalLink,
+  File,
+  FileText,
+  ImageIcon,
   Paperclip,
+  Upload,
+  UploadIcon,
+  X,
+  XIcon,
 } from "lucide-react";
 // import { TagsInput } from '@/components/ui/tags-input'
 import { TagsInput } from "../ui/tags-input";
@@ -92,6 +99,8 @@ import { MediaCard } from "../ui/media-card";
 import { usePathname } from "next/navigation";
 import MediaSocialPage from "../ui/media-social-page";
 import BarChartPage from "../ui/bar-chart-page";
+import { Card, CardContent } from "../ui/card";
+import Image from "next/image";
 
 const languages = [
   { label: "English", value: "en" },
@@ -134,13 +143,25 @@ const FileSvgDraw = () => {
   );
 };
 
+const ALLOWED_FILES_TYPES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/csv'
+];
+
+const MAX_FILES_SIZE = 5 * 1024 * 1024;
+
+
 export const renderFormField = (field: FormFieldType, form: any,apiFieldData: any) => {
   const [checked, setChecked] = useState<boolean>(field.checked);
   const [value, setValue] = useState<any>(field.value);
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
   const [tagsValue, setTagsValue] = useState<string[]>([]);
-  const [files, setFiles] = useState<File[] | null>(null);
-  const [images, setImages] = useState<File[] | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [images, setImages] = useState<File[]>([]);
   const [date, setDate] = useState<Date>();
   const [datetime, setDatetime] = useState<Date>();
   const [smartDatetime, setSmartDatetime] = useState<Date | null>();
@@ -157,6 +178,13 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const [imageError, setError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif']
+  const MAX_FILE_SIZE = 5 * 1024 * 1024
+
+
 
   const dropZoneConfig = {
     maxFiles: 5,
@@ -174,44 +202,51 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
     setValue(url);
   };
 
-  const handleFileChange = async (newFiles: File[] | any) => {
-    // Clear previous states
-    setUploadError(null);
-    setUploadedFileUrl(null);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      
+      // Validate file types and size
+      const validFiles = newFiles.filter(file => 
+        ALLOWED_FILES_TYPES.includes(file.type) && file.size <= MAX_FILES_SIZE
+      );
 
-    if (!currentPath) {
-      setUploadError("File upload is disabled in the current path.");
-      return;
-    }
+      if (validFiles.length !== newFiles.length) {
+        setUploadError('Please ensure all files are in PDF, DOC, DOCX, XLS, XLSX, or CSV format and under 5MB.');
+        return;
+      }
 
-    setUploading(true);
-    setFiles(newFiles);
+      setUploadError(null);
+      setUploading(true);
+      setFiles(validFiles);
 
-    const formData = new FormData();
-    newFiles.forEach((file: any) => {
-      formData.append("file", file);
-    });
-
-    try {
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
+      const formData = new FormData();
+      validFiles.forEach((file) => {
+        formData.append("file", file);
       });
 
-      if (!response.ok) {
-        throw new Error("Upload failed");
-      }
+      try {
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
 
-      const data = await response.json();
-      setUploadedFileUrl(data.url);
-      if (data.url) {
-        localStorage.setItem("uploadedFileUrl", data.url);
+        if (!response.ok) {
+          throw new Error("Upload failed");
+        }
+
+        const data = await response.json();
+        setUploadedFileUrl(data.url);
+        if (data.url) {
+          localStorage.setItem("uploadedFileUrl", data.url);
+        }
+        setValue(validFiles);
+      } catch (error) {
+        console.error("Upload error:", error);
+        setUploadError("Failed to upload file. Please try again.");
+      } finally {
+        setUploading(false);
       }
-    } catch (error) {
-      console.error("Upload error:", error);
-      setUploadError("Failed to upload file. Please try again.");
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -221,16 +256,42 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
     }
   };
 
-  const handleImageChange = (newImages: any) => {
-    const validImageTypes = ["image/jpeg", "image/png", "image/gif"];
-    const filteredImages = newImages.filter((image: any) =>
-      validImageTypes.includes(image.type)
-    );
-
-    console.log("Filtered Images:", filteredImages);
-    setImages(filteredImages);
-    setValue(filteredImages);
+  const removeFile = () => {
+    setFiles([]);
+    setUploadedFileUrl(null);
+    setValue([]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
+
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newImages = Array.from(e.target.files)
+      console.log("newImages----",newImages)
+      const validImages = newImages.filter(file => 
+        ALLOWED_FILE_TYPES.includes(file.type) && file.size <= MAX_FILE_SIZE
+      )
+
+      if (validImages.length !== newImages.length) {
+        setError('Some files were not added. Please ensure all files are images (JPG, PNG, or GIF) and under 5MB.')
+      } else {
+        setError(null)
+      }
+
+      setImages((prevImages: any) => [...prevImages, ...validImages])
+      setValue([...images, ...validImages])
+
+      const newPreviews = validImages.map(file => URL.createObjectURL(file))
+      setImagePreviews(prevPreviews => [...prevPreviews, ...newPreviews])
+    }
+  }
+
+  const removeImage = (index: number) => {
+    setImages((prevImages: any[]) => prevImages.filter((_, i) => i !== index))
+    setImagePreviews(prevPreviews => prevPreviews.filter((_, i) => i !== index))
+    setValue(images.filter((_: any, i: number) => i !== index))
+  }
 
   useEffect(() => {
     const timer = setTimeout(() => setProgress(66), 500);
@@ -495,92 +556,165 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
     case "File Upload":
       return (
         <FormItem>
-          <div className="flex justify-between items-center">
-          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
-          <FormMessage />
-
-          </div>
-          <FormControl>
-            <FileUploader
-              value={files}
-              onValueChange={handleFileChange}
-              dropzoneOptions={dropZoneConfig}
-              className="relative bg-background rounded-lg p-2"
-            >
-              <FileInput
-                id="fileInput"
-                disabled={!currentPath}
-                className="outline-dashed outline-1 outline-slate-500"
-              >
-                <div className="flex items-center justify-center flex-col pt-3 pb-4 w-full">
-                  <FileSvgDraw />
+      <div className="flex justify-between items-center">
+        <div>
+          <FormLabel>{field.label}</FormLabel>
+          <span className="text-red-500">{field.required && "*"}</span>
+        </div>
+        <FormMessage />
+      </div>
+      <FormControl>
+        <Card>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-center w-full">
+                <label
+                  htmlFor={`${field.name}-upload`}
+                  className="relative flex flex-col items-center justify-center w-full h-64 border-2 border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary/80 transition-all duration-300 ease-in-out"
+                >
+                  {files && files?.length > 0 ? (
+                    <div className="flex flex-col items-center justify-center w-full h-full">
+                      <div className="text-4xl font-bold text-primary mb-2">
+                        <File/>
+                      </div>
+                      <div className="text-sm text-primary truncate max-w-[80%]">
+                        {files[0].name}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          removeFile();
+                        }}
+                        className="absolute top-2 right-2"
+                      >
+                        <XIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                      <p className="mb-2 text-sm text-primary">
+                        <span className="font-semibold">Click to upload</span> or drag and drop
+                      </p>
+                      <p className="text-xs text-primary">
+                        PDF, DOC, DOCX, XLS, XLSX, CSV (MAX. 5MB)
+                      </p>
+                    </div>
+                  )}
+                  <Input
+                    id={`${field.name}-upload`}
+                    type="file"
+                    onChange={handleFileChange}
+                    ref={fileInputRef}
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.csv"
+                    className="hidden"
+                    disabled={uploading}
+                  />
+                </label>
+              </div>
+              {uploadError && (
+                <p className="text-sm text-red-500">{uploadError}</p>
+              )}
+              {uploading && (
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  <span className="text-sm text-primary">Uploading...</span>
                 </div>
-              </FileInput>
-              <FileUploaderContent  className={form.formState.errors?.[field.name] ? "border-red-500" : ""}>
-                {files &&
-                  files.length > 0 &&
-                  files.map((file, i) => (
-                    <FileUploaderItem key={i} index={i}>
-                      <Paperclip className="h-4 w-4 stroke-current" />
-                      <span>{file.name}</span>
-                    </FileUploaderItem>
-                  ))}
-
-                {uploadedFileUrl && (
-                  <div
-                    className="mt-2 text-blue-600 cursor-pointer hover:underline"
-                    onClick={handleFileUrlClick}
-                  >
-                    View Uploaded File: {files && files[0]?.name}
-                  </div>
-                )}
-              </FileUploaderContent>
-            </FileUploader>
-          </FormControl>
-          {uploadError && (
-            <div className="text-red-500 text-sm mt-1">{uploadError}</div>
-          )}
-          <FormDescription>{field.description}</FormDescription>
-        </FormItem>
+              )}
+              {files.length > 0 && uploadedFileUrl && (
+                <div className="flex items-center space-x-2 p-2 bg-secondary text-primary rounded">
+                  <FileText className="h-4 w-4 stroke-current" />
+                  <span className="text-sm font-medium truncate">
+                    {files[0].name}
+                  </span>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </FormControl>
+      <FormDescription>{field.description}</FormDescription>
+    </FormItem>
       );
     case "Image Upload":
       return (
         <FormItem>
-          <div className="flex justify-between items-center">
-          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
-          <FormMessage />
-
-          </div>
-          <FormControl>
-            <FileUploader
-              value={images}
-              onValueChange={handleImageChange}
-              dropzoneOptions={imageDropZoneConfig}
-              className="relative bg-background rounded-lg p-2"
-            >
-              <FileInput
-                id="fileInput"
-                // className=""
-                className={`${form.formState.errors?.[field.name] ? "border-red-500" : ""}outline-dashed outline-1 outline-slate-500` }
-              >
-                <div className="flex items-center justify-center flex-col pt-3 pb-4 w-full ">
-                  <FileSvgDraw />
+      <div className="flex justify-between items-center">
+        <div>
+          <FormLabel>{field.label}</FormLabel> 
+          <span className="text-red-500">{field.required && "*"}</span>
+        </div>
+        <FormMessage />
+      </div>
+      <FormControl>
+        <Card>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <div className="flex items-center justify-center w-full">
+                <label
+                  htmlFor={`${field.name}-upload`}
+                  className="relative flex flex-col items-center justify-center w-full h-64 border-2 border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden"
+                >
+                  {imagePreviews.length > 0 ? (
+                    <>
+                      <Image
+                        src={imagePreviews[0]}
+                        alt="Preview"
+                        layout="fill"
+                        className=""
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          removeImage(0)
+                        }}
+                        className="absolute top-2 right-2 z-10"
+                      >
+                        <XIcon className="h-4 w-4" />
+                      </Button>
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                      <p className="mb-2 text-sm text-primary">
+                        <span className="font-semibold">Click to upload</span> or drag and drop
+                      </p>
+                      <p className="text-xs text-primary">JPG, PNG, or GIF (MAX. 5MB)</p>
+                    </div>
+                  )}
+                  <Input
+                    id={`${field.name}-upload`}
+                    type="file"
+                    onChange={handleImageChange}
+                    ref={fileInputRef}
+                    accept=".jpg,.jpeg,.png,.gif"
+                    className="hidden"
+                  />
+                </label>
+              </div>
+              {imageError && (
+                <p className="text-sm text-red-500">{imageError}</p>
+              )}
+              {images.length > 0 && (
+                <div className="flex items-center space-x-2 p-2 bg-secondary text-primary rounded">
+                  <ImageIcon className="h-4 w-4 stroke-current" />
+                  <span className="text-sm font-medium">{images[0].name}</span>
                 </div>
-              </FileInput>
-              <FileUploaderContent>
-                {images &&
-                  images.length > 0 &&
-                  images.map((file, i) => (
-                    <FileUploaderItem key={i} index={i}>
-                      <Paperclip className="h-4 w-4 stroke-current" />
-                      <span>{file.name}</span>
-                    </FileUploaderItem>
-                  ))}
-              </FileUploaderContent>
-            </FileUploader>
-          </FormControl>
-          <FormDescription>{field.description}</FormDescription>
-        </FormItem>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </FormControl>
+      <FormDescription>{field.description}</FormDescription>
+    </FormItem>
       );
     case "Text Box":
       return (

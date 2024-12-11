@@ -1,12 +1,13 @@
 "use client"
 import * as React from "react"
-import { Bot, User } from 'lucide-react'
+import { Bot, File, User, XIcon } from 'lucide-react'
 import { v4 as uuidv4 } from 'uuid'
 import { Avatar } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { FaArrowUp } from "react-icons/fa6";
 import RenderInputField from "./render-chat-field"
+import Image from "next/image"
 
 type Message = {
   id: string
@@ -27,7 +28,8 @@ export function ChatForm({ formFields,apiFieldData }: any) {
   const [input, setInput] = React.useState<any>()
   const [currentStep, setCurrentStep] = React.useState(0)
   const [formData, setFormData] = React.useState<Record<string, any>>({})
-  const [selectedImage, setSelectedImage] = React.useState(null)
+  const [selectedImage, setSelectedImage] = React.useState<File | null>(null)
+  const [selectedFile, setSelectedFile] = React.useState<File | null>(null)
   const [validationError, setValidationError] = React.useState<string | null>(null)
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
 
@@ -66,6 +68,72 @@ export function ChatForm({ formFields,apiFieldData }: any) {
       setCurrentStep(firstActiveFieldIndex);
     }
   }, []);
+
+  React.useEffect(() => {
+    if (selectedImage) {
+        const imagePreview = URL.createObjectURL(selectedImage);
+        addMessage(
+            "assistant",
+            <div className="relative w-fit">
+                <Image
+                    src={imagePreview}
+                    alt="Uploaded"
+                    height={200}
+                    width={200}
+                    className="max-w-[200px] rounded-lg border"
+                />
+                {/* <button
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setSelectedImage(null);
+                        // Remove the last assistant message which contains the preview
+                        setMessages(prev => prev.slice(0, -1));
+                    }}
+                    hidden={isImageSubmitted}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                >
+                    <XIcon className="h-4 w-4" />
+                </button> */}
+            </div>
+        );
+
+        // Cleanup function to revoke the URL when component unmounts or image changes
+        return () => {
+            URL.revokeObjectURL(imagePreview);
+        };
+    }
+}, [addMessage, selectedImage, setMessages]);
+
+React.useEffect(() => {
+    if (selectedFile) {
+        addMessage(
+            "assistant",
+            <div className="relative w-fit">
+                <div className="flex items-center p-4 border rounded-lg">
+                    <div className="text-2xl mr-3"><File/></div>
+                    <span className="text-sm font-medium truncate max-w-[200px]">
+                        {selectedFile.name}
+                    </span>
+                </div>
+                {/* {!formData[formFields[currentStep].name] &&
+                <button
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setSelectedFile(null);
+                        // Remove the last assistant message which contains the preview
+                        setMessages(prev => prev.slice(0, -1));
+                    }}
+                    className="absolute top-2 right-2 bg-blue-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                >
+                    <XIcon className="h-4 w-4" />
+                </button> */}
+    {/* } */}
+            </div>
+        );
+    }
+}, [addMessage, selectedFile, setMessages,  formData, currentStep, formFields]);
 
   // Validation function
   const validateInput = (currentField: any, value: any): string | null => {
@@ -126,7 +194,105 @@ export function ChatForm({ formFields,apiFieldData }: any) {
   const handleSubmit = () => {
     const currentField = formFields[currentStep];
 
-    // Validate input
+    if (selectedImage) {
+      const imagePreview = URL.createObjectURL(selectedImage);
+      addMessage(
+        "user",
+        <Image
+          src={imagePreview}
+          alt="Uploaded"
+          height={200}
+          width={200}
+          className="max-w-[200px] rounded-lg border"
+        />
+      );
+      setFormData((prev) => ({
+        ...prev,
+        [currentField.name]: selectedImage.name,
+      }));
+     
+      setSelectedImage(null);
+      
+      setInput("");
+      const nextStep = findNextActiveField(currentStep);
+      setCurrentStep(nextStep);
+
+      if (nextStep !== -1) {
+        const nextField = formFields[nextStep];
+        addMessage(
+          "assistant",
+          <div>
+            <span className="label">{nextField.label}</span>
+            {nextField.required && <span className="text-red-500">*</span>}
+            <br />
+            <span className="text-sm text-gray-400">{nextField.description}</span>
+          </div>
+        );
+      } else {
+        addMessage("assistant", "Thank you for completing the form.");
+      }
+      return;
+    }
+
+    if (selectedFile) {
+      // Get file type icon and styling based on file extension
+      const getFileDisplay = (file: File) => {
+          
+          
+          return (
+              <div className={`flex items-center p-4  rounded-lg border max-w-[300px]`}>
+                  <div className="text-2xl mr-3"><File/></div>
+                  <div className="flex flex-col">
+                      <span className="text-sm font-medium truncate max-w-[200px]">
+                          {file.name}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                          {(file.size / (1024 * 1024)).toFixed(2)} MB
+                      </span>
+                  </div>
+              </div>
+          );
+      };
+
+      // Add file preview to chat
+      addMessage(
+          "user",
+          getFileDisplay(selectedFile)
+      );
+
+      // Update form data
+      setFormData((prev) => ({
+          ...prev,
+          [currentField.name]: selectedFile.name,
+      }));
+
+      // Reset states
+      
+      setSelectedFile(null);
+      
+      setInput("");
+
+      // Handle next step
+      const nextStep = findNextActiveField(currentStep);
+      setCurrentStep(nextStep);
+
+      if (nextStep !== -1) {
+          const nextField = formFields[nextStep];
+          addMessage(
+              "assistant",
+              <div>
+                  <span className="label">{nextField.label}</span>
+                  {nextField.required && <span className="text-red-500">*</span>}
+                  <br />
+                  <span className="text-sm text-gray-400">{nextField.description}</span>
+              </div>
+          );
+      } else {
+          addMessage("assistant", "Thank you for completing the form.");
+      }
+      return;
+  }
+
     const error = validateInput(currentField, input);
 
     if (error) {
@@ -226,6 +392,7 @@ export function ChatForm({ formFields,apiFieldData }: any) {
                   formData={formData}
                   setFormData={setFormData}
                   setSelectedImage={setSelectedImage}
+                  setSelectedFile={setSelectedFile}
                   apiFieldData={apiFieldData}
                 />
                 {validationError && (
