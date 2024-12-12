@@ -20,7 +20,8 @@ const nextConfig = {
     ],
     remotePatterns: [
       {
-        hostname: 'avatar.vercel.sh',
+        hostname: '**',
+        protocol: "https"
       },
     ],
   },

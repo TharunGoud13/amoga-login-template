@@ -65,6 +65,7 @@ import {
   File,
   FileText,
   ImageIcon,
+  Link,
   Paperclip,
   Upload,
   UploadIcon,
@@ -162,6 +163,7 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
   const [tagsValue, setTagsValue] = useState<string[]>([]);
   const [files, setFiles] = useState<File[]>([]);
   const [images, setImages] = useState<File[]>([]);
+  const [videos, setVideos] = useState<string[]>([]);
   const [date, setDate] = useState<Date>();
   const [datetime, setDatetime] = useState<Date>();
   const [smartDatetime, setSmartDatetime] = useState<Date | null>();
@@ -170,31 +172,24 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
   const [password, setPassword] = useState<string>("");
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [progress, setProgress] = useState(13);
-  const [media, setMedia] = useState<File | null>(null);
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
   const path = usePathname();
   const currentPath = path.includes("submit");
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [imageError, setError] = useState<string | null>(null)
+  const [videoUrl, setVideoUrl] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [fileUrl, setFileUrl] = useState<string>("");
+  const [videoError, setVideoError] = useState<string | null>(null);
+  const [imageUploadError, setImageUploadError] = useState<string | null>(null);
+  const [fileUploadError, setFileUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null)
   const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif']
   const MAX_FILE_SIZE = 5 * 1024 * 1024
-
-
-
-  const dropZoneConfig = {
-    maxFiles: 5,
-    maxSize: 1024 * 1024 * 4,
-    multiple: true,
-  };
-
-  const imageDropZoneConfig = {
-    accept: { "image/*": [] },
-  };
+  const MAX_VIDEO_SIZE = 2 * 1024 * 1024
 
   const handleIframeUrlChange = (url: string) => {
     setIframeUrl(url);
@@ -218,7 +213,10 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
 
       setUploadError(null);
       setUploading(true);
+      if(!currentPath){
       setFiles(validFiles);
+      }
+      if(currentPath){
 
       const formData = new FormData();
       validFiles.forEach((file) => {
@@ -240,6 +238,7 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
         if (data.url) {
           localStorage.setItem("uploadedFileUrl", data.url);
         }
+        setFiles(validFiles);
         setValue(validFiles);
       } catch (error) {
         console.error("Upload error:", error);
@@ -248,13 +247,63 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
         setUploading(false);
       }
     }
-  };
-
-  const handleFileUrlClick = () => {
-    if (uploadedFileUrl) {
-      window.open(uploadedFileUrl, "_blank");
     }
   };
+
+  const handleFileSubmit = async(e:any) => {
+    e.preventDefault();
+    setFileUploadError("")
+    if(!fileUrl){
+      setFileUploadError("Please enter a valid video url");
+      return;
+    }
+    const validFileUrlPattern =  /^(https?:\/\/.*\.(doc|docx|xls|xlsx|csv|pdf|ppt|pptx|txt))$|^(https?:\/\/docs\.google\.com\/(document|spreadsheets)\/d\/[a-zA-Z0-9-_]+)/i;
+    if (!validFileUrlPattern.test(fileUrl)) {
+      setFileUploadError('Invalid File URL. Please provide a valid File Link.');
+      return;
+    }
+    const fileName = fileUrl.split('/').pop(); // Extract file name from URL
+    const fileMock = {
+      name: fileName || "unknown",
+      url: fileUrl, // Use URL as the source
+      type: fileUrl.split('.').pop(), // Extract the extension
+    };
+    if(currentPath){
+      const payload = {
+        url: fileUrl,
+      };
+      try {
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+    
+        if (!response.ok) {
+          throw new Error("Upload failed");
+        }
+    
+        const data = await response.json();
+        if (data.url) {
+          localStorage.setItem("uploadedFileUrl", data.url);
+        }
+        setFiles((prevFiles: any) => [...prevFiles, fileMock]);
+        setValue((prevValues: any) => [...prevValues, fileMock]);
+        // setImagePreviews((prevVideos) => [...prevVideos, imageUrl]);
+
+          // setValue(validImages);
+      } catch (error) {
+        console.error("Upload error:", error);
+        setUploadError("Failed to upload video URL. Please try again.");
+      }
+    }
+
+  // Update the files state to include the new file
+  setFiles((prevFiles: any) => [...prevFiles, fileMock]);
+  setValue((prevValues: any) => [...prevValues, fileMock]);
+  }
 
   const removeFile = () => {
     setFiles([]);
@@ -265,7 +314,105 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
     }
   };
 
-  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleVideoChange = async(e: ChangeEvent<HTMLInputElement>) => {
+
+    if(e.target.files){
+      const newVideo = Array.from(e.target.files)
+      const validVideo = newVideo.filter(video => 
+        video.size <= MAX_VIDEO_SIZE
+      )
+      if(validVideo.length !== newVideo.length){
+        setVideoUrl('')
+        setVideoError('No video selected')
+      }
+      const newPreview = validVideo.map(video => URL.createObjectURL(video))
+      if(!currentPath){
+      setVideos(prevPreviews => [...prevPreviews, ...newPreview])
+      }
+      
+      if(currentPath){
+      const formData = new FormData();
+      validVideo.forEach((file) => {
+        formData.append("file", file);
+      });
+
+      try {
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error("Upload failed");
+        }
+
+        const data = await response.json();
+        if (data.url) {
+          localStorage.setItem("uploadedVideoUrl", data.url);
+        }
+        setVideos(prevPreviews => [...prevPreviews, ...newPreview])
+        setVideoUrl('');
+        setVideoError('');
+        setValue(validVideo);
+      } catch (error) {
+        console.error("Upload error:", error);
+        setUploadError("Failed to upload file. Please try again.");
+      } finally {
+        setUploading(false);
+      }
+    }
+  
+    }
+  }
+
+  const handleVideoSubmit = async(e:any) => {
+    e.preventDefault();
+    if(!videoUrl){
+      setVideoError("Please enter a valid video url");
+      return;
+    }
+    const validUrlPattern = /^(https?:\/\/.*\.(mp4|mov|avi|mkv|webm))|(https?:\/\/(www\.)?youtube\.com\/watch\?v=\w+)|(https?:\/\/youtu\.be\/\w+)/;
+    if (!validUrlPattern.test(videoUrl)) {
+      setVideoError('Invalid video URL. Please provide a direct video link or YouTube link.');
+      return;
+    }
+
+    if(!currentPath){
+      setVideos((prevVideos) => [...prevVideos, videoUrl]);
+    }
+
+    if(currentPath){
+    const payload = {
+      url: videoUrl,
+    };
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+  
+      const data = await response.json();
+      if (data.url) {
+        localStorage.setItem("uploadedVideoUrl", data.url);
+      }
+      setVideos((prevVideos) => [...prevVideos, videoUrl]); // Add URL to video list
+      setVideoUrl(''); // Clear input field
+      setVideoError(''); // Clear error messages
+    } catch (error) {
+      console.error("Upload error:", error);
+      setUploadError("Failed to upload video URL. Please try again.");
+    }
+  }
+  }
+
+  const handleImageChange = async(e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newImages = Array.from(e.target.files)
       console.log("newImages----",newImages)
@@ -277,14 +424,97 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
         setError('Some files were not added. Please ensure all files are images (JPG, PNG, or GIF) and under 5MB.')
       } else {
         setError(null)
-      }
+      } 
 
       setImages((prevImages: any) => [...prevImages, ...validImages])
       setValue([...images, ...validImages])
 
       const newPreviews = validImages.map(file => URL.createObjectURL(file))
       setImagePreviews(prevPreviews => [...prevPreviews, ...newPreviews])
+
+      if(currentPath){
+
+      const formData = new FormData();
+      validImages.forEach((file) => {
+        formData.append("file", file);
+      });
+
+      try {
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error("Upload failed");
+        }
+
+        const data = await response.json();
+        setUploadedFileUrl(data.url);
+        if (data.url) {
+          localStorage.setItem("uploadedImageUrl", data.url);
+        }
+        setImages(validImages);
+        setValue(validImages);
+      } catch (error) {
+        console.error("Upload error:", error);
+        setUploadError("Failed to upload file. Please try again.");
+      } finally {
+        setUploading(false);
+      }
     }
+    }
+  }
+
+  const handleImageSubmit = async(e:any) => {
+    e.preventDefault();
+    setImageUploadError("")
+    if(!imageUrl){
+      setImageUploadError("Please enter a valid video url");
+      return;
+    }
+    const validImageUrlPattern = /^(https?:\/\/.*\.(jpg|jpeg|png|gif|webp|tif|svg))$/i;
+    if (!validImageUrlPattern.test(imageUrl)) {
+      setImageUploadError('Invalid Image URL. Please provide a valid Image Link.');
+      return;
+    }
+
+    if(!currentPath){
+      setImagePreviews((prevVideos) => [...prevVideos, imageUrl]);
+    }
+
+    if(currentPath){
+    const payload = {
+      url: imageUrl,
+    };
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+  
+      const data = await response.json();
+      if (data.url) {
+        localStorage.setItem("uploadedImageUrl", data.url);
+      }
+      setImagePreviews((prevVideos) => [...prevVideos, imageUrl]);
+        // setValue(validImages);
+    } catch (error) {
+      console.error("Upload error:", error);
+      setUploadError("Failed to upload video URL. Please try again.");
+    }
+  }
+  }
+
+  const removeVideo = (index: number) => {
+    setVideos((prevVideos: any[]) => prevVideos.filter((_, i) => i !== index))
   }
 
   const removeImage = (index: number) => {
@@ -612,27 +842,34 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
                     ref={fileInputRef}
                     accept=".pdf,.doc,.docx,.xls,.xlsx,.csv"
                     className="hidden"
-                    disabled={uploading}
+                    disabled={uploading || fileUrl?.length > 0}
                   />
                 </label>
               </div>
               {uploadError && (
                 <p className="text-sm text-red-500">{uploadError}</p>
               )}
-              {uploading && (
+              {currentPath && uploading && (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
                   <span className="text-sm text-primary">Uploading...</span>
                 </div>
               )}
-              {files.length > 0 && uploadedFileUrl && (
-                <div className="flex items-center space-x-2 p-2 bg-secondary text-primary rounded">
-                  <FileText className="h-4 w-4 stroke-current" />
-                  <span className="text-sm font-medium truncate">
-                    {files[0].name}
-                  </span>
-                </div>
-              )}
+              <div className="mt-2.5 flex items-center gap-2.5">
+            <Input
+              value={fileUrl}
+              placeholder="Enter File URL"
+              className="border-secondary"
+              disabled={files?.length > 0}
+              onChange={(e) => setFileUrl(e.target.value)}
+            />
+            <Button disabled={!fileUrl || files?.length > 0} onClick={handleFileSubmit}>
+              <Link className="w-4 h-4 mr-2" />
+              Add URL
+            </Button>
+          </div>
+          {fileUploadError && <p className="text-red-500 mt-2">{fileUploadError}</p>}
+
             </div>
           </CardContent>
         </Card>
@@ -657,7 +894,7 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
               <div className="flex items-center justify-center w-full">
                 <label
                   htmlFor={`${field.name}-upload`}
-                  className="relative flex flex-col items-center justify-center w-full h-64 border-2 border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden"
+                  className="relative flex flex-col items-center justify-center w-full h-64 border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden"
                 >
                   {imagePreviews.length > 0 ? (
                     <>
@@ -695,6 +932,7 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
                     type="file"
                     onChange={handleImageChange}
                     ref={fileInputRef}
+                    disabled={imageUrl?.length > 0}
                     accept=".jpg,.jpeg,.png,.gif"
                     className="hidden"
                   />
@@ -703,12 +941,20 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
               {imageError && (
                 <p className="text-sm text-red-500">{imageError}</p>
               )}
-              {images.length > 0 && (
-                <div className="flex items-center space-x-2 p-2 bg-secondary text-primary rounded">
-                  <ImageIcon className="h-4 w-4 stroke-current" />
-                  <span className="text-sm font-medium">{images[0].name}</span>
-                </div>
-              )}
+              <div className="mt-2.5 flex items-center gap-2.5">
+            <Input
+              value={imageUrl}
+              placeholder="Enter Image URL"
+              className="border-secondary"
+              disabled={images?.length > 0}
+              onChange={(e) => setImageUrl(e.target.value)}
+            />
+            <Button disabled={!imageUrl || images?.length > 0} onClick={handleImageSubmit}>
+              <Link className="w-4 h-4 mr-2" />
+              Add URL
+            </Button>
+          </div>
+          {imageUploadError && <p className="text-red-500 mt-2">{imageUploadError}</p>}
             </div>
           </CardContent>
         </Card>
@@ -716,6 +962,96 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
       <FormDescription>{field.description}</FormDescription>
     </FormItem>
       );
+    case "Video Upload":
+      return(
+        <FormItem>
+    <div className="flex justify-between items-center">
+      <div>
+        <FormLabel>{field.label}</FormLabel>
+        <span className="text-red-500">{field.required && '*'}</span>
+      </div>
+      <FormMessage />
+    </div>
+    <FormControl>
+      <Card>
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-center w-full">
+              <label
+                htmlFor={`${field.name}-upload`}
+                className={`relative flex flex-col items-center justify-center w-full ${
+                  videos?.length > 0 ? 'h-fit' : 'h-64'
+                } border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden`}
+              >
+                {videos.length > 0 ? (
+                  <div className="relative w-full">
+                    {videos[0].startsWith('http') ? (
+                      /(youtube\.com|youtu\.be)/.test(videos[0]) ? (
+                        <iframe
+                          src={videos[0].replace('watch?v=', 'embed/')}
+                          title="video-preview"
+                          className="h-64 w-full"
+                          frameBorder="0"
+                          allow="autoplay; encrypted-media"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <video src={videos[0]} controls className="h-fit w-full" />
+                      )
+                    ) : (
+                      <video src={videos[0]} controls className="h-fit w-full" />
+                    )}
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        removeVideo(0);
+                      }}
+                      className="absolute top-2 right-2 z-10"
+                    >
+                      <XIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                    <p className="mb-2 text-sm text-primary">
+                      <span className="font-semibold">Click to upload a video</span>
+                    </p>
+                  </div>
+                )}
+                <Input
+                  id={`${field.name}-upload`}
+                  type="file"
+                  onChange={handleVideoChange}
+                  accept=".mp4, .mov, .avi, .mkv, .webm"
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </div>
+          <div className="mt-2.5 flex items-center gap-2.5">
+            <Input
+              value={videoUrl}
+              placeholder="Enter video URL (supports YouTube links)"
+              className="border-secondary"
+              disabled={videos?.length > 0}
+              onChange={(e) => setVideoUrl(e.target.value)}
+            />
+            <Button disabled={!videoUrl || videos?.length > 0} onClick={handleVideoSubmit}>
+              <Link className="w-4 h-4 mr-2" />
+              Add URL
+            </Button>
+          </div>
+          {videoError && <p className="text-red-500 mt-2">{videoError}</p>}
+        </CardContent>
+      </Card>
+    </FormControl>
+  </FormItem>
+      )
     case "Text Box":
       return (
         <FormItem>
@@ -931,10 +1267,7 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
         </FormItem>
       );
     case "Media Card":
-      const handleMediaChange = (newMedia: File | null) => {
-        setMedia(newMedia);
-        form.setValue(field.name, newMedia); // Synchronize with react-hook-form
-      };
+      
       return (
         <div>
           <MediaCard

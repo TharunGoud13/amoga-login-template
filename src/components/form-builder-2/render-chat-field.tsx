@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Calendar } from "../ui/calendar";
 import { Checkbox } from "../ui/checkbox";
@@ -29,7 +29,7 @@ import {
 } from "../ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { cn } from "@/lib/utils";
-import { Check, ChevronsUpDown, ExternalLink, ImageIcon } from "lucide-react";
+import { Check, ChevronsUpDown, ExternalLink, File, ImageIcon, Link, UploadIcon, XIcon } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
 import { MultiSelector, MultiSelectorContent, MultiSelectorInput, MultiSelectorItem, MultiSelectorList, MultiSelectorTrigger } from "../ui/multi-select";
 import { MediaCard } from "../ui/media-card";
@@ -37,6 +37,8 @@ import  MediaSocialPage  from "../ui/media-social-page";
 import BarChartPage from "../ui/bar-chart-page";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card";
 import { Badge } from "../ui/badge";
+import { Card, CardContent } from "../ui/card";
+import Image from "next/image";
 
 const RenderInputField = ({
   currentField,
@@ -46,7 +48,20 @@ const RenderInputField = ({
   setFormData,
   setSelectedImage,
   setSelectedFile,
-  apiFieldData
+  apiFieldData,
+  videos,
+  setVideos,
+  videoError,
+  setVideoError,
+  imageError,
+  setImageError,
+  selectedImage,
+  selectedFile,
+  fileError,
+  setFileError,
+  fileName,
+  setFileName,
+
 }: {
   currentField: any;
   input: string;
@@ -55,7 +70,19 @@ const RenderInputField = ({
   setFormData: (formData: Record<string, any>) => void;
   setSelectedImage: any;
   setSelectedFile: any;
-  apiFieldData: any
+  apiFieldData: any;
+  videos: any,
+  setVideos: any;
+  videoError: any;
+  setVideoError: any
+  imageError:any
+  setImageError:any
+  selectedImage: any
+  selectedFile: any
+  fileError: any
+  setFileError: any
+  fileName: any;
+  setFileName: any
 }) => {
 
   const [selectedValues, setSelectedValues] = useState<any>([]);
@@ -64,6 +91,13 @@ const RenderInputField = ({
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [multiSelectedItems, setMultiSelectedItems] = useState<string[]>([]);
+  const [videoUrl, setVideoUrl] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [fileUrl, setFileUrl] = useState<string>("");
+
+  const MAX_VIDEO_SIZE = 2 * 1024 * 1024
+  const MAX_IMAGE_SIZE = 5 * 1024 * 1024
+  const MAX_FILE_SIZE = 5 * 1024 * 1024
 
 
   const handleIframeUrlChange = (url: string) => {
@@ -80,6 +114,134 @@ const RenderInputField = ({
     }
 
   },[currentField.variant])
+
+  
+
+
+  const handleVideoChange = async(e: ChangeEvent<HTMLInputElement>) => {
+    if(e.target.files){
+      const newVideo = Array.from(e.target.files)
+      const validVideo = newVideo.filter(video => 
+        video.size <= MAX_VIDEO_SIZE
+      )
+      if(validVideo.length !== newVideo.length){
+        setVideoError('No video selected')
+      }
+      const newPreview = validVideo.map(video => URL.createObjectURL(video))
+      
+      setVideos((prevPreviews: any) => [...prevPreviews, ...newPreview])
+      // setInput(newPreview[0])
+      
+    }
+  }
+
+  const handleVideoSubmit = async(e:any) => {
+    e.preventDefault();
+    if(!videoUrl){
+      setVideoError("Please enter a valid video url");
+      return;
+    }
+    const validUrlPattern = /^(https?:\/\/.*\.(mp4|mov|avi|mkv|webm))|(https?:\/\/(www\.)?youtube\.com\/watch\?v=\w+)|(https?:\/\/youtu\.be\/\w+)/;
+    if (!validUrlPattern.test(videoUrl)) {
+      setVideoError('Invalid video URL. Please provide a direct video link or YouTube link.');
+      return;
+    }
+      setVideos((prevVideos: any) => [...prevVideos, videoUrl]);
+      // setInput(videoUrl)
+      
+    
+  }
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newImages = Array.from(e.target.files);
+  
+      // Validate image size
+      const validImages = newImages.filter(
+        (image) => image.size <= MAX_IMAGE_SIZE // Replace `MAX_IMAGE_SIZE` with your desired size limit in bytes
+      );
+  
+      if (validImages.length !== newImages.length) {
+        setImageError("Some images were not uploaded. Please ensure all images are under the size limit.");
+        return;
+      }
+  
+      // Generate previews for valid images
+      const newPreviews = validImages.map((image) => URL.createObjectURL(image));
+  
+      // Update state
+      setSelectedImage((prevImages: any) => [...prevImages, ...newPreviews]);
+      // setInput(newPreviews[0]);
+      setImageError(null);
+    }
+  };
+
+  const handleImageSubmit = async (e: any) => {
+    e.preventDefault();
+  
+    if (!imageUrl) {
+      setImageError("Please enter a valid image URL.");
+      return;
+    }
+  
+    const validImageUrlPattern = /^(https?:\/\/.*\.(jpg|jpeg|png|gif|webp))$/i;
+    if (!validImageUrlPattern.test(imageUrl)) {
+      setImageError("Invalid Image URL. Please provide a valid image link.");
+      return;
+    }
+  
+    // Add the image URL to the state
+    setSelectedImage((prevImages: any) => [...prevImages, imageUrl]);
+    setImageUrl(""); // Clear input field
+  };
+
+  const handleFileSubmit = async (e: any) => {
+    e.preventDefault();
+  
+    if (!fileUrl) {
+      setFileError("Please enter a valid file URL.");
+      return;
+    }
+  
+    const validFileUrlPattern =  /^(https?:\/\/.*\.(doc|docx|xls|xlsx|csv|pdf|ppt|pptx|txt))$|^(https?:\/\/docs\.google\.com\/(document|spreadsheets)\/d\/[a-zA-Z0-9-_]+)/i
+    if (!validFileUrlPattern.test(fileUrl)) {
+      setFileError("Invalid File URL. Please provide a valid file link.");
+      return;
+    }
+  
+    // Add the image URL to the state
+    setSelectedFile((prevImages: any) => [...prevImages, fileUrl]);
+    setFileName(fileUrl)
+    setFileUrl(""); // Clear input field
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+  
+      // Validate image size
+      const validFiles = newFiles.filter(
+        (file) => file.size <= MAX_FILE_SIZE // Replace `MAX_IMAGE_SIZE` with your desired size limit in bytes
+      );
+  
+      if (validFiles.length !== newFiles.length) {
+        setFileError("Some Files were not uploaded. Please ensure all files are under the size limit.");
+        return;
+      }
+  
+      // Generate previews for valid images
+      const newPreviews = validFiles.map((file) => URL.createObjectURL(file));
+  
+      // Update state
+      setSelectedFile((prevFiles: any) => [...prevFiles, ...newPreviews]);
+      // setInput(newPreviews[0]);
+    setFileName(e.target.files[0].name)
+
+      setFileError(null);
+    }
+  };
+
+  
 
 
   
@@ -318,50 +480,227 @@ const RenderInputField = ({
         </div>
 
       );
-    case "Image Upload":
-      return (
-        <div className="space-y-4 w-full  p-4 rounded-lg">
-          <Input
-            type="file"
-            accept=".jpg,.jpeg,.png,.gif"
-            onChange={(e) => {
-              const file: any = e.target.files?.[0];
-              if (file) {
-                
-                const reader = new FileReader();
-                setInput(file.name);
-                setSelectedImage(file);
-                reader.onloadend = () => {
-                  // No need to set the selected image here, we'll handle it in the `handleSubmit` function
-                };
-                reader.readAsDataURL(file);
-              }
-            }}
-            className=" border-gray-700 text-white"
-          />
-        </div>
-      );
+      case "Image Upload":
+        return (
+          <Card>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-center w-full">
+                  <label
+                    htmlFor={"image-upload"}
+                    className={`relative flex flex-col items-center justify-center w-full ${
+                      selectedImage?.length > 0 ? "h-fit" : "h-64"
+                    } border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden`}
+                  >
+                    {selectedImage?.length > 0 ? (
+                      <div className="relative w-full">
+                        <img
+                          src={selectedImage[0]}
+                          alt="Preview"
+                          className="h-fit w-full object-contain"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setSelectedImage((prevImages: any) =>
+                              prevImages.filter((_: any, index: number) => index !== 0)
+                            );
+                          }}
+                          className="absolute top-2 right-2 z-10"
+                        >
+                          <XIcon className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                        <p className="mb-2 text-sm text-primary">
+                          <span className="font-semibold">Click to upload an image</span>
+                        </p>
+                      </div>
+                    )}
+                    <Input
+                      id={"image-upload"}
+                      type="file"
+                      onChange={handleImageChange}
+                      accept=".jpg,.jpeg,.png,.gif,.webp"
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              </div>
+              <div className="mt-2.5 flex items-center gap-2.5">
+                <Input
+                  value={imageUrl}
+                  placeholder="Enter image URL"
+                  className="border-secondary"
+                  disabled={selectedImage?.length > 0}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                />
+                <Button disabled={!imageUrl} onClick={handleImageSubmit}>
+                  <Link className="w-4 h-4 mr-2" />
+                  Add URL
+                </Button>
+              </div>
+              {imageError && <p className="text-red-500 text-sm">{imageError}</p>}
+            </CardContent>
+          </Card>
+        );
     case "File Upload":
       return (
-        <div className="space-y-4 w-full  p-4 rounded-lg">
-          <Input
-            type="file"
-            onChange={(e) => {
-              const file: any = e.target.files?.[0];
-              if (file) {
-                const reader = new FileReader();
-                setInput(file.name);
-
-                setSelectedFile(file);
-                reader.onloadend = () => {
-                };
-                reader.readAsDataURL(file);
-              }
-            }}
-            className=" border-gray-700 text-white"
-          />
-        </div>
+        <Card>
+            <CardContent className="p-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-center w-full">
+                  <label
+                    htmlFor={"file-upload"}
+                    className={`relative flex flex-col items-center justify-center w-full ${
+                      selectedFile?.length > 0 ? "h-64" : "h-64"
+                    } border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden`}
+                  >
+                    {selectedFile && selectedFile?.length > 0 ? (
+                    <div className="flex flex-col items-center justify-center w-full h-full">
+                      <File/>
+                      <span>{fileName}</span>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setSelectedFile((prevImages: any) =>
+                            prevImages.filter((_: any, index: number) => index !== 0)
+                          );
+                        }}
+                        className="absolute top-2 right-2"
+                      >
+                        <XIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                      <p className="mb-2 text-sm text-primary">
+                        <span className="font-semibold">Click to upload</span> or drag and drop
+                      </p>
+                      <p className="text-xs text-primary">
+                        PDF, DOC, DOCX, XLS, XLSX, CSV (MAX. 5MB)
+                      </p>
+                    </div>
+                  )}
+                    <Input
+                      id={"file-upload"}
+                      type="file"
+                      onChange={handleFileChange}
+                      accept=".pdf,.xlsx,.xls,.doc,.ppt,.txt,.docx,.pptx,.csv"
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              </div>
+              <div className="mt-2.5 flex items-center gap-2.5">
+                <Input
+                  value={fileUrl}
+                  placeholder="Enter image URL"
+                  className="border-secondary"
+                  disabled={selectedFile?.length > 0}
+                  onChange={(e) => setFileUrl(e.target.value)}
+                />
+                <Button disabled={!fileUrl} onClick={handleFileSubmit}>
+                  <Link className="w-4 h-4 mr-2" />
+                  Add URL
+                </Button>
+              </div>
+              {fileError && <p className="text-red-500 text-sm">{fileError}</p>}
+            </CardContent>
+          </Card>
       );
+    case "Video Upload":
+      return(
+        
+      <Card>
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-center w-full">
+              <label
+                htmlFor={"video-upload"}
+                className={`relative flex flex-col items-center justify-center w-full ${
+                  videos?.length > 0 ? 'h-fit' : 'h-64'
+                } border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden`}
+              >
+                {videos.length > 0 ? (
+                  <div className="relative w-full">
+                    {videos[0].startsWith('http') ? (
+                      /(youtube\.com|youtu\.be)/.test(videos[0]) ? (
+                        <iframe
+                          src={videos[0].replace('watch?v=', 'embed/')}
+                          title="video-preview"
+                          className="h-64 w-full"
+                          frameBorder="0"
+                          allow="autoplay; encrypted-media"
+                          allowFullScreen
+                        />
+                      ) : (
+                        <video src={videos[0]} controls className="h-fit w-full" />
+                      )
+                    ) : (
+                      <video src={videos[0]} controls className="h-fit w-full" />
+                    )}
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        // removeVideo(0);
+                      }}
+                      className="absolute top-2 right-2 z-10"
+                    >
+                      <XIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                    <p className="mb-2 text-sm text-primary">
+                      <span className="font-semibold">Click to upload a video</span>
+                    </p>
+                  </div>
+                )}
+                <Input
+                  id={"video-upload"}
+                  type="file"
+                  onChange={handleVideoChange}
+                  accept=".mp4, .mov, .avi, .mkv, .webm"
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </div>
+          <div className="mt-2.5 flex items-center gap-2.5">
+            <Input
+              value={videoUrl}
+              placeholder="Enter video URL (supports YouTube links)"
+              className="border-secondary"
+              disabled={videos?.length > 0}
+              onChange={(e) => setVideoUrl(e.target.value)}
+              
+            />
+            <Button  disabled={!videoUrl} onClick={handleVideoSubmit}>
+              <Link className="w-4 h-4 mr-2" />
+              Add URL
+            </Button>
+          </div>
+          {videoError && <p className="text-red-500 mt-2">{videoError}</p>}
+        </CardContent>
+      </Card>
+      )
 
       case "Combobox":
       return (

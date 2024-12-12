@@ -28,10 +28,19 @@ export function ChatForm({ formFields,apiFieldData }: any) {
   const [input, setInput] = React.useState<any>()
   const [currentStep, setCurrentStep] = React.useState(0)
   const [formData, setFormData] = React.useState<Record<string, any>>({})
-  const [selectedImage, setSelectedImage] = React.useState<File | null>(null)
-  const [selectedFile, setSelectedFile] = React.useState<File | null>(null)
+  const [selectedImage, setSelectedImage] = React.useState<string[]>([])
+  const [selectedFile, setSelectedFile] = React.useState<string[]>([])
+  const [fileName, setFileName] = React.useState("")
+  const [videos, setVideos] = React.useState<string[]>([])
+  const [videoError, setVideoError] = React.useState<string | null>(null);
+  const [imageError, setImageError] = React.useState<string | null>(null);
+  const [fileError, setFileError] = React.useState<string | null>(null);
   const [validationError, setValidationError] = React.useState<string | null>(null)
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
+
+  console.log("selectedImage----",selectedImage)
+  console.log("selectedFile----",selectedFile)
+  console.log("fileName----",fileName)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" })
@@ -69,71 +78,119 @@ export function ChatForm({ formFields,apiFieldData }: any) {
     }
   }, []);
 
-  React.useEffect(() => {
-    if (selectedImage) {
-        const imagePreview = URL.createObjectURL(selectedImage);
-        addMessage(
-            "assistant",
-            <div className="relative w-fit">
-                <Image
-                    src={imagePreview}
-                    alt="Uploaded"
-                    height={200}
-                    width={200}
-                    className="max-w-[200px] rounded-lg border"
-                />
-                {/* <button
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setSelectedImage(null);
-                        // Remove the last assistant message which contains the preview
-                        setMessages(prev => prev.slice(0, -1));
-                    }}
-                    hidden={isImageSubmitted}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                >
-                    <XIcon className="h-4 w-4" />
-                </button> */}
-            </div>
-        );
+//   React.useEffect(() => {
+//     if (selectedImage) {
+//         const imagePreview = URL.createObjectURL(selectedImage);
+//         addMessage(
+//             "assistant",
+//             <div className="relative w-fit">
+//                 <Image
+//                     src={imagePreview}
+//                     alt="Uploaded"
+//                     height={200}
+//                     width={200}
+//                     className="max-w-[200px] rounded-lg border"
+//                 />
+//                 {/* <button
+//                     onClick={(e) => {
+//                         e.preventDefault();
+//                         e.stopPropagation();
+//                         setSelectedImage(null);
+//                         // Remove the last assistant message which contains the preview
+//                         setMessages(prev => prev.slice(0, -1));
+//                     }}
+//                     hidden={isImageSubmitted}
+//                     className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+//                 >
+//                     <XIcon className="h-4 w-4" />
+//                 </button> */}
+//             </div>
+//         );
 
-        // Cleanup function to revoke the URL when component unmounts or image changes
-        return () => {
-            URL.revokeObjectURL(imagePreview);
-        };
-    }
-}, [addMessage, selectedImage, setMessages]);
+//         // Cleanup function to revoke the URL when component unmounts or image changes
+//         return () => {
+//             URL.revokeObjectURL(imagePreview);
+//         };
+//     }
+// }, [addMessage, selectedImage, setMessages]);
 
-React.useEffect(() => {
-    if (selectedFile) {
-        addMessage(
-            "assistant",
-            <div className="relative w-fit">
-                <div className="flex items-center p-4 border rounded-lg">
-                    <div className="text-2xl mr-3"><File/></div>
-                    <span className="text-sm font-medium truncate max-w-[200px]">
-                        {selectedFile.name}
-                    </span>
-                </div>
-                {/* {!formData[formFields[currentStep].name] &&
-                <button
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setSelectedFile(null);
-                        // Remove the last assistant message which contains the preview
-                        setMessages(prev => prev.slice(0, -1));
-                    }}
-                    className="absolute top-2 right-2 bg-blue-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                >
-                    <XIcon className="h-4 w-4" />
-                </button> */}
-    {/* } */}
-            </div>
-        );
-    }
-}, [addMessage, selectedFile, setMessages,  formData, currentStep, formFields]);
+// React.useEffect(() => {
+//     if (selectedFile) {
+//         addMessage(
+//             "assistant",
+//             <div className="relative w-fit">
+//                 <div className="flex items-center p-4 border rounded-lg">
+//                     <div className="text-2xl mr-3"><File/></div>
+//                     <span className="text-sm font-medium truncate max-w-[200px]">
+//                         {selectedFile.name}
+//                     </span>
+//                 </div>
+//                 {/* {!formData[formFields[currentStep].name] &&
+//                 <button
+//                     onClick={(e) => {
+//                         e.preventDefault();
+//                         e.stopPropagation();
+//                         setSelectedFile(null);
+//                         // Remove the last assistant message which contains the preview
+//                         setMessages(prev => prev.slice(0, -1));
+//                     }}
+//                     className="absolute top-2 right-2 bg-blue-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+//                 >
+//                     <XIcon className="h-4 w-4" />
+//                 </button> */}
+//     {/* } */}
+//             </div>
+//         );
+//     }
+// }, [addMessage, selectedFile, setMessages,  formData, currentStep, formFields]);
+
+const displayVideo = (videoUrl: string) => {
+  if (/(youtube\.com|youtu\.be)/.test(videoUrl)) {
+      return (
+        
+        <iframe
+              src={videoUrl.replace('watch?v=', 'embed/')}
+              title="video-preview"
+              className="h-64 w-full rounded-lg border"
+              frameBorder="0"
+              allow="autoplay; encrypted-media"
+              allowFullScreen
+          />
+          
+      );
+  } else {
+      return (
+          <video
+              src={videoUrl}
+              controls
+              className="h-64 w-full rounded-lg border"
+          />
+      );
+  }
+};
+
+const displayImage = (imageUrl: string) => {
+  
+      return (
+          <img
+              src={selectedImage[0]}
+              
+              className="h-64 w-full rounded-lg border"
+          />
+      );
+  
+};
+
+const displayFile = (imageUrl: string) => {
+  
+  return (
+      <div className="flex items-center p-4 gap-2.5 rounded-lg">
+        <File/>
+        <span>{fileName}</span>
+      </div>
+  );
+
+};
 
   // Validation function
   const validateInput = (currentField: any, value: any): string | null => {
@@ -194,88 +251,31 @@ React.useEffect(() => {
   const handleSubmit = () => {
     const currentField = formFields[currentStep];
 
-    if (selectedImage) {
-      const imagePreview = URL.createObjectURL(selectedImage);
-      addMessage(
-        "user",
-        <Image
-          src={imagePreview}
-          alt="Uploaded"
-          height={200}
-          width={200}
-          className="max-w-[200px] rounded-lg border"
-        />
-      );
-      setFormData((prev) => ({
-        ...prev,
-        [currentField.name]: selectedImage.name,
-      }));
-     
-      setSelectedImage(null);
-      
-      setInput("");
-      const nextStep = findNextActiveField(currentStep);
-      setCurrentStep(nextStep);
-
-      if (nextStep !== -1) {
-        const nextField = formFields[nextStep];
-        addMessage(
-          "assistant",
-          <div>
-            <span className="label">{nextField.label}</span>
-            {nextField.required && <span className="text-red-500">*</span>}
-            <br />
-            <span className="text-sm text-gray-400">{nextField.description}</span>
-          </div>
-        );
-      } else {
-        addMessage("assistant", "Thank you for completing the form.");
-      }
-      return;
-    }
-
-    if (selectedFile) {
-      // Get file type icon and styling based on file extension
-      const getFileDisplay = (file: File) => {
-          
-          
-          return (
-              <div className={`flex items-center p-4  rounded-lg border max-w-[300px]`}>
-                  <div className="text-2xl mr-3"><File/></div>
-                  <div className="flex flex-col">
-                      <span className="text-sm font-medium truncate max-w-[200px]">
-                          {file.name}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                          {(file.size / (1024 * 1024)).toFixed(2)} MB
-                      </span>
-                  </div>
-              </div>
-          );
-      };
-
-      // Add file preview to chat
+    if (selectedImage.length > 0) {
+      const imageToDisplay = selectedImage[0]; // Display the first video in the state
+  
       addMessage(
           "user",
-          getFileDisplay(selectedFile)
+          <div className="flex h-64 w-full items-center">
+              {displayImage(imageToDisplay)}
+          </div>
       );
-
+  
       // Update form data
       setFormData((prev) => ({
           ...prev,
-          [currentField.name]: selectedFile.name,
+          [currentField.name]: imageToDisplay,
       }));
-
+  
       // Reset states
-      
-      setSelectedFile(null);
-      
+      setSelectedImage((prev) => prev.slice(1))
+      // setVideos((prev) => prev.slice(1)); // Remove the displayed video from state
       setInput("");
-
+  
       // Handle next step
       const nextStep = findNextActiveField(currentStep);
       setCurrentStep(nextStep);
-
+  
       if (nextStep !== -1) {
           const nextField = formFields[nextStep];
           addMessage(
@@ -290,8 +290,190 @@ React.useEffect(() => {
       } else {
           addMessage("assistant", "Thank you for completing the form.");
       }
-      return;
+    }
+
+    if (selectedFile.length > 0) {
+      const fileToDisplay = selectedFile[0]; // Display the first video in the state
+  
+      addMessage(
+          "user",
+          <div className="flex h-fit w-full items-center">
+              {displayFile(fileToDisplay)}
+          </div>
+      );
+  
+      // Update form data
+      setFormData((prev) => ({
+          ...prev,
+          [currentField.name]: fileToDisplay,
+      }));
+  
+      // Reset states
+      setSelectedFile((prev) => prev.slice(1))
+      // setVideos((prev) => prev.slice(1)); // Remove the displayed video from state
+      setInput("");
+  
+      // Handle next step
+      const nextStep = findNextActiveField(currentStep);
+      setCurrentStep(nextStep);
+  
+      if (nextStep !== -1) {
+          const nextField = formFields[nextStep];
+          addMessage(
+              "assistant",
+              <div>
+                  <span className="label">{nextField.label}</span>
+                  {nextField.required && <span className="text-red-500">*</span>}
+                  <br />
+                  <span className="text-sm text-gray-400">{nextField.description}</span>
+              </div>
+          );
+      } else {
+          addMessage("assistant", "Thank you for completing the form.");
+      }
+    }
+
+    // if (selectedImage) {
+    //   const imagePreview = URL.createObjectURL(selectedImage);
+    //   addMessage(
+    //     "user",
+    //     <Image
+    //       src={imagePreview}
+    //       alt="Uploaded"
+    //       height={200}
+    //       width={200}
+    //       className="max-w-[200px] rounded-lg border"
+    //     />
+    //   );
+    //   setFormData((prev) => ({
+    //     ...prev,
+    //     [currentField.name]: selectedImage.name,
+    //   }));
+     
+    //   setSelectedImage(null);
+      
+    //   setInput("");
+    //   const nextStep = findNextActiveField(currentStep);
+    //   setCurrentStep(nextStep);
+
+    //   if (nextStep !== -1) {
+    //     const nextField = formFields[nextStep];
+    //     addMessage(
+    //       "assistant",
+    //       <div>
+    //         <span className="label">{nextField.label}</span>
+    //         {nextField.required && <span className="text-red-500">*</span>}
+    //         <br />
+    //         <span className="text-sm text-gray-400">{nextField.description}</span>
+    //       </div>
+    //     );
+    //   } else {
+    //     addMessage("assistant", "Thank you for completing the form.");
+    //   }
+    //   return;
+    // }
+
+  //   if (selectedFile) {
+  //     // Get file type icon and styling based on file extension
+  //     const getFileDisplay = (file: File) => {
+          
+          
+  //         return (
+  //             <div className={`flex items-center p-4  rounded-lg border max-w-[300px]`}>
+  //                 <div className="text-2xl mr-3"><File/></div>
+  //                 <div className="flex flex-col">
+  //                     <span className="text-sm font-medium truncate max-w-[200px]">
+  //                         {file.name}
+  //                     </span>
+  //                     <span className="text-xs text-gray-500">
+  //                         {(file.size / (1024 * 1024)).toFixed(2)} MB
+  //                     </span>
+  //                 </div>
+  //             </div>
+  //         );
+  //     };
+
+  //     // Add file preview to chat
+  //     addMessage(
+  //         "user",
+  //         getFileDisplay(selectedFile)
+  //     );
+
+  //     // Update form data
+  //     setFormData((prev) => ({
+  //         ...prev,
+  //         [currentField.name]: selectedFile.name,
+  //     }));
+
+  //     // Reset states
+      
+  //     setSelectedFile(null);
+      
+  //     setInput("");
+
+  //     // Handle next step
+  //     const nextStep = findNextActiveField(currentStep);
+  //     setCurrentStep(nextStep);
+
+  //     if (nextStep !== -1) {
+  //         const nextField = formFields[nextStep];
+  //         addMessage(
+  //             "assistant",
+  //             <div>
+  //                 <span className="label">{nextField.label}</span>
+  //                 {nextField.required && <span className="text-red-500">*</span>}
+  //                 <br />
+  //                 <span className="text-sm text-gray-400">{nextField.description}</span>
+  //             </div>
+  //         );
+  //     } else {
+  //         addMessage("assistant", "Thank you for completing the form.");
+  //     }
+  //     return;
+  // }
+
+  
+
+  if (videos.length > 0) {
+    const videoToDisplay = videos[0]; // Display the first video in the state
+
+    addMessage(
+        "user",
+        <div className="flex h-64 w-full items-center">
+            {displayVideo(videoToDisplay)}
+        </div>
+    );
+
+    // Update form data
+    setFormData((prev) => ({
+        ...prev,
+        [currentField.name]: videoToDisplay,
+    }));
+
+    // Reset states
+    setVideos((prev) => prev.slice(1)); // Remove the displayed video from state
+    setInput("");
+
+    // Handle next step
+    const nextStep = findNextActiveField(currentStep);
+    setCurrentStep(nextStep);
+
+    if (nextStep !== -1) {
+        const nextField = formFields[nextStep];
+        addMessage(
+            "assistant",
+            <div>
+                <span className="label">{nextField.label}</span>
+                {nextField.required && <span className="text-red-500">*</span>}
+                <br />
+                <span className="text-sm text-gray-400">{nextField.description}</span>
+            </div>
+        );
+    } else {
+        addMessage("assistant", "Thank you for completing the form.");
+    }
   }
+
 
     const error = validateInput(currentField, input);
 
@@ -391,9 +573,21 @@ React.useEffect(() => {
                   }}
                   formData={formData}
                   setFormData={setFormData}
+                  selectedImage={selectedImage}
                   setSelectedImage={setSelectedImage}
                   setSelectedFile={setSelectedFile}
                   apiFieldData={apiFieldData}
+                  videos={videos}
+                  setVideos={setVideos}
+                  videoError={videoError}
+                  setVideoError={setVideoError}
+                  selectedFile={selectedFile}
+                  imageError={imageError}
+                  setImageError={setImageError}
+                  fileError={fileError}
+                  setFileError={setFileError}
+                  setFileName={setFileName}
+                  fileName={fileName}
                 />
                 {validationError && (
                   <p className="text-red-500 text-sm mt-1">{validationError}</p>

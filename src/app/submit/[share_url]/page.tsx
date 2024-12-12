@@ -226,6 +226,28 @@ const Page = (props: any) => {
       data.description = mediaCardVariant.value.description;
     }
 
+    const videoUploadVariant = formJsonData.find(
+      (item) => item.variant === "Video Upload"
+    )
+
+    if (videoUploadVariant){
+      const uploadedVideoUrl = localStorage.getItem("uploadedVideoUrl");
+      if(uploadedVideoUrl){
+        data.video_url = uploadedVideoUrl;
+      }
+    }
+
+    const imageUploadVariant = formJsonData.find(
+      (item) => item.variant === "Image Upload"
+    )
+
+    if(imageUploadVariant){
+      const uploadedImageUrl = localStorage.getItem("uploadedImageUrl");
+      if(uploadedImageUrl){
+        data.image_url = uploadedImageUrl;
+      }
+    }
+
     const payload = {
       form_id: formData[0].form_id,
       form_name: formData[0].form_name,
