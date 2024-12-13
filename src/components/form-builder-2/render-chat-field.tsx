@@ -29,7 +29,7 @@ import {
 } from "../ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { cn } from "@/lib/utils";
-import { Check, ChevronsUpDown, ExternalLink, File, ImageIcon, Link, UploadIcon, XIcon } from "lucide-react";
+import { Check, ChevronsUpDown, DownloadCloud, ExternalLink, File, FileText, ImageIcon, Link, Table, UploadIcon, XIcon } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
 import { MultiSelector, MultiSelectorContent, MultiSelectorInput, MultiSelectorItem, MultiSelectorList, MultiSelectorTrigger } from "../ui/multi-select";
 import { MediaCard } from "../ui/media-card";
@@ -39,6 +39,10 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from "../ui/hover-card"
 import { Badge } from "../ui/badge";
 import { Card, CardContent } from "../ui/card";
 import Image from "next/image";
+import { FaFilePdf } from "react-icons/fa";
+import { FcDocument } from "react-icons/fc";
+import { PiMicrosoftExcelLogoDuotone } from "react-icons/pi";
+import { FaRegFilePdf } from "react-icons/fa";
 
 const RenderInputField = ({
   currentField,
@@ -61,6 +65,12 @@ const RenderInputField = ({
   setFileError,
   fileName,
   setFileName,
+  selectedPdf,
+  setSelectedPdf,
+  pdfError,
+  setPdfError,
+  pdfName,
+  setPdfName
 
 }: {
   currentField: any;
@@ -82,7 +92,13 @@ const RenderInputField = ({
   fileError: any
   setFileError: any
   fileName: any;
-  setFileName: any
+  setFileName: any;
+  pdfName: any;
+  setPdfName: any;
+  selectedPdf: any;
+  setSelectedPdf: any;
+  pdfError: any;
+  setPdfError: any;
 }) => {
 
   const [selectedValues, setSelectedValues] = useState<any>([]);
@@ -94,6 +110,7 @@ const RenderInputField = ({
   const [videoUrl, setVideoUrl] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string>("");
   const [fileUrl, setFileUrl] = useState<string>("");
+  const [pdfUrl, setPdfUrl] = useState<string>("");
 
   const MAX_VIDEO_SIZE = 2 * 1024 * 1024
   const MAX_IMAGE_SIZE = 5 * 1024 * 1024
@@ -217,6 +234,23 @@ const RenderInputField = ({
     setFileUrl(""); // Clear input field
   };
 
+  const getFileIcon = (fileName: any) => {
+    const extension = fileName.split('.').pop().toLowerCase();
+    console.log("extension----",extension);
+    switch (extension) {
+      
+      case 'doc':
+      case 'docx':
+        return <FileText className="w-8 h-8 text-blue-500" />;
+      case 'xls':
+      case 'xlsx':
+      case 'csv':
+        return <Table className="w-8 h-8 text-green-500" />;
+      default:
+        return <File className="w-8 h-8 text-gray-500" />;
+    }
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
@@ -241,6 +275,54 @@ const RenderInputField = ({
 
       setFileError(null);
     }
+  };
+
+  const handlePdfChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+  
+      // Validate image size
+      const validFiles = newFiles.filter(
+        (file) => file.size <= MAX_FILE_SIZE // Replace `MAX_IMAGE_SIZE` with your desired size limit in bytes
+      );
+  
+      if (validFiles.length !== newFiles.length) {
+        setFileError("Some Files were not uploaded. Please ensure all files are under the size limit.");
+        return;
+      }
+  
+      // Generate previews for valid images
+      const newPreviews = validFiles.map((file) => URL.createObjectURL(file));
+  
+      // Update state
+      setSelectedPdf((prevFiles: any) => [...prevFiles, ...newPreviews]);
+      // setInput(newPreviews[0]);
+    setPdfName(e.target.files[0].name)
+
+      setPdfError(null);
+    }
+  };
+
+  const handlePdfSubmit = async (e: any) => {
+    e.preventDefault();
+  
+    if (!pdfUrl) {
+      setPdfError("Please enter a valid file URL.");
+      return;
+    }
+  
+    const validFileUrlPattern =  /^(https?:\/\/.*\.(pdf)$)/i
+    if (!validFileUrlPattern.test(pdfUrl)) {
+      setPdfError("Invalid File URL. Please provide a valid file link.");
+      return;
+    }
+
+    const fileName = fileUrl.split('/').pop();
+  
+    // Add the image URL to the state
+    setSelectedPdf((prevImages: any) => [...prevImages, fileName]);
+    setPdfName(fileName)
+    setPdfUrl(""); // Clear input field
   };
 
   
@@ -566,7 +648,7 @@ const RenderInputField = ({
                   >
                     {selectedFile && selectedFile?.length > 0 ? (
                     <div className="flex p-2.5 flex-col items-center justify-center w-full h-full">
-                      <File/>
+                      {getFileIcon(fileName)}
                       <span className="text-sm md:text-md flex flex-wrap">{fileName}</span>
                       <Button
                         type="button"
@@ -591,7 +673,7 @@ const RenderInputField = ({
                         <span className="font-semibold">Click to upload</span> or drag and drop
                       </p>
                       <p className="text-xs text-primary">
-                        PDF, DOC, DOCX, XLS, XLSX, CSV (MAX. 5MB)
+                         DOC, DOCX, XLS, XLSX, CSV (MAX. 5MB)
                       </p>
                     </div>
                   )}
@@ -599,7 +681,7 @@ const RenderInputField = ({
                       id={"file-upload"}
                       type="file"
                       onChange={handleFileChange}
-                      accept=".pdf,.xlsx,.xls,.doc,.ppt,.txt,.docx,.pptx,.csv"
+                      accept=".xlsx,.xls,.doc,.ppt,.txt,.docx,.pptx,.csv"
                       className="hidden"
                     />
                   </label>
@@ -622,6 +704,76 @@ const RenderInputField = ({
             </CardContent>
           </Card>
       );
+      case "PDF Upload":
+        return (
+          <Card>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center w-full">
+                    <label
+                      htmlFor={"pdf-upload"}
+                      className={`relative flex flex-col items-center justify-center w-full ${
+                        selectedPdf?.length > 0 ? "h-64" : "h-64"
+                      } border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden`}
+                    >
+                      {selectedPdf && selectedPdf?.length > 0 ? (
+                      <div className="flex p-2.5 flex-col items-center justify-center w-full h-full">
+                        <FaRegFilePdf className="w-8 h-8 mb-4 text-red-500" />
+                        <span className="text-sm md:text-md flex flex-wrap">{pdfName}</span>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setSelectedPdf((prevImages: any) =>
+                              prevImages.filter((_: any, index: number) => index !== 0)
+                            );
+                          }}
+                          className="absolute top-2 right-2"
+                        >
+                          <XIcon className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex p-2.5 flex-col items-center justify-center pt-5 pb-6">
+                        <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                        <p className="mb-2 text-sm text-primary">
+                          <span className="font-semibold">Click to upload</span> or drag and drop
+                        </p>
+                        <p className="text-xs text-primary">
+                           PDF (MAX. 5MB)
+                        </p>
+                      </div>
+                    )}
+                      <Input
+                        id={"pdf-upload"}
+                        type="file"
+                        onChange={handlePdfChange}
+                        accept=".pdf"
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+                <div className="mt-2.5 flex items-center gap-2.5">
+                  <Input
+                    value={pdfUrl}
+                    placeholder="Enter pdf URL"
+                    className="border-secondary"
+                    disabled={selectedPdf?.length > 0}
+                    onChange={(e) => setPdfUrl(e.target.value)}
+                  />
+                  <Button disabled={!fileUrl} onClick={handlePdfSubmit}>
+                    <Link className="w-4 h-4 md:mr-2" />
+                    <span className="hidden md:inline">Add URL</span>
+                  </Button>
+                </div>
+                {pdfError && <p className="text-red-500 text-sm">{pdfError}</p>}
+              </CardContent>
+            </Card>
+        );
     case "Video Upload":
       return(
         

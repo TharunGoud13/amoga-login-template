@@ -248,6 +248,17 @@ const Page = (props: any) => {
       }
     }
 
+    const pdfUploadVariant = formJsonData.find(
+      (item) => item.variant === "PDF Upload"
+    )
+
+    if(pdfUploadVariant){
+      const uploadedImageUrl = localStorage.getItem("uploadedPdfUrl");
+      if(uploadedImageUrl){
+        data.pdf_url = uploadedImageUrl;
+      }
+    }
+
     const payload = {
       form_id: formData[0].form_id,
       form_name: formData[0].form_name,

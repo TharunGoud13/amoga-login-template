@@ -24,6 +24,7 @@ export const fieldTypes: FieldType[] = [
   { name: 'Multi Select', isNew: false },
   { name: 'Image Upload', isNew: false },
   { name: 'File Upload', isNew: false },
+  { name: 'PDF Upload', isNew: false },
   { name: 'Video Upload', isNew: false },
   { name: 'Location Select', isNew: true },
   { name: 'Tool Tip Card', isNew: true },

@@ -61,12 +61,14 @@ import {
   CalendarIcon,
   Check,
   ChevronsUpDown,
+  Dock,
   ExternalLink,
   File,
   FileText,
   ImageIcon,
   Link,
   Paperclip,
+  Table,
   Upload,
   UploadIcon,
   X,
@@ -102,6 +104,7 @@ import MediaSocialPage from "../ui/media-social-page";
 import BarChartPage from "../ui/bar-chart-page";
 import { Card, CardContent } from "../ui/card";
 import Image from "next/image";
+import { FaFilePdf } from "react-icons/fa";
 
 const languages = [
   { label: "English", value: "en" },
@@ -145,23 +148,28 @@ const FileSvgDraw = () => {
 };
 
 const ALLOWED_FILES_TYPES = [
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.ms-excel',
-  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  'text/csv'
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "text/csv",
 ];
+const ALLOWED_PDF_TYPES = ["application/pdf"];
 
 const MAX_FILES_SIZE = 5 * 1024 * 1024;
 
-
-export const renderFormField = (field: FormFieldType, form: any,apiFieldData: any) => {
+export const renderFormField = (
+  field: FormFieldType,
+  form: any,
+  apiFieldData: any
+) => {
   const [checked, setChecked] = useState<boolean>(field.checked);
   const [value, setValue] = useState<any>(field.value);
   const [selectedValues, setSelectedValues] = useState<string[]>([]);
   const [tagsValue, setTagsValue] = useState<string[]>([]);
   const [files, setFiles] = useState<File[]>([]);
+  const [pdf, setPdf] = useState<File[]>([]);
   const [images, setImages] = useState<File[]>([]);
   const [videos, setVideos] = useState<string[]>([]);
   const [date, setDate] = useState<Date>();
@@ -178,18 +186,20 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [uploadedFileUrl, setUploadedFileUrl] = useState<string | null>(null);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([])
-  const [imageError, setError] = useState<string | null>(null)
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [imageError, setError] = useState<string | null>(null);
   const [videoUrl, setVideoUrl] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string>("");
   const [fileUrl, setFileUrl] = useState<string>("");
+  const [pdfUrl, setPdfUrl] = useState<string>("");
   const [videoError, setVideoError] = useState<string | null>(null);
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
   const [fileUploadError, setFileUploadError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif']
-  const MAX_FILE_SIZE = 5 * 1024 * 1024
-  const MAX_VIDEO_SIZE = 2 * 1024 * 1024
+  const [pdfUploadError, setPdfUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/gif"];
+  const MAX_FILE_SIZE = 5 * 1024 * 1024;
+  const MAX_VIDEO_SIZE = 2 * 1024 * 1024;
 
   const handleIframeUrlChange = (url: string) => {
     setIframeUrl(url);
@@ -200,75 +210,95 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
-      
+
       // Validate file types and size
-      const validFiles = newFiles.filter(file => 
-        ALLOWED_FILES_TYPES.includes(file.type) && file.size <= MAX_FILES_SIZE
+      const validFiles = newFiles.filter(
+        (file) =>
+          ALLOWED_FILES_TYPES.includes(file.type) && file.size <= MAX_FILES_SIZE
       );
 
       if (validFiles.length !== newFiles.length) {
-        setUploadError('Please ensure all files are in PDF, DOC, DOCX, XLS, XLSX, or CSV format and under 5MB.');
+        setUploadError(
+          "Please ensure all files are in PDF, DOC, DOCX, XLS, XLSX, or CSV format and under 5MB."
+        );
         return;
       }
 
       setUploadError(null);
       setUploading(true);
-      if(!currentPath){
-      setFiles(validFiles);
+      if (!currentPath) {
+        setFiles(validFiles);
       }
-      if(currentPath){
-
-      const formData = new FormData();
-      validFiles.forEach((file) => {
-        formData.append("file", file);
-      });
-
-      try {
-        const response = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
+      if (currentPath) {
+        const formData = new FormData();
+        validFiles.forEach((file) => {
+          formData.append("file", file);
         });
 
-        if (!response.ok) {
-          throw new Error("Upload failed");
-        }
+        try {
+          const response = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
 
-        const data = await response.json();
-        setUploadedFileUrl(data.url);
-        if (data.url) {
-          localStorage.setItem("uploadedFileUrl", data.url);
+          if (!response.ok) {
+            throw new Error("Upload failed");
+          }
+
+          const data = await response.json();
+          setUploadedFileUrl(data.url);
+          if (data.url) {
+            localStorage.setItem("uploadedFileUrl", data.url);
+          }
+          setFiles(validFiles);
+          setValue(validFiles);
+        } catch (error) {
+          console.error("Upload error:", error);
+          setUploadError("Failed to upload file. Please try again.");
+        } finally {
+          setUploading(false);
         }
-        setFiles(validFiles);
-        setValue(validFiles);
-      } catch (error) {
-        console.error("Upload error:", error);
-        setUploadError("Failed to upload file. Please try again.");
-      } finally {
-        setUploading(false);
       }
-    }
     }
   };
 
-  const handleFileSubmit = async(e:any) => {
+  const getFileIcon = (fileName: any) => {
+    const extension = fileName.split(".").pop().toLowerCase();
+    switch (extension) {
+      case "pdf":
+        return <FaFilePdf className="w-8 h-8 text-red-500" />;
+      case "doc":
+      case "docx":
+        return <Dock className="w-8 h-8 text-blue-500" />;
+      case "xls":
+      case "xlsx":
+      case "csv":
+        return <Table className="w-8 h-8 text-green-500" />;
+      default:
+        return <File className="w-8 h-8 text-gray-500" />;
+    }
+  };
+
+  const handleFileSubmit = async (e: any) => {
     e.preventDefault();
-    setFileUploadError("")
-    if(!fileUrl){
+    setFileUploadError("");
+    if (!fileUrl) {
       setFileUploadError("Please enter a valid video url");
       return;
     }
-    const validFileUrlPattern =  /^(https?:\/\/.*\.(doc|docx|xls|xlsx|csv|pdf|ppt|pptx|txt))$|^(https?:\/\/docs\.google\.com\/(document|spreadsheets)\/d\/[a-zA-Z0-9-_]+)/i;
+    const validFileUrlPattern =
+      /^(https?:\/\/.*\.(doc|docx|xls|xlsx|csv|ppt|pptx|txt))$|^(https?:\/\/docs\.google\.com\/(document|spreadsheets)\/d\/[a-zA-Z0-9-_]+)/i;
     if (!validFileUrlPattern.test(fileUrl)) {
-      setFileUploadError('Invalid File URL. Please provide a valid File Link.');
+      setFileUploadError("Invalid File URL. Please provide a valid File Link.");
       return;
     }
-    const fileName = fileUrl.split('/').pop(); // Extract file name from URL
+    const fileName = fileUrl.split("/").pop(); // Extract file name from URL
     const fileMock = {
       name: fileName || "unknown",
       url: fileUrl, // Use URL as the source
-      type: fileUrl.split('.').pop(), // Extract the extension
+      type: fileUrl.split(".").pop(), // Extract the extension
     };
-    if(currentPath){
+    if (currentPath) {
       const payload = {
         url: fileUrl,
       };
@@ -280,11 +310,11 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
           },
           body: JSON.stringify(payload),
         });
-    
+
         if (!response.ok) {
           throw new Error("Upload failed");
         }
-    
+
         const data = await response.json();
         if (data.url) {
           localStorage.setItem("uploadedFileUrl", data.url);
@@ -293,53 +323,107 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
         setValue((prevValues: any) => [...prevValues, fileMock]);
         // setImagePreviews((prevVideos) => [...prevVideos, imageUrl]);
 
-          // setValue(validImages);
+        // setValue(validImages);
       } catch (error) {
         console.error("Upload error:", error);
         setUploadError("Failed to upload video URL. Please try again.");
       }
     }
 
-  // Update the files state to include the new file
-  setFiles((prevFiles: any) => [...prevFiles, fileMock]);
-  setValue((prevValues: any) => [...prevValues, fileMock]);
-  }
+    // Update the files state to include the new file
+    setFiles((prevFiles: any) => [...prevFiles, fileMock]);
+    setValue((prevValues: any) => [...prevValues, fileMock]);
+  };
 
   const removeFile = () => {
     setFiles([]);
     setUploadedFileUrl(null);
     setValue([]);
+    setFileUrl("");
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
-  const handleVideoChange = async(e: ChangeEvent<HTMLInputElement>) => {
-
-    if(e.target.files){
-      const newVideo = Array.from(e.target.files)
-      const validVideo = newVideo.filter(video => 
-        video.size <= MAX_VIDEO_SIZE
-      )
-      if(validVideo.length !== newVideo.length){
-        setVideoUrl('')
-        setVideoError('No video selected')
+  const handleVideoChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newVideo = Array.from(e.target.files);
+      const validVideo = newVideo.filter(
+        (video) => video.size <= MAX_VIDEO_SIZE
+      );
+      if (validVideo.length !== newVideo.length) {
+        setVideoUrl("");
+        setVideoError("No video selected");
       }
-      const newPreview = validVideo.map(video => URL.createObjectURL(video))
-      if(!currentPath){
-      setVideos(prevPreviews => [...prevPreviews, ...newPreview])
+      const newPreview = validVideo.map((video) => URL.createObjectURL(video));
+      if (!currentPath) {
+        setVideos((prevPreviews) => [...prevPreviews, ...newPreview]);
       }
-      
-      if(currentPath){
-      const formData = new FormData();
-      validVideo.forEach((file) => {
-        formData.append("file", file);
-      });
 
+      if (currentPath) {
+        const formData = new FormData();
+        validVideo.forEach((file) => {
+          formData.append("file", file);
+        });
+
+        try {
+          const response = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error("Upload failed");
+          }
+
+          const data = await response.json();
+          if (data.url) {
+            localStorage.setItem("uploadedVideoUrl", data.url);
+          }
+          setVideos((prevPreviews) => [...prevPreviews, ...newPreview]);
+          setVideoUrl("");
+          setVideoError("");
+          setValue(validVideo);
+        } catch (error) {
+          console.error("Upload error:", error);
+          setUploadError("Failed to upload file. Please try again.");
+        } finally {
+          setUploading(false);
+        }
+      }
+    }
+  };
+
+  const handleVideoSubmit = async (e: any) => {
+    e.preventDefault();
+    if (!videoUrl) {
+      setVideoError("Please enter a valid video url");
+      return;
+    }
+    const validUrlPattern =
+      /^(https?:\/\/.*\.(mp4|mov|avi|mkv|webm))|(https?:\/\/(www\.)?youtube\.com\/watch\?v=\w+)|(https?:\/\/youtu\.be\/\w+)/;
+    if (!validUrlPattern.test(videoUrl)) {
+      setVideoError(
+        "Invalid video URL. Please provide a direct video link or YouTube link."
+      );
+      return;
+    }
+
+    if (!currentPath) {
+      setVideos((prevVideos) => [...prevVideos, videoUrl]);
+    }
+
+    if (currentPath) {
+      const payload = {
+        url: videoUrl,
+      };
       try {
         const response = await fetch("/api/upload", {
           method: "POST",
-          body: formData,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
         });
 
         if (!response.ok) {
@@ -350,99 +434,103 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
         if (data.url) {
           localStorage.setItem("uploadedVideoUrl", data.url);
         }
-        setVideos(prevPreviews => [...prevPreviews, ...newPreview])
-        setVideoUrl('');
-        setVideoError('');
-        setValue(validVideo);
+        setVideos((prevVideos) => [...prevVideos, videoUrl]); // Add URL to video list
+        setVideoUrl(""); // Clear input field
+        setVideoError(""); // Clear error messages
       } catch (error) {
         console.error("Upload error:", error);
-        setUploadError("Failed to upload file. Please try again.");
-      } finally {
-        setUploading(false);
+        setUploadError("Failed to upload video URL. Please try again.");
       }
     }
-  
-    }
-  }
+  };
 
-  const handleVideoSubmit = async(e:any) => {
-    e.preventDefault();
-    if(!videoUrl){
-      setVideoError("Please enter a valid video url");
-      return;
-    }
-    const validUrlPattern = /^(https?:\/\/.*\.(mp4|mov|avi|mkv|webm))|(https?:\/\/(www\.)?youtube\.com\/watch\?v=\w+)|(https?:\/\/youtu\.be\/\w+)/;
-    if (!validUrlPattern.test(videoUrl)) {
-      setVideoError('Invalid video URL. Please provide a direct video link or YouTube link.');
-      return;
-    }
-
-    if(!currentPath){
-      setVideos((prevVideos) => [...prevVideos, videoUrl]);
-    }
-
-    if(currentPath){
-    const payload = {
-      url: videoUrl,
-    };
-    try {
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-  
-      if (!response.ok) {
-        throw new Error("Upload failed");
-      }
-  
-      const data = await response.json();
-      if (data.url) {
-        localStorage.setItem("uploadedVideoUrl", data.url);
-      }
-      setVideos((prevVideos) => [...prevVideos, videoUrl]); // Add URL to video list
-      setVideoUrl(''); // Clear input field
-      setVideoError(''); // Clear error messages
-    } catch (error) {
-      console.error("Upload error:", error);
-      setUploadError("Failed to upload video URL. Please try again.");
-    }
-  }
-  }
-
-  const handleImageChange = async(e: ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const newImages = Array.from(e.target.files)
-      console.log("newImages----",newImages)
-      const validImages = newImages.filter(file => 
-        ALLOWED_FILE_TYPES.includes(file.type) && file.size <= MAX_FILE_SIZE
-      )
+      const newImages = Array.from(e.target.files);
+      console.log("newImages----", newImages);
+      const validImages = newImages.filter(
+        (file) =>
+          ALLOWED_FILE_TYPES.includes(file.type) && file.size <= MAX_FILE_SIZE
+      );
 
       if (validImages.length !== newImages.length) {
-        setError('Some files were not added. Please ensure all files are images (JPG, PNG, or GIF) and under 5MB.')
+        setError(
+          "Some files were not added. Please ensure all files are images (JPG, PNG, or GIF) and under 5MB."
+        );
       } else {
-        setError(null)
-      } 
+        setError(null);
+      }
 
-      setImages((prevImages: any) => [...prevImages, ...validImages])
-      setValue([...images, ...validImages])
+      setImages((prevImages: any) => [...prevImages, ...validImages]);
+      setValue([...images, ...validImages]);
 
-      const newPreviews = validImages.map(file => URL.createObjectURL(file))
-      setImagePreviews(prevPreviews => [...prevPreviews, ...newPreviews])
+      const newPreviews = validImages.map((file) => URL.createObjectURL(file));
+      setImagePreviews((prevPreviews) => [...prevPreviews, ...newPreviews]);
 
-      if(currentPath){
+      if (currentPath) {
+        const formData = new FormData();
+        validImages.forEach((file) => {
+          formData.append("file", file);
+        });
 
-      const formData = new FormData();
-      validImages.forEach((file) => {
-        formData.append("file", file);
-      });
+        try {
+          const response = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
 
+          if (!response.ok) {
+            throw new Error("Upload failed");
+          }
+
+          const data = await response.json();
+          setUploadedFileUrl(data.url);
+          if (data.url) {
+            localStorage.setItem("uploadedImageUrl", data.url);
+          }
+          setImages(validImages);
+          setValue(validImages);
+        } catch (error) {
+          console.error("Upload error:", error);
+          setUploadError("Failed to upload file. Please try again.");
+        } finally {
+          setUploading(false);
+        }
+      }
+    }
+  };
+
+  const handleImageSubmit = async (e: any) => {
+    e.preventDefault();
+    setImageUploadError("");
+    if (!imageUrl) {
+      setImageUploadError("Please enter a valid video url");
+      return;
+    }
+    const validImageUrlPattern =
+      /^(https?:\/\/.*\.(jpg|jpeg|png|gif|webp|tif|svg))$/i;
+    if (!validImageUrlPattern.test(imageUrl)) {
+      setImageUploadError(
+        "Invalid Image URL. Please provide a valid Image Link."
+      );
+      return;
+    }
+
+    if (!currentPath) {
+      setImagePreviews((prevVideos) => [...prevVideos, imageUrl]);
+    }
+
+    if (currentPath) {
+      const payload = {
+        url: imageUrl,
+      };
       try {
         const response = await fetch("/api/upload", {
           method: "POST",
-          body: formData,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
         });
 
         if (!response.ok) {
@@ -450,78 +538,161 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
         }
 
         const data = await response.json();
-        setUploadedFileUrl(data.url);
         if (data.url) {
           localStorage.setItem("uploadedImageUrl", data.url);
         }
-        setImages(validImages);
-        setValue(validImages);
+        setImagePreviews((prevVideos) => [...prevVideos, imageUrl]);
+        // setValue(validImages);
       } catch (error) {
         console.error("Upload error:", error);
-        setUploadError("Failed to upload file. Please try again.");
-      } finally {
-        setUploading(false);
+        setUploadError("Failed to upload video URL. Please try again.");
       }
     }
-    }
-  }
+  };
 
-  const handleImageSubmit = async(e:any) => {
+  const handlePdfChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+
+      // Validate file types and size
+      const validFiles = newFiles.filter(
+        (file) =>
+          ALLOWED_PDF_TYPES.includes(file.type) && file.size <= MAX_FILES_SIZE
+      );
+
+      if (validFiles.length !== newFiles.length) {
+        setUploadError("Please ensure files are in PDF format and under 5MB.");
+        return;
+      }
+
+      setUploadError(null);
+      setUploading(true);
+      if (!currentPath) {
+        setPdf(validFiles);
+      }
+      if (currentPath) {
+        const formData = new FormData();
+        validFiles.forEach((file) => {
+          formData.append("file", file);
+        });
+
+        try {
+          const response = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error("Upload failed");
+          }
+
+          const data = await response.json();
+          setUploadedFileUrl(data.url);
+          if (data.url) {
+            localStorage.setItem("uploadedPdfUrl", data.url);
+          }
+          setPdf(validFiles);
+          setValue(validFiles);
+        } catch (error) {
+          console.error("Upload error:", error);
+          setUploadError("Failed to upload file. Please try again.");
+        } finally {
+          setUploading(false);
+        }
+      }
+    }
+  };
+
+  const handlePdfSubmit = async (e: any) => {
     e.preventDefault();
-    setImageUploadError("")
-    if(!imageUrl){
-      setImageUploadError("Please enter a valid video url");
+    setPdfUploadError("");
+    if (!pdfUrl) {
+      setPdfUploadError("Please enter a valid video url");
       return;
     }
-    const validImageUrlPattern = /^(https?:\/\/.*\.(jpg|jpeg|png|gif|webp|tif|svg))$/i;
-    if (!validImageUrlPattern.test(imageUrl)) {
-      setImageUploadError('Invalid Image URL. Please provide a valid Image Link.');
+    const validFileUrlPattern = /^(https?:\/\/.*\.(pdf)$)/i;
+    if (!validFileUrlPattern.test(pdfUrl)) {
+      setPdfUploadError("Invalid File URL. Please provide a valid File Link.");
       return;
     }
-
-    if(!currentPath){
-      setImagePreviews((prevVideos) => [...prevVideos, imageUrl]);
-    }
-
-    if(currentPath){
-    const payload = {
-      url: imageUrl,
+    const fileName = pdfUrl.split("/").pop(); // Extract file name from URL
+    const fileMock = {
+      name: fileName || "unknown",
+      url: pdfUrl, // Use URL as the source
+      type: pdfUrl.split(".").pop(), // Extract the extension
     };
-    try {
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-  
-      if (!response.ok) {
-        throw new Error("Upload failed");
-      }
-  
-      const data = await response.json();
-      if (data.url) {
-        localStorage.setItem("uploadedImageUrl", data.url);
-      }
-      setImagePreviews((prevVideos) => [...prevVideos, imageUrl]);
+    if (currentPath) {
+      const payload = {
+        url: pdfUrl,
+      };
+      try {
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error("Upload failed");
+        }
+
+        const data = await response.json();
+        if (data.url) {
+          localStorage.setItem("uploadedFileUrl", data.url);
+        }
+        setFiles((prevFiles: any) => [...prevFiles, fileMock]);
+        setValue((prevValues: any) => [...prevValues, fileMock]);
+        // setImagePreviews((prevVideos) => [...prevVideos, imageUrl]);
+
         // setValue(validImages);
-    } catch (error) {
-      console.error("Upload error:", error);
-      setUploadError("Failed to upload video URL. Please try again.");
+      } catch (error) {
+        console.error("Upload error:", error);
+        setUploadError("Failed to upload video URL. Please try again.");
+      }
     }
-  }
-  }
+
+    // Update the files state to include the new file
+    setPdf((prevFiles: any) => [...prevFiles, fileMock]);
+    setValue((prevValues: any) => [...prevValues, fileMock]);
+  };
+
+  const handleRemovePdf = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    // Clear PDF states
+    setPdf([]);
+    setPdfUrl("");
+
+    // Clear uploaded file URL in localStorage if exists
+    if (currentPath) {
+      localStorage.removeItem("uploadedPdfUrl");
+    }
+
+    // Additional cleanup if you're using other states
+    setUploadError(null);
+    setUploadedFileUrl(null);
+  };
 
   const removeVideo = (index: number) => {
-    setVideos((prevVideos: any[]) => prevVideos.filter((_, i) => i !== index))
-  }
+    setVideos((prevVideos: any[]) => prevVideos.filter((_, i) => i !== index));
+  };
 
   const removeImage = (index: number) => {
-    setImages((prevImages: any[]) => prevImages.filter((_, i) => i !== index))
-    setImagePreviews(prevPreviews => prevPreviews.filter((_, i) => i !== index))
-    setValue(images.filter((_: any, i: number) => i !== index))
-  }
+    setImages((prevImages: any[]) => prevImages.filter((_, i) => i !== index));
+    setImageUrl("");
+    setImagePreviews((prevPreviews) =>
+      prevPreviews.filter((_, i) => i !== index)
+    );
+    setValue(images.filter((_: any, i: number) => i !== index));
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => setProgress(66), 500);
@@ -543,16 +714,20 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
               onCheckedChange={() => {
                 setChecked(!checked);
               }}
-              className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
+              className={
+                form.formState.errors?.[field.name] ? "border-red-500" : ""
+              }
               disabled={field.disabled}
             />
           </FormControl>
           <div className="space-y-1 leading-none">
-          <div className="flex justify-between items-center">
-          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
-          <FormMessage />
-
-          </div>
+            <div className="flex justify-between items-center">
+              <div>
+                <FormLabel>{field.label}</FormLabel>{" "}
+                <span className="text-red-500">{field.required && "*"}</span>
+              </div>
+              <FormMessage />
+            </div>
             <FormDescription>{field.description}</FormDescription>
           </div>
         </FormItem>
@@ -560,33 +735,35 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
     case "Radio Group":
       return (
         <>
-        <div className="flex justify-between items-center">
-          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
+          <div className="flex justify-between items-center">
+            <div>
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
           </div>
-        <FormItem
-          className={cn(
-            "flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4",
-            field.className
-          )}
-        >
-          
-          <FormMessage />
-          <FormControl>
-            <RadioGroup defaultValue="comfortable">
-              {apiFieldData?.length > 0 ? apiFieldData?.map((item:any,index: any) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <RadioGroupItem value={item} id={index} />
-                  <Label htmlFor={index}>{item}</Label>
-                </div>
-              )):
-              field?.radiogroup?.map((item:any,index: any) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <RadioGroupItem value={item} id={index} />
-                  <Label htmlFor={index}>{item}</Label>
-                </div>
-              ))
-            }
-              {/* <div className="flex items-center space-x-2">
+          <FormItem
+            className={cn(
+              "flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4",
+              field.className
+            )}
+          >
+            <FormMessage />
+            <FormControl>
+              <RadioGroup defaultValue="comfortable">
+                {apiFieldData?.length > 0
+                  ? apiFieldData?.map((item: any, index: any) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <RadioGroupItem value={item} id={index} />
+                        <Label htmlFor={index}>{item}</Label>
+                      </div>
+                    ))
+                  : field?.radiogroup?.map((item: any, index: any) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <RadioGroupItem value={item} id={index} />
+                        <Label htmlFor={index}>{item}</Label>
+                      </div>
+                    ))}
+                {/* <div className="flex items-center space-x-2">
                 <RadioGroupItem value="default" id="r1" />
                 <Label htmlFor="r1">{field.name}</Label>
               </div>
@@ -598,14 +775,14 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
                 <RadioGroupItem value="compact" id="r3" />
                 <Label htmlFor="r3">{field.name}</Label>
               </div> */}
-            </RadioGroup>
-          </FormControl>
-          <div className="space-y-1 leading-none">
-            {/* <FormLabel>{field.label}</FormLabel> {field.required && "*"} */}
-            {/* <FormDescription>{field.description}</FormDescription> */}
-          </div>
-          <FormMessage />
-        </FormItem>
+              </RadioGroup>
+            </FormControl>
+            <div className="space-y-1 leading-none">
+              {/* <FormLabel>{field.label}</FormLabel> {field.required && "*"} */}
+              {/* <FormDescription>{field.description}</FormDescription> */}
+            </div>
+            <FormMessage />
+          </FormItem>
         </>
       );
     case "Search Lookup":
@@ -653,9 +830,11 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
       return (
         <FormItem className="flex flex-col">
           <div className="flex justify-between items-center">
-          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
-          <FormMessage />
-
+            <div>
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
           </div>
           <Popover>
             <PopoverTrigger asChild>
@@ -669,8 +848,8 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
                   )}
                 >
                   {value
-                ? field.combobox?.find((item) => item === value)
-                : "Select option"}
+                    ? field.combobox?.find((item) => item === value)
+                    : "Select option"}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </FormControl>
@@ -681,22 +860,24 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
                 <CommandList>
                   <CommandEmpty>No option found.</CommandEmpty>
                   <CommandGroup>
-                  {field.combobox?.map((item) => (
-                  <CommandItem
-                  className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
-                    value={item}
-                    key={item}
-                    onSelect={() => {
-                      setValue(item);
-                      form.setValue(field.name, item);
-                    }}
+                    {field.combobox?.map((item) => (
+                      <CommandItem
+                        className={
+                          form.formState.errors?.[field.name]
+                            ? "border-red-500"
+                            : ""
+                        }
+                        value={item}
+                        key={item}
+                        onSelect={() => {
+                          setValue(item);
+                          form.setValue(field.name, item);
+                        }}
                       >
                         <Check
                           className={cn(
                             "mr-2 h-4 w-4",
-                            item === value
-                              ? "opacity-100"
-                              : "opacity-0"
+                            item === value ? "opacity-100" : "opacity-0"
                           )}
                         />
                         {item}
@@ -708,16 +889,17 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
             </PopoverContent>
           </Popover>
           <FormDescription>{field.description}</FormDescription>
-          
         </FormItem>
       );
     case "Date":
       return (
         <FormItem className="flex flex-col">
-         <div className="flex justify-between items-center">
-          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
-          <FormMessage />
-
+          <div className="flex justify-between items-center">
+            <div>
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
           </div>
           <Popover>
             <PopoverTrigger asChild>
@@ -746,21 +928,24 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
                   });
                 }}
                 initialFocus
-                className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
+                className={
+                  form.formState.errors?.[field.name] ? "border-red-500" : ""
+                }
               />
             </PopoverContent>
           </Popover>
           <FormDescription>{field.description}</FormDescription>
-          
         </FormItem>
       );
     case "Date Time":
       return (
         <FormItem className="flex flex-col">
           <div className="flex justify-between items-center">
-          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
-          <FormMessage />
-
+            <div>
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
           </div>
           <DatetimePicker
             {...field}
@@ -773,336 +958,472 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
                 shouldDirty: true,
               });
             }}
-            className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
+            className={
+              form.formState.errors?.[field.name] ? "border-red-500" : ""
+            }
             format={[
               ["months", "days", "years"],
               ["hours", "minutes", "am/pm"],
             ]}
           />
           <FormDescription>{field.description}</FormDescription>
-          
         </FormItem>
       );
     case "File Upload":
       return (
         <FormItem>
-      <div className="flex justify-between items-center">
-        <div>
-          <FormLabel>{field.label}</FormLabel>
-          <span className="text-red-500">{field.required && "*"}</span>
-        </div>
-        <FormMessage />
-      </div>
-      <FormControl>
-        <Card>
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-center w-full">
-                <label
-                  htmlFor={`${field.name}-upload`}
-                  className="relative flex flex-col items-center justify-center w-full h-64 border-2 border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary/80 transition-all duration-300 ease-in-out"
-                >
-                  {files && files?.length > 0 ? (
-                    <div className="flex flex-col items-center justify-center w-full h-full">
-                      <div className="text-4xl font-bold text-primary mb-2">
-                        <File/>
-                      </div>
-                      <div className="text-sm text-primary truncate max-w-[80%]">
-                        {files[0].name}
-                      </div>
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          removeFile();
-                        }}
-                        className="absolute top-2 right-2"
-                      >
-                        <XIcon className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col p-2.5 items-center justify-center pt-5 pb-6">
-                      <UploadIcon className="w-8 h-8 mb-4 text-primary" />
-                      <p className="mb-2 text-sm text-primary">
-                        <span className="font-semibold">Click to upload</span> or drag and drop
-                      </p>
-                      <p className="text-xs text-primary">
-                        PDF, DOC, DOCX, XLS, XLSX, CSV (MAX. 5MB)
-                      </p>
-                    </div>
-                  )}
-                  <Input
-                    id={`${field.name}-upload`}
-                    type="file"
-                    onChange={handleFileChange}
-                    ref={fileInputRef}
-                    accept=".pdf,.doc,.docx,.xls,.xlsx,.csv"
-                    className="hidden"
-                    disabled={uploading || fileUrl?.length > 0}
-                  />
-                </label>
-              </div>
-              {uploadError && (
-                <p className="text-sm text-red-500">{uploadError}</p>
-              )}
-              {currentPath && uploading && (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                  <span className="text-sm text-primary">Uploading...</span>
-                </div>
-              )}
-              <div className="mt-2.5 flex items-center gap-2.5">
-            <Input
-              value={fileUrl}
-              placeholder="Enter File URL"
-              className="border-secondary"
-              disabled={files?.length > 0}
-              onChange={(e) => setFileUrl(e.target.value)}
-            />
-            <Button disabled={!fileUrl || files?.length > 0} onClick={handleFileSubmit}>
-              <Link className="w-4 h-4 mr-2" />
-              Add URL
-            </Button>
-          </div>
-          {fileUploadError && <p className="text-red-500 mt-2">{fileUploadError}</p>}
-
+          <div className="flex justify-between items-center">
+            <div>
+              <FormLabel>{field.label}</FormLabel>
+              <span className="text-red-500">{field.required && "*"}</span>
             </div>
-          </CardContent>
-        </Card>
-      </FormControl>
-      <FormDescription>{field.description}</FormDescription>
-    </FormItem>
-      );
-    case "Image Upload":
-      return (
-        <FormItem>
-      <div className="flex justify-between items-center">
-        <div>
-          <FormLabel>{field.label}</FormLabel> 
-          <span className="text-red-500">{field.required && "*"}</span>
-        </div>
-        <FormMessage />
-      </div>
-      <FormControl>
-        <Card>
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <div className="flex items-center justify-center w-full">
-                <label
-                  htmlFor={`${field.name}-upload`}
-                  className="relative flex flex-col items-center justify-center w-full h-64 border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden"
-                >
-                  {imagePreviews.length > 0 ? (
-                    <>
-                      <Image
-                        src={imagePreviews[0]}
-                        alt="Preview"
-                        layout="fill"
-                        className=""
-                      />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        onClick={(e) => {
-                          e.preventDefault()
-                          e.stopPropagation()
-                          removeImage(0)
-                        }}
-                        className="absolute top-2 right-2 z-10"
-                      >
-                        <XIcon className="h-4 w-4" />
-                      </Button>
-                    </>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <UploadIcon className="w-8 h-8 mb-4 text-primary" />
-                      <p className="mb-2 text-sm text-primary">
-                        <span className="font-semibold">Click to upload</span> or drag and drop
-                      </p>
-                      <p className="text-xs text-primary">JPG, PNG, or GIF (MAX. 5MB)</p>
-                    </div>
-                  )}
-                  <Input
-                    id={`${field.name}-upload`}
-                    type="file"
-                    onChange={handleImageChange}
-                    ref={fileInputRef}
-                    disabled={imageUrl?.length > 0}
-                    accept=".jpg,.jpeg,.png,.gif"
-                    className="hidden"
-                  />
-                </label>
-              </div>
-              {imageError && (
-                <p className="text-sm text-red-500">{imageError}</p>
-              )}
-              <div className="mt-2.5 flex items-center gap-2.5">
-            <Input
-              value={imageUrl}
-              placeholder="Enter Image URL"
-              className="border-secondary"
-              disabled={images?.length > 0}
-              onChange={(e) => setImageUrl(e.target.value)}
-            />
-            <Button disabled={!imageUrl || images?.length > 0} onClick={handleImageSubmit}>
-              <Link className="w-4 h-4 mr-2" />
-              Add URL
-            </Button>
+            <FormMessage />
           </div>
-          {imageUploadError && <p className="text-red-500 mt-2">{imageUploadError}</p>}
-            </div>
-          </CardContent>
-        </Card>
-      </FormControl>
-      <FormDescription>{field.description}</FormDescription>
-    </FormItem>
-      );
-    case "Video Upload":
-      return(
-        <FormItem>
-    <div className="flex justify-between items-center">
-      <div>
-        <FormLabel>{field.label}</FormLabel>
-        <span className="text-red-500">{field.required && '*'}</span>
-      </div>
-      <FormMessage />
-    </div>
-    <FormControl>
-      <Card>
-        <CardContent className="p-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-center w-full">
-              <label
-                htmlFor={`${field.name}-upload`}
-                className={`relative flex flex-col items-center justify-center w-full ${
-                  videos?.length > 0 ? 'h-fit' : 'h-64'
-                } border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden`}
-              >
-                {videos.length > 0 ? (
-                  <div className="relative w-full">
-                    {videos[0].startsWith('http') ? (
-                      /(youtube\.com|youtu\.be)/.test(videos[0]) ? (
-                        <iframe
-                          src={videos[0].replace('watch?v=', 'embed/')}
-                          title="video-preview"
-                          className="h-64 w-full"
-                          frameBorder="0"
-                          allow="autoplay; encrypted-media"
-                          allowFullScreen
-                        />
-                      ) : (
-                        <video src={videos[0]} controls className="h-fit w-full" />
-                      )
-                    ) : (
-                      <video src={videos[0]} controls className="h-fit w-full" />
-                    )}
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        removeVideo(0);
-                      }}
-                      className="absolute top-2 right-2 z-10"
+          <FormControl>
+            <Card>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center w-full">
+                    <label
+                      htmlFor={`${field.name}-upload`}
+                      className="relative flex flex-col items-center justify-center w-full h-64 border-2 border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary/80 transition-all duration-300 ease-in-out"
                     >
-                      <XIcon className="h-4 w-4" />
+                      {files && files?.length > 0 ? (
+                        <div className="flex flex-col items-center justify-center w-full h-full">
+                          <div className="text-4xl font-bold text-primary mb-2">
+                            {getFileIcon(files[0].name)}
+                          </div>
+                          <div className="text-sm text-primary truncate max-w-[80%]">
+                            {files[0].name}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              removeFile();
+                            }}
+                            className="absolute top-2 right-2"
+                          >
+                            <XIcon className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col p-2.5 items-center justify-center pt-5 pb-6">
+                          <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                          <p className="mb-2 text-sm text-primary">
+                            <span className="font-semibold">
+                              Click to upload
+                            </span>{" "}
+                            or drag and drop
+                          </p>
+                          <p className="text-xs text-primary">
+                            DOC, DOCX, XLS, XLSX, CSV (MAX. 5MB)
+                          </p>
+                        </div>
+                      )}
+                      <Input
+                        id={`${field.name}-upload`}
+                        type="file"
+                        onChange={handleFileChange}
+                        ref={fileInputRef}
+                        accept=".doc,.docx,.xls,.xlsx,.csv"
+                        className="hidden"
+                        disabled={fileUrl?.length > 0}
+                      />
+                    </label>
+                  </div>
+                  {uploadError && (
+                    <p className="text-sm text-red-500">{uploadError}</p>
+                  )}
+                  {currentPath && uploading && (
+                    <div className="flex items-center justify-center space-x-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                      <span className="text-sm text-primary">Uploading...</span>
+                    </div>
+                  )}
+                  <div className="mt-2.5 flex items-center gap-2.5">
+                    <Input
+                      value={fileUrl}
+                      placeholder="Enter File URL"
+                      className="border-secondary"
+                      disabled={files?.length > 0}
+                      onChange={(e) => setFileUrl(e.target.value)}
+                    />
+                    <Button
+                      disabled={!fileUrl || files?.length > 0}
+                      onClick={handleFileSubmit}
+                    >
+                      <Link className="w-4 h-4 mr-2" />
+                      Add URL
                     </Button>
                   </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <UploadIcon className="w-8 h-8 mb-4 text-primary" />
-                    <p className="mb-2 text-sm text-primary">
-                      <span className="font-semibold">Click to upload a video</span>
-                    </p>
-                  </div>
-                )}
-                <Input
-                  id={`${field.name}-upload`}
-                  type="file"
-                  onChange={handleVideoChange}
-                  accept=".mp4, .mov, .avi, .mkv, .webm"
-                  className="hidden"
-                />
-              </label>
-            </div>
-          </div>
-          <div className="mt-2.5 flex items-center gap-2.5">
-            <Input
-              value={videoUrl}
-              placeholder="Enter video URL (supports YouTube links)"
-              className="border-secondary"
-              disabled={videos?.length > 0}
-              onChange={(e) => setVideoUrl(e.target.value)}
-            />
-            <Button disabled={!videoUrl || videos?.length > 0} onClick={handleVideoSubmit}>
-              <Link className="w-4 h-4 mr-2" />
-              Add URL
-            </Button>
-          </div>
-          {videoError && <p className="text-red-500 mt-2">{videoError}</p>}
-        </CardContent>
-      </Card>
-    </FormControl>
-  </FormItem>
-      )
-    case "Text Box":
-      return (
-        <FormItem>
-          <div className="flex justify-between items-center">
-          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
-          <FormMessage />
-
-          </div>
-
-          <FormControl className="flex justify-between">
-            <Input
-            className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
-              placeholder={field.placeholder}
-              disabled={field.disabled}
-              type={field?.type}
-            />
-
+                  {fileUploadError && (
+                    <p className="text-red-500 mt-2">{fileUploadError}</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
         </FormItem>
       );
-      case "Label":
-        return (
-          <FormItem>
-            <div className="flex justify-between items-center">
-          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
-          <FormMessage />
-
+    case "PDF Upload":
+      return (
+        <FormItem>
+          <div className="flex justify-between items-center">
+            <div>
+              <FormLabel>{field.label}</FormLabel>
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
           </div>
-            <Input className="bg-gray-100" value={field.label} readOnly/>
-            <FormDescription>{field.description}</FormDescription>
-          </FormItem>
-        );
+          <FormControl>
+            <Card>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center w-full">
+                    <label
+                      htmlFor={`${field.name}-upload`}
+                      className="relative flex flex-col items-center justify-center w-full h-64 border-2 border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary/80 transition-all duration-300 ease-in-out"
+                    >
+                      {pdf && pdf?.length > 0 ? (
+                        <div className="flex flex-col items-center justify-center w-full h-full">
+                          <div className="text-4xl font-bold text-primary mb-2">
+                            <FaFilePdf className="text-red-500" />
+                          </div>
+                          <div className="text-sm text-primary truncate max-w-[80%]">
+                            {pdf[0].name}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={handleRemovePdf}
+                            className="absolute top-2 right-2"
+                          >
+                            <XIcon className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col p-2.5 items-center justify-center pt-5 pb-6">
+                          <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                          <p className="mb-2 text-sm text-primary">
+                            <span className="font-semibold">
+                              Click to upload
+                            </span>{" "}
+                            or drag and drop
+                          </p>
+                          <p className="text-xs text-primary">PDF (MAX. 5MB)</p>
+                        </div>
+                      )}
+                      <Input
+                        id={`${field.name}-upload`}
+                        type="file"
+                        onChange={handlePdfChange}
+                        ref={fileInputRef}
+                        accept=".pdf"
+                        className="hidden"
+                        disabled={pdf?.length > 0}
+                      />
+                    </label>
+                  </div>
+                  {/* {uploadError && (
+                <p className="text-sm text-red-500">{uploadError}</p>
+              )} */}
+                  {/* {currentPath  && (
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  <span className="text-sm text-primary">Uploading...</span>
+                </div>
+              )} */}
+                  <div className="mt-2.5 flex items-center gap-2.5">
+                    <Input
+                      value={pdfUrl}
+                      placeholder="Enter Pdf URL"
+                      className="border-secondary"
+                      disabled={pdf?.length > 0}
+                      onChange={(e) => setPdfUrl(e.target.value)}
+                    />
+                    <Button
+                      disabled={!pdfUrl || pdf?.length > 0}
+                      onClick={handlePdfSubmit}
+                    >
+                      <Link className="w-4 h-4 mr-2" />
+                      Add URL
+                    </Button>
+                  </div>
+                  {pdfUploadError && (
+                    <p className="text-red-500 mt-2">{pdfUploadError}</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </FormControl>
+          <FormDescription>{field.description}</FormDescription>
+        </FormItem>
+      );
+    case "Image Upload":
+      return (
+        <FormItem>
+          <div className="flex justify-between items-center">
+            <div>
+              <FormLabel>{field.label}</FormLabel>
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
+          </div>
+          <FormControl>
+            <Card>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center w-full">
+                    <label
+                      htmlFor={`${field.name}-upload`}
+                      className="relative flex flex-col items-center justify-center w-full h-64 border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden"
+                    >
+                      {imagePreviews.length > 0 ? (
+                        <>
+                          <Image
+                            src={imagePreviews[0]}
+                            alt="Preview"
+                            layout="fill"
+                            className=""
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              removeImage(0);
+                            }}
+                            className="absolute top-2 right-2 z-10"
+                          >
+                            <XIcon className="h-4 w-4" />
+                          </Button>
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                          <p className="mb-2 text-sm text-primary">
+                            <span className="font-semibold">
+                              Click to upload
+                            </span>{" "}
+                            or drag and drop
+                          </p>
+                          <p className="text-xs text-primary">
+                            JPG, PNG, or GIF (MAX. 5MB)
+                          </p>
+                        </div>
+                      )}
+                      <Input
+                        id={`${field.name}-upload`}
+                        type="file"
+                        onChange={handleImageChange}
+                        ref={fileInputRef}
+                        disabled={imageUrl?.length > 0}
+                        accept=".jpg,.jpeg,.png,.gif"
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                  {imageError && (
+                    <p className="text-sm text-red-500">{imageError}</p>
+                  )}
+                  <div className="mt-2.5 flex items-center gap-2.5">
+                    <Input
+                      value={imageUrl}
+                      placeholder="Enter Image URL"
+                      className="border-secondary"
+                      disabled={images?.length > 0}
+                      onChange={(e) => setImageUrl(e.target.value)}
+                    />
+                    <Button
+                      disabled={!imageUrl || images?.length > 0}
+                      onClick={handleImageSubmit}
+                    >
+                      <Link className="w-4 h-4 mr-2" />
+                      Add URL
+                    </Button>
+                  </div>
+                  {imageUploadError && (
+                    <p className="text-red-500 mt-2">{imageUploadError}</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </FormControl>
+          <FormDescription>{field.description}</FormDescription>
+        </FormItem>
+      );
+    case "Video Upload":
+      return (
+        <FormItem>
+          <div className="flex justify-between items-center">
+            <div>
+              <FormLabel>{field.label}</FormLabel>
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
+          </div>
+          <FormControl>
+            <Card>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center w-full">
+                    <label
+                      htmlFor={`${field.name}-upload`}
+                      className={`relative flex flex-col items-center justify-center w-full ${
+                        videos?.length > 0 ? "h-fit" : "h-64"
+                      } border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden`}
+                    >
+                      {videos.length > 0 ? (
+                        <div className="relative w-full">
+                          {videos[0].startsWith("http") ? (
+                            /(youtube\.com|youtu\.be)/.test(videos[0]) ? (
+                              <iframe
+                                src={videos[0].replace("watch?v=", "embed/")}
+                                title="video-preview"
+                                className="h-64 w-full"
+                                frameBorder="0"
+                                allow="autoplay; encrypted-media"
+                                allowFullScreen
+                              />
+                            ) : (
+                              <video
+                                src={videos[0]}
+                                controls
+                                className="h-fit w-full"
+                              />
+                            )
+                          ) : (
+                            <video
+                              src={videos[0]}
+                              controls
+                              className="h-fit w-full"
+                            />
+                          )}
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              removeVideo(0);
+                            }}
+                            className="absolute top-2 right-2 z-10"
+                          >
+                            <XIcon className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                          <p className="mb-2 text-sm text-primary">
+                            <span className="font-semibold">
+                              Click to upload a video
+                            </span>
+                          </p>
+                        </div>
+                      )}
+                      <Input
+                        id={`${field.name}-upload`}
+                        type="file"
+                        onChange={handleVideoChange}
+                        accept=".mp4, .mov, .avi, .mkv, .webm"
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+                <div className="mt-2.5 flex items-center gap-2.5">
+                  <Input
+                    value={videoUrl}
+                    placeholder="Enter video URL (supports YouTube links)"
+                    className="border-secondary"
+                    disabled={videos?.length > 0}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                  />
+                  <Button
+                    disabled={!videoUrl || videos?.length > 0}
+                    onClick={handleVideoSubmit}
+                  >
+                    <Link className="w-4 h-4 mr-2" />
+                    Add URL
+                  </Button>
+                </div>
+                {videoError && (
+                  <p className="text-red-500 mt-2">{videoError}</p>
+                )}
+              </CardContent>
+            </Card>
+          </FormControl>
+        </FormItem>
+      );
+    case "Text Box":
+      return (
+        <FormItem>
+          <div className="flex justify-between items-center">
+            <div>
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
+          </div>
+
+          <FormControl className="flex justify-between">
+            <Input
+              className={
+                form.formState.errors?.[field.name] ? "border-red-500" : ""
+              }
+              placeholder={field.placeholder}
+              disabled={field.disabled}
+              type={field?.type}
+            />
+          </FormControl>
+          <FormDescription>{field.description}</FormDescription>
+        </FormItem>
+      );
+    case "Label":
+      return (
+        <FormItem>
+          <div className="flex justify-between items-center">
+            <div>
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
+          </div>
+          <Input className="bg-gray-100" value={field.label} readOnly />
+          <FormDescription>{field.description}</FormDescription>
+        </FormItem>
+      );
     case "Email":
       return (
         <FormItem>
-         <div className="flex justify-between items-center">
-          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
-          <FormMessage />
-
+          <div className="flex justify-between items-center">
+            <div>
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
           </div>
           <FormControl>
             <Input
               placeholder={field.placeholder}
               disabled={field.disabled}
               type={field?.type}
-              className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
+              className={
+                form.formState.errors?.[field.name] ? "border-red-500" : ""
+              }
             />
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
-          
         </FormItem>
       );
     case "Check box label":
@@ -1110,13 +1431,18 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
         <FormItem>
           <FormControl>
             <div className="flex justify-between">
-            <div className="flex items-center space-x-2">
-              <Checkbox id="terms" className={form.formState.errors?.[field.name] ? "border-red-500" : ""} />
-              <Label htmlFor="terms">{field.label}</Label>
-              <span className="text-red-500">{field.required && "*"}</span>
-            </div>
-              <FormMessage />
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="terms"
+                  className={
+                    form.formState.errors?.[field.name] ? "border-red-500" : ""
+                  }
+                />
+                <Label htmlFor="terms">{field.label}</Label>
+                <span className="text-red-500">{field.required && "*"}</span>
               </div>
+              <FormMessage />
+            </div>
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
         </FormItem>
@@ -1125,12 +1451,19 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
       return (
         <FormItem>
           <div className="flex justify-between items-center">
-          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
-          <FormMessage />
-
+            <div>
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
           </div>
           <FormControl>
-            <InputOTP maxLength={6} className={form.formState.errors?.[field.name] ? "border-red-500" : ""}>
+            <InputOTP
+              maxLength={6}
+              className={
+                form.formState.errors?.[field.name] ? "border-red-500" : ""
+              }
+            >
               <InputOTPGroup>
                 <InputOTPSlot index={0} />
                 <InputOTPSlot index={1} />
@@ -1145,16 +1478,17 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
             </InputOTP>
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
-         
         </FormItem>
       );
     case "Location Select":
       return (
         <FormItem className="flex flex-col">
           <div className="flex justify-between items-center">
-          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
-          <FormMessage />
-
+            <div>
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
           </div>
           <LocationSelector
             onCountryChange={(country) => {
@@ -1167,16 +1501,17 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
             }}
           />
           <FormDescription>{field.description}</FormDescription>
-         
         </FormItem>
       );
     case "Multi Select":
       return (
         <FormItem>
           <div className="flex justify-between items-center">
-          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
-          <FormMessage />
-
+            <div>
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
           </div>
           <FormControl>
             <MultiSelector
@@ -1194,8 +1529,12 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
                 <MultiSelectorInput placeholder={field.placeholder} />
               </MultiSelectorTrigger>
               <MultiSelectorContent>
-                <MultiSelectorList className={form.formState.errors?.[field.name] ? "border-red-500" : ""}>
-                  {field?.multiselect?.map((item,index) => (
+                <MultiSelectorList
+                  className={
+                    form.formState.errors?.[field.name] ? "border-red-500" : ""
+                  }
+                >
+                  {field?.multiselect?.map((item, index) => (
                     <MultiSelectorItem key={index} value={item}>
                       {item}
                     </MultiSelectorItem>
@@ -1205,34 +1544,46 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
             </MultiSelector>
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
-          
         </FormItem>
       );
     case "Dropdown":
       return (
         <FormItem>
           <div className="flex justify-between items-center">
-          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
-          <FormMessage />
-
+            <div>
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
           </div>
-          <Select onValueChange={field.onChange} defaultValue={field?.options && field?.options[0]}
+          <Select
+            onValueChange={field.onChange}
+            defaultValue={field?.options && field?.options[0]}
           >
             <FormControl>
-              <SelectTrigger className={form.formState.errors?.[field.name] ? "border-red-500" : ""}>
-                <SelectValue placeholder={field.placeholder}/>
+              <SelectTrigger
+                className={
+                  form.formState.errors?.[field.name] ? "border-red-500" : ""
+                }
+              >
+                <SelectValue placeholder={field.placeholder} />
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-            {field.options?.map((option) => (
-            <SelectItem key={option} value={option} className={form.formState.errors?.[field.name] ? "border-red-500" : ""}>
-              {option}
-            </SelectItem>
-          ))}
+              {field.options?.map((option) => (
+                <SelectItem
+                  key={option}
+                  value={option}
+                  className={
+                    form.formState.errors?.[field.name] ? "border-red-500" : ""
+                  }
+                >
+                  {option}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <FormDescription>{field.description}</FormDescription>
-          
         </FormItem>
       );
     case "Slider":
@@ -1244,9 +1595,11 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
       return (
         <FormItem>
           <div className="flex justify-between items-center">
-          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
-          <FormMessage />
-
+            <div>
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
           </div>
           <FormControl>
             <Slider
@@ -1263,11 +1616,9 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
             {field.description} Selected value is {value || defaultValue},
             minimun valus is {min}, maximim values is {max}, step size is {step}
           </FormDescription>
-          
         </FormItem>
       );
     case "Media Card":
-      
       return (
         <div>
           <MediaCard
@@ -1309,9 +1660,9 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
           }}
         />
       );
-      case "Bar Chart with Social":
-        return(
-          <BarChartPage 
+    case "Bar Chart with Social":
+      return (
+        <BarChartPage
           title={field.label || ""}
           description={field.description || ""}
           value={field.value}
@@ -1322,8 +1673,9 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
           onDescriptionChange={(newDescription) => {
             field.description = newDescription;
             form.setValue(`${field.name}`, newDescription);
-          }}/>
-        )
+          }}
+        />
+      );
     case "Signature Input":
       return (
         <FormItem>
@@ -1402,14 +1754,18 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
       return (
         <FormItem>
           <div className="flex justify-between items-center">
-          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
-          <FormMessage />
-
+            <div>
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
           </div>
           <FormControl>
             <SmartDatetimeInput
               locale={field.locale as any}
-              className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
+              className={
+                form.formState.errors?.[field.name] ? "border-red-500" : ""
+              }
               hour12={field.hour12}
               value={smartDatetime}
               onValueChange={(newDate) => {
@@ -1425,23 +1781,26 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
           <FormDescription className="py-3">
             {field.description}
           </FormDescription>
-         
         </FormItem>
       );
     case "Switch":
       return (
         <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
           <div className="space-y-0.5">
-          <div className="flex justify-between items-center">
-          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
-          <FormMessage />
-
-          </div>
+            <div className="flex justify-between items-center">
+              <div>
+                <FormLabel>{field.label}</FormLabel>{" "}
+                <span className="text-red-500">{field.required && "*"}</span>
+              </div>
+              <FormMessage />
+            </div>
             <FormDescription>{field.description}</FormDescription>
           </div>
           <FormControl>
             <Switch
-            className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
+              className={
+                form.formState.errors?.[field.name] ? "border-red-500" : ""
+              }
               checked={checked}
               onCheckedChange={() => {
                 setChecked(!checked);
@@ -1480,33 +1839,40 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
         <FormItem>
           <div className="flex justify-between">
             <div>
-          <FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
-          <FormMessage />
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
           </div>
           <FormControl>
             <Textarea
               placeholder={field.placeholder}
-              className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
+              className={
+                form.formState.errors?.[field.name] ? "border-red-500" : ""
+              }
               // {...field}
             />
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
-         
         </FormItem>
       );
     case "Password":
       return (
         <FormItem>
           <div className="flex justify-between items-center">
-          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
-          <FormMessage />
-
+            <div>
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
           </div>
           <FormControl>
             <PasswordInput
               value={password}
               placeholder="password"
-              className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
+              className={
+                form.formState.errors?.[field.name] ? "border-red-500" : ""
+              }
               onChange={(e: ChangeEvent<HTMLInputElement>) => {
                 setPassword(e.target.value);
                 form.setValue(field.name, e.target.value, {
@@ -1517,7 +1883,6 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
             />
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
-        
         </FormItem>
       );
     case "Number":
@@ -1525,8 +1890,10 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
         <FormItem>
           <div className="flex justify-between">
             <div>
-          <FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
-          <FormMessage />
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
           </div>
           <FormControl>
             <PhoneInput
@@ -1537,7 +1904,11 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
                   shouldDirty: true,
                 });
               }}
-              className={form.formState.errors?.[field.name] ? "border-red-500 border rounded" : ""}
+              className={
+                form.formState.errors?.[field.name]
+                  ? "border-red-500 border rounded"
+                  : ""
+              }
             />
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
@@ -1548,9 +1919,11 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
       return (
         <FormItem>
           <div className="flex justify-between items-center">
-          <div><FormLabel>{field.label}</FormLabel> <span className="text-red-500">{field.required && "*"}</span></div>
-          <FormMessage />
-
+            <div>
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
           </div>
           <FormControl>
             <PhoneInput
@@ -1561,7 +1934,9 @@ export const renderFormField = (field: FormFieldType, form: any,apiFieldData: an
                   shouldDirty: true,
                 });
               }}
-              className={form.formState.errors?.[field.name] ? "border-red-500" : ""}
+              className={
+                form.formState.errors?.[field.name] ? "border-red-500" : ""
+              }
             />
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
