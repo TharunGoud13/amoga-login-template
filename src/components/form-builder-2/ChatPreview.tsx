@@ -209,9 +209,9 @@ const displayImage = (imageUrl: string) => {
 const displayFile = (imageUrl: string) => {
   
   return (
-      <div className="flex flex-col items-center p-4 gap-2.5 rounded-lg">
+      <div className="flex flex-col flex-wrap items-center p-4 gap-2.5 rounded-lg">
         {getFileIcon(fileName)}
-        <span className="text-sm md:text-md">{fileName}</span>
+        <span className="text-sm flex flex-wrap md:text-md">{fileName}</span>
       </div>
   );
 
@@ -219,9 +219,9 @@ const displayFile = (imageUrl: string) => {
 
 const displayPdf = (imageUrl: string) => {
   return (
-      <div className="flex flex-col items-center p-4 gap-2.5 rounded-lg">
+      <div className="flex flex-col flex-wrap items-center p-4 gap-2.5 rounded-lg">
         <FaRegFilePdf className="h-5 w-5 text-red-500"/>
-        <span className="text-sm md:text-md">{pdfName}</span>
+        <span className="text-sm flex flex-wrap md:text-md">{pdfName}</span>
       </div>
   );
 
