@@ -678,6 +678,7 @@ const displayPdf = (imageUrl: string) => {
               </div>
               {!(formFields[currentStep]?.variant === "File Upload" || 
                 formFields[currentStep]?.variant === "Image Upload" || 
+                formFields[currentStep]?.variant === "PDF Upload" || 
                 formFields[currentStep]?.variant === "Video Upload") &&
               <Button
                 onClick={handleSubmit}
@@ -690,6 +691,7 @@ const displayPdf = (imageUrl: string) => {
             </div>
             {(formFields[currentStep]?.variant === "File Upload" || 
               formFields[currentStep]?.variant === "Image Upload" || 
+              formFields[currentStep]?.variant === "PDF Upload" || 
               formFields[currentStep]?.variant === "Video Upload") &&
             <Button
                 onClick={handleSubmit}

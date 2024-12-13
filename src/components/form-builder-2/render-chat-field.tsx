@@ -44,6 +44,16 @@ import { FcDocument } from "react-icons/fc";
 import { PiMicrosoftExcelLogoDuotone } from "react-icons/pi";
 import { FaRegFilePdf } from "react-icons/fa";
 
+const ALLOWED_FILES_TYPES = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-excel",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "text/csv",
+];
+const ALLOWED_PDF_TYPES = ["application/pdf"];
+
 const RenderInputField = ({
   currentField,
   input,
@@ -257,7 +267,7 @@ const RenderInputField = ({
   
       // Validate image size
       const validFiles = newFiles.filter(
-        (file) => file.size <= MAX_FILE_SIZE // Replace `MAX_IMAGE_SIZE` with your desired size limit in bytes
+        (file) => ALLOWED_FILES_TYPES.includes(file.type) && file.size <= MAX_FILE_SIZE // Replace `MAX_IMAGE_SIZE` with your desired size limit in bytes
       );
   
       if (validFiles.length !== newFiles.length) {
@@ -283,7 +293,7 @@ const RenderInputField = ({
   
       // Validate image size
       const validFiles = newFiles.filter(
-        (file) => file.size <= MAX_FILE_SIZE // Replace `MAX_IMAGE_SIZE` with your desired size limit in bytes
+        (file) => ALLOWED_PDF_TYPES.includes(file.type) && file.size <= MAX_FILE_SIZE // Replace `MAX_IMAGE_SIZE` with your desired size limit in bytes
       );
   
       if (validFiles.length !== newFiles.length) {
