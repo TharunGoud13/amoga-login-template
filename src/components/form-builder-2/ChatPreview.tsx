@@ -618,7 +618,7 @@ const displayPdf = (imageUrl: string) => {
               </Avatar>
             )}
             <div
-              className={`relative py-4  max-w-[80%] rounded-[10px] ${
+              className={`relative py-[8px]  max-w-[80%] rounded-[10px] ${
                 message.role === "user"
                   ? "border-primary border  text-primary px-[8px]  rounded-br-none shadow-[0_4px_8px_rgba(0,0,0,0.25)]"
                   : " w-[80%] rounded-[5px]"
