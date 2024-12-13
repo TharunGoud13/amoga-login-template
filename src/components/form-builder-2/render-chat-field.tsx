@@ -208,10 +208,12 @@ const RenderInputField = ({
       setFileError("Invalid File URL. Please provide a valid file link.");
       return;
     }
+
+    const fileName = fileUrl.split('/').pop();
   
     // Add the image URL to the state
-    setSelectedFile((prevImages: any) => [...prevImages, fileUrl]);
-    setFileName(fileUrl)
+    setSelectedFile((prevImages: any) => [...prevImages, fileName]);
+    setFileName(fileName)
     setFileUrl(""); // Clear input field
   };
 
@@ -497,7 +499,7 @@ const RenderInputField = ({
                         <img
                           src={selectedImage[0]}
                           alt="Preview"
-                          className="h-fit w-full object-contain"
+                          className="h-64 w-full "
                         />
                         <Button
                           type="button"
@@ -542,8 +544,8 @@ const RenderInputField = ({
                   onChange={(e) => setImageUrl(e.target.value)}
                 />
                 <Button disabled={!imageUrl} onClick={handleImageSubmit}>
-                  <Link className="w-4 h-4 mr-2" />
-                  Add URL
+                  <Link className="w-4 h-4 md:mr-2" />
+                  <span className="hidden md:inline">Add URL</span>
                 </Button>
               </div>
               {imageError && <p className="text-red-500 text-sm">{imageError}</p>}
@@ -563,9 +565,9 @@ const RenderInputField = ({
                     } border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden`}
                   >
                     {selectedFile && selectedFile?.length > 0 ? (
-                    <div className="flex flex-col items-center justify-center w-full h-full">
+                    <div className="flex p-2.5 flex-col items-center justify-center w-full h-full">
                       <File/>
-                      <span>{fileName}</span>
+                      <span className="text-sm md:text-md flex flex-wrap">{fileName}</span>
                       <Button
                         type="button"
                         variant="destructive"
@@ -583,7 +585,7 @@ const RenderInputField = ({
                       </Button>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <div className="flex p-2.5 flex-col items-center justify-center pt-5 pb-6">
                       <UploadIcon className="w-8 h-8 mb-4 text-primary" />
                       <p className="mb-2 text-sm text-primary">
                         <span className="font-semibold">Click to upload</span> or drag and drop
@@ -606,14 +608,14 @@ const RenderInputField = ({
               <div className="mt-2.5 flex items-center gap-2.5">
                 <Input
                   value={fileUrl}
-                  placeholder="Enter image URL"
+                  placeholder="Enter file URL"
                   className="border-secondary"
                   disabled={selectedFile?.length > 0}
                   onChange={(e) => setFileUrl(e.target.value)}
                 />
                 <Button disabled={!fileUrl} onClick={handleFileSubmit}>
-                  <Link className="w-4 h-4 mr-2" />
-                  Add URL
+                  <Link className="w-4 h-4 md:mr-2" />
+                  <span className="hidden md:inline">Add URL</span>
                 </Button>
               </div>
               {fileError && <p className="text-red-500 text-sm">{fileError}</p>}
@@ -658,7 +660,9 @@ const RenderInputField = ({
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        // removeVideo(0);
+                        setVideos((prevImages: any) =>
+                          prevImages.filter((_: any, index: number) => index !== 0)
+                        );
                       }}
                       className="absolute top-2 right-2 z-10"
                     >
@@ -693,8 +697,8 @@ const RenderInputField = ({
               
             />
             <Button  disabled={!videoUrl} onClick={handleVideoSubmit}>
-              <Link className="w-4 h-4 mr-2" />
-              Add URL
+              <Link className="w-4 h-4 md:mr-2" />
+              <span className="hidden md:inline">Add URL</span>
             </Button>
           </div>
           {videoError && <p className="text-red-500 mt-2">{videoError}</p>}

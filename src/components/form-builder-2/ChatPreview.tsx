@@ -144,18 +144,23 @@ export function ChatForm({ formFields,apiFieldData }: any) {
 //     }
 // }, [addMessage, selectedFile, setMessages,  formData, currentStep, formFields]);
 
+console.log("formFields----",formFields)
+
+
 const displayVideo = (videoUrl: string) => {
   if (/(youtube\.com|youtu\.be)/.test(videoUrl)) {
       return (
-        
+        <div className="md:h-64 w-full relative">
         <iframe
               src={videoUrl.replace('watch?v=', 'embed/')}
               title="video-preview"
-              className="h-64 w-full rounded-lg border"
+              className="md:h-64 w-full rounded-lg border block"
+              style={{display: "block"}}
               frameBorder="0"
               allow="autoplay; encrypted-media"
               allowFullScreen
           />
+          </div>
           
       );
   } else {
@@ -163,7 +168,7 @@ const displayVideo = (videoUrl: string) => {
           <video
               src={videoUrl}
               controls
-              className="h-64 w-full rounded-lg border"
+              className="md:h-64  rounded-lg border"
           />
       );
   }
@@ -184,9 +189,9 @@ const displayImage = (imageUrl: string) => {
 const displayFile = (imageUrl: string) => {
   
   return (
-      <div className="flex items-center p-4 gap-2.5 rounded-lg">
+      <div className="flex flex-col items-center p-4 gap-2.5 rounded-lg">
         <File/>
-        <span>{fileName}</span>
+        <span className="text-sm md:text-md">{fileName}</span>
       </div>
   );
 
@@ -256,7 +261,7 @@ const displayFile = (imageUrl: string) => {
   
       addMessage(
           "user",
-          <div className="flex h-64 w-full items-center">
+          <div className="flex md:h-64 w-full items-center">
               {displayImage(imageToDisplay)}
           </div>
       );
@@ -432,14 +437,13 @@ const displayFile = (imageUrl: string) => {
   //     return;
   // }
 
-  
 
   if (videos.length > 0) {
     const videoToDisplay = videos[0]; // Display the first video in the state
 
     addMessage(
         "user",
-        <div className="flex h-64 w-full items-center">
+        <div className="flex md:h-64 w-full items-center">
             {displayVideo(videoToDisplay)}
         </div>
     );
@@ -593,14 +597,26 @@ const displayFile = (imageUrl: string) => {
                   <p className="text-red-500 text-sm mt-1">{validationError}</p>
                 )}
               </div>
+             
               <Button
                 onClick={handleSubmit}
-                className="bg-primary hover:bg-primary/90 transition-colors"
+                className="bg-primary hover:bg-primary/90 transition-colors self-end"
               >
                 <FaArrowUp className="h-4 w-4" />
                 <span className="sr-only">Send</span>
               </Button>
             </div>
+            {formFields[currentStep]?.variant === "File Upload" || 
+     formFields[currentStep]?.variant === "Image Upload" || 
+     formFields[currentStep]?.variant === "Video Upload" &&
+            <Button
+                onClick={handleSubmit}
+                className="bg-primary mt-2 hover:bg-primary/90 transition-colors self-end"
+              >
+                <FaArrowUp className="h-4 w-4" />
+                <span className="sr-only">Send</span>
+              </Button>
+}
           </div>
         </CardFooter>
       )}
