@@ -26,6 +26,8 @@ export const fieldTypes: FieldType[] = [
   { name: 'File Upload', isNew: false },
   { name: 'PDF Upload', isNew: false },
   { name: 'Video Upload', isNew: false },
+  {name: "Send Image", isNew: false },
+  {name: "Send Video", isNew: false },
   { name: 'Location Select', isNew: true },
   { name: 'Tool Tip Card', isNew: true },
   { name: 'Progress', isNew: true },

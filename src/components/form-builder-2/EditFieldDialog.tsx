@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ChangeEvent } from "react";
 import * as Locales from "date-fns/locale";
 
 import {
@@ -21,10 +21,11 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select"; // Import Select components
-import {  X } from "lucide-react";
+import {  Link, UploadIcon, X, XIcon } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { toast } from "../ui/use-toast";
 import { ADD_CONNECTIONS, NEXT_PUBLIC_API_KEY } from "@/constants/envConfig";
+import Image from "next/image";
 
 type EditFieldDialogProps = {
   isOpen: boolean;
@@ -43,7 +44,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
   existingField,
   setApiFieldData
 }) => {
-  const [editedField, setEditedField] = useState<FormFieldType | null>(null);
+  const [editedField, setEditedField] = useState<any>(null);
   const [fieldType, setFieldType] = useState<string>();
   const [newOption, setNewOption] = useState("");
   const [comboboxOptions, setComboboxOptions] = useState("");
@@ -53,12 +54,228 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
   const [useAPI, setUseAPI] = useState(false);
   const [apiURL, setAPIURL] = useState("");
   const [apiField, setApiField] = useState("");
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+  const [uploadError, setUploadError] = useState("");
+  const [uploading, setUploading] = useState(false)
+  const [isPlaceholderChecked, setIsPlaceholderChecked] = useState(false)
+  const [isUrlChecked, setIsUrlChecked] = useState(false)
+  const MAX_FILE_SIZE = 5 * 1024 * 1024;
+  const MAX_VIDEO_SIZE = 2 * 1024 * 1024;
 
 
 
   useEffect(() => {
     setEditedField(field);
   }, [field]);
+
+  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    
+      if (e.target.files) {
+        setUploading(true)
+        const newImages = Array.from(e.target.files);
+        const validImages = newImages.filter(
+          (file) =>
+            file.size <= MAX_FILE_SIZE
+        );
+  
+        if (validImages.length !== newImages.length) {
+          setUploadError(
+            "Some files were not added. Please ensure all files are images (JPG, PNG, or GIF) and under 5MB."
+          );
+        } else {
+          setUploadError("");
+        }
+
+        const newPreviews = validImages.map((file) => URL.createObjectURL(file));
+        setImagePreviews((prevPreviews) => [...prevPreviews, ...newPreviews]);
+          const formData = new FormData();
+          validImages.forEach((file) => {
+            formData.append("file", file);
+          });
+  
+          try {
+            const response = await fetch("/api/upload", {
+              method: "POST",
+              body: formData,
+            });
+  
+            if (!response.ok) {
+              throw new Error("Upload failed");
+            }
+  
+            const data = await response.json();
+            setEditedField({ ...editedField, placeholder_file_url: data.url })
+            setUploading(false)
+            
+          } catch (error) {
+            console.error("Upload error:", error);
+            setUploadError("Failed to upload file. Please try again.");
+            setUploading(false)
+          } 
+      }
+    };
+
+    const handleFileSubmit = async (e: any) => {
+      setUploading(true)
+      e.preventDefault();
+      setUploadError("");
+      if (!imageUrl) {
+        setUploadError("Please enter a valid video url");
+        return;
+      }
+      const validImageUrlPattern =
+        /^(https?:\/\/.*\.(jpg|jpeg|png|gif|webp|tif|svg))$/i;
+      if (!validImageUrlPattern.test(imageUrl)) {
+        setUploadError(
+          "Invalid Image URL. Please provide a valid Image Link."
+        );
+        return;
+      }
+      setImagePreviews((prevVideos) => [...prevVideos, imageUrl]);
+      const payload = {
+        url: imageUrl,
+      };
+      
+        try {
+          const response = await fetch("/api/upload", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+          });
+  
+          if (!response.ok) {
+            throw new Error("Upload failed");
+          }
+  
+          const data = await response.json();
+          if (data.url) {
+            setEditedField({ ...editedField, placeholder_file_url: data.url })
+            setUploading(false)
+
+          }
+          setImagePreviews((prevVideos) => [...prevVideos, imageUrl]);
+          // setValue(validImages);
+        } catch (error) {
+          console.error("Upload error:", error);
+          setUploadError("Failed to upload video URL. Please try again.");
+          setUploading(false)
+        }
+      
+    };
+
+  const removeImage = (index: number) => {
+      setImagePreviews((prevPreviews) =>
+        prevPreviews.filter((_, i) => i !== index)
+      );
+  };
+
+  const handleVideoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setUploading(true)
+      const newVideo = Array.from(e.target.files);
+      const validVideo = newVideo.filter(
+        (video) => video.size <= MAX_VIDEO_SIZE
+      );
+      if (validVideo.length !== newVideo.length) {
+        setVideoUrl("");
+      }
+      const newPreview = validVideo.map((video) => URL.createObjectURL(video));
+      setVideoPreviews((prevPreviews) => [...prevPreviews,...newPreview]);
+
+        const formData = new FormData();
+        validVideo.forEach((file) => {
+          formData.append("file", file);
+        });
+
+        try {
+          const response = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error("Upload failed");
+          }
+
+          const data = await response.json();
+          if (data.url) {
+            setEditedField({...editedField, placeholder_video_url: data.url})
+            setUploading(false)
+          }
+          setVideoUrl("");
+          
+        } catch (error) {
+          console.error("Upload error:", error);
+          setUploadError("Failed to upload file. Please try again.");
+          setUploading(false)
+        } finally {
+          setUploading(false);
+        }
+      
+    }
+  };
+
+  const handleVideoSubmit = async (e: any) => {
+    setUploading(true)
+    e.preventDefault();
+    setUploadError("");
+    if (!videoUrl) {
+      setUploadError("Please enter a valid video url");
+      return;
+    }
+    const validUrlPattern =
+      /^(https?:\/\/.*\.(mp4|mov|avi|mkv|webm))|(https?:\/\/(www\.)?youtube\.com\/watch\?v=\w+)|(https?:\/\/youtu\.be\/\w+)/;
+    
+    if (!validUrlPattern.test(videoUrl)) {
+      setUploadError(
+        "Invalid Video URL. Please provide a valid Video Link."
+      );
+      return;
+    }
+    setVideoPreviews((prevVideos) => [...prevVideos, videoUrl]);
+    const payload = {
+      url: videoUrl,
+    };
+    
+      try {
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error("Upload failed");
+        }
+
+        const data = await response.json();
+        if (data.url) {
+          setEditedField({ ...editedField, placeholder_video_url: data.url })
+          setUploading(false)
+
+        }
+        setVideoPreviews((prevVideos) => [...prevVideos, videoUrl]);
+        // setValue(validImages);
+      } catch (error) {
+        console.error("Upload error:", error);
+        setUploadError("Failed to upload video URL. Please try again.");
+        setUploading(false)
+      }
+    
+  };
+
+const removeVideo = (index: number) => {
+    setVideoPreviews((prevPreviews) =>
+      prevPreviews.filter((_, i) => i !== index)
+    );
+};
 
   
 
@@ -188,7 +405,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
     if(editedField) {
       setEditedField({
         ...editedField,
-        options:editedField?.options?.filter((_,i) => i !== index)
+        options:editedField?.options?.filter((_: any,i: string | number) => i !== index)
       })
     }
   }
@@ -278,6 +495,211 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
               }
             />
           </div>
+          <If condition={field?.variant !== "Send Video"}
+          render={() => (
+          <div>
+          <div>
+            <Label htmlFor="file-upload">
+             <div className="flex items-center gap-2.5 my-2">
+               <Checkbox checked={isPlaceholderChecked} 
+               onCheckedChange={() => setIsPlaceholderChecked(!isPlaceholderChecked)} /> Use upload placeholder</div>
+            </Label>
+            
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center w-full">
+                    <label
+                      htmlFor="file-upload"
+                      className={`relative flex flex-col items-center justify-center w-full h-64 border border-primary border-dashed rounded-lg ${!isPlaceholderChecked ? "cursor-not-allowed" : "cursor-pointer"} bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden`}
+                    >
+                      {imagePreviews.length > 0 ? (
+                        <>
+                          <Image
+                            src={imagePreviews[0]}
+                            alt="Preview"
+                            layout="fill"
+                            className=""
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              removeImage(0);
+                            }}
+                            className="absolute top-2 right-2 z-10"
+                          >
+                            <XIcon className="h-4 w-4" />
+                          </Button>
+                        </>
+                      ) : (
+                        <div className={`flex ${!isPlaceholderChecked && "bg-gray-100 cursor-not-allowed"} flex-col items-center justify-center pt-5 pb-6`}>
+                          <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                          <p className="mb-2 text-sm text-primary">
+                            <span className="font-semibold">
+                              Click to upload
+                            </span>{" "}
+                            or drag and drop
+                          </p>
+                          <p className="text-xs text-primary">
+                            JPG, PNG, or GIF (MAX. 5MB)
+                          </p>
+                        </div>
+                      )}
+                      <Input
+                        id="file-upload"
+                        type="file"
+                        disabled={!isPlaceholderChecked || uploading || imageUrl?.length > 0}
+                        onChange={handleFileUpload}
+                        accept=".jpg,.jpeg,.png,.gif"
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+          </div>
+          
+          <div>
+            <div className="flex gap-2.5 items-center my-2">
+              <Checkbox checked={isUrlChecked}
+               onCheckedChange={() => setIsUrlChecked(!isUrlChecked)}
+               /> Use URL placeholder
+            </div>
+            <div className="mt-2.5 flex items-center gap-2.5">
+                    <Input
+                      value={imageUrl}
+                      placeholder="Enter Image URL"
+                      className="border-secondary"
+                      disabled={!isUrlChecked || imagePreviews?.length > 0}
+                      onChange={(e) => {
+                        setImageUrl(e.target.value)
+
+                      }}
+                    />
+                    <Button
+                      disabled={!isUrlChecked || !imageUrl || imagePreviews?.length > 0}
+                      onClick={handleFileSubmit}
+                    >
+                      <Link className="w-4 h-4 mr-2" />
+                      Add URL
+                    </Button>
+                  </div>
+          </div>
+          {uploadError && <span className="text-red-500">{uploadError}</span>}
+          </div>
+          )}
+          />
+          <If condition={field?.variant === "Send Video"}
+          render={() => (
+            <div>
+            <div>
+              <Label htmlFor="video-upload">
+               <div className="flex items-center gap-2.5 my-2">
+                 <Checkbox checked={isPlaceholderChecked} 
+                 onCheckedChange={() => setIsPlaceholderChecked(!isPlaceholderChecked)} /> Use upload placeholder</div>
+              </Label>
+              
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center w-full">
+                      <label
+                        htmlFor="video-upload"
+                        className={`relative flex flex-col items-center justify-center w-full h-64 border border-primary border-dashed rounded-lg ${!isPlaceholderChecked ? "cursor-not-allowed" : "cursor-pointer"} bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden`}
+                      >
+                        {videoPreviews.length > 0 ? (
+                        <div className="relative w-full">
+                          {videoPreviews[0].startsWith("http") ? (
+                            /(youtube\.com|youtu\.be)/.test(videoPreviews[0]) ? (
+                              <iframe
+                                src={videoPreviews[0].replace("watch?v=", "embed/")}
+                                title="video-preview"
+                                className="h-64 w-full"
+                                frameBorder="0"
+                                allow="autoplay; encrypted-media"
+                                allowFullScreen
+                              />
+                            ) : (
+                              <video
+                                src={videoPreviews[0]}
+                                controls
+                                className="h-fit w-full"
+                              />
+                            )
+                          ) : (
+                            <video
+                              src={videoPreviews[0]}
+                              controls
+                              className="h-fit w-full"
+                            />
+                          )}
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              removeVideo(0);
+                            }}
+                            className="absolute top-2 right-2 z-10"
+                          >
+                            <XIcon className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                          <p className="mb-2 text-sm text-primary">
+                            <span className="font-semibold">
+                              Click to upload a video
+                            </span>
+                          </p>
+                        </div>
+                      )}
+                        <Input
+                          id="video-upload"
+                          type="file"
+                          disabled={!isPlaceholderChecked || uploading || videoUrl?.length > 0}
+                          onChange={handleVideoUpload}
+                          accept=".mp4, .mov, .avi, .mkv, .webm"
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  </div>
+            </div>
+            
+            <div>
+              <div className="flex gap-2.5 items-center my-2">
+                <Checkbox checked={isUrlChecked}
+                 onCheckedChange={() => setIsUrlChecked(!isUrlChecked)}
+                 /> Use URL placeholder
+              </div>
+              <div className="mt-2.5 flex items-center gap-2.5">
+                      <Input
+                        value={videoUrl}
+                        placeholder="Enter Video URL"
+                        className="border-secondary"
+                        disabled={!isUrlChecked || videoPreviews?.length > 0}
+                        onChange={(e) => {
+                          setVideoUrl(e.target.value)
+  
+                        }}
+                      />
+                      <Button
+                        disabled={!isUrlChecked || !videoUrl || videoPreviews?.length > 0}
+                        onClick={handleVideoSubmit}
+                      >
+                        <Link className="w-4 h-4 mr-2" />
+                        Add URL
+                      </Button>
+                    </div>
+            </div>
+            {uploadError && <span className="text-red-500">{uploadError}</span>}
+            </div>
+
+          )}
+          />
           <div>
             <Label htmlFor="className">className</Label>
             <Input
@@ -456,7 +878,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                       Add
                     </Button>
                   </div>
-                  {editedField?.options?.map((item,index) => (
+                  {editedField?.options?.map((item: any,index: any) => (
                     <div key={index} className="p-2.5 bg-secondary rounded flex justify-between items-center">
                       <span>{item}</span>
                       <span className="cursor-pointer"
@@ -499,7 +921,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                       Add
                     </Button>
                   </div>
-                  {editedField?.combobox?.map((item,index) => (
+                  {editedField?.combobox?.map((item: any,index: any) => (
                     <div key={index} className="p-2.5 bg-secondary rounded flex justify-between items-center">
                       <span>{item}</span>
                       <span className="cursor-pointer"
@@ -507,7 +929,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                         if(editedField){
                           setEditedField({
                             ...editedField,
-                            combobox: editedField.combobox?.filter((_,i) => i !== index)
+                            combobox: editedField.combobox?.filter((_: any,i: any) => i !== index)
                           })
                         }
                       }
@@ -549,7 +971,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                       Add
                     </Button>
                   </div>
-                  {editedField?.multiselect?.map((item,index) => (
+                  {editedField?.multiselect?.map((item: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined,index: React.Key | null | undefined) => (
                     <div key={index} className="p-2.5 bg-secondary rounded flex justify-between items-center">
                       <span>{item}</span>
                       <span className="cursor-pointer"
@@ -557,7 +979,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                         if(editedField){
                           setEditedField({
                             ...editedField,
-                            multiselect: editedField.multiselect?.filter((_,i) => i !== index)
+                            multiselect: editedField.multiselect?.filter((_: any,i: any) => i !== index)
                           })
                         }
                       }
@@ -601,7 +1023,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                       Add
                     </Button>
                   </div>
-                  {editedField?.radiogroup?.map((item,index) => (
+                  {editedField?.radiogroup?.map((item: string | number | bigint | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<React.AwaitedReactNode> | null | undefined,index: React.Key | null | undefined) => (
                     <div key={index} className="p-2.5 bg-secondary rounded flex justify-between items-center">
                       <span>{item}</span>
                       <span className="cursor-pointer"
@@ -609,7 +1031,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                         if(editedField){
                           setEditedField({
                             ...editedField,
-                            radiogroup: editedField.radiogroup?.filter((_,i) => i !== index)
+                            radiogroup: editedField.radiogroup?.filter((_: any,i: any) => i !== index)
                           })
                         }
                       }}
@@ -767,7 +1189,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
         </TabsContent>
         </Tabs>
         <DialogFooter>
-          <Button onClick={handleSave}>Save changes</Button>
+          <Button onClick={handleSave} disabled={uploading}>Save changes</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

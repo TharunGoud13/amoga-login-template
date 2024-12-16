@@ -106,6 +106,8 @@ export default function FormBuilder() {
       combobox: [],
       multiselect: [],
       radiogroup: [],
+      placeholder_file_url: "",
+      placeholder_video_url: "",
       validation_message: '',
       variant_code: newFieldName
     };

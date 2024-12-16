@@ -46,6 +46,8 @@ export type FormFieldType = {
   combobox?: string[]
   multiselect?: string[]
   radiogroup?: string[]
+  placeholder_file_url?: string
+  placeholder_video_url?: string
   disabled: boolean
   value: string | boolean | Date | number | string[]
   setValue: (value: string | boolean) => void

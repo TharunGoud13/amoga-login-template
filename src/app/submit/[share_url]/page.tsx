@@ -181,11 +181,8 @@ const Page = (props: any) => {
     );
   }
 
-  // console.log("formJsonData----", formJsonData);
 
   async function onSubmit(data: any) {
-    // console.log("formdata-----", formData);
-    // console.log("data-----", data);
     const headers = new Headers();
     headers.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
     headers.append("Content-Type", "application/json");
@@ -256,6 +253,28 @@ const Page = (props: any) => {
       const uploadedImageUrl = localStorage.getItem("uploadedPdfUrl");
       if(uploadedImageUrl){
         data.pdf_url = uploadedImageUrl;
+      }
+    }
+
+    const sendImageVariant = formJsonData.find(
+      (item) => item.variant === "Send Image"
+    )
+
+    if(sendImageVariant) {
+      const image_url = formJsonData.map((item) => item.variant === "Send Image");
+      if(image_url){
+        data.send_file_url = formJsonData.map((item) => item.variant === "Send Image" && item.placeholder_file_url)
+      }
+    }
+
+    const sendVideoVariant = formJsonData.find(
+      (item) => item.variant === "Send Video"
+    )
+
+    if(sendVideoVariant) {
+      const video_url = formJsonData.map((item) => item.variant === "Send Video");
+      if(video_url){
+        data.send_file_video_url = formJsonData.map((item) => item.variant === "Send Video" && item.placeholder_video_url)
       }
     }
 

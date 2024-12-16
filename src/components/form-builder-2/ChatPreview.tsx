@@ -42,9 +42,6 @@ export function ChatForm({ formFields,apiFieldData }: any) {
   const [validationError, setValidationError] = React.useState<string | null>(null)
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
 
-  console.log("selectedImage----",selectedImage)
-  console.log("selectedFile----",selectedFile)
-  console.log("fileName----",fileName)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" })
@@ -206,6 +203,18 @@ const displayImage = (imageUrl: string) => {
   
 };
 
+const displaySendImage = (imageUrl: any)  => {
+  
+  return (
+    <img
+    src={imageUrl}
+    className="md:h-64 w-full rounded-lg border"
+    />
+  )
+
+};
+
+
 const displayFile = (imageUrl: string) => {
   
   return (
@@ -306,6 +315,77 @@ const displayPdf = (imageUrl: string) => {
       setSelectedImage((prev) => prev.slice(1))
       // setVideos((prev) => prev.slice(1)); // Remove the displayed video from state
       setInput("");
+  
+      // Handle next step
+      const nextStep = findNextActiveField(currentStep);
+      setCurrentStep(nextStep);
+  
+      if (nextStep !== -1) {
+          const nextField = formFields[nextStep];
+          addMessage(
+              "assistant",
+              <div>
+                  <span className="label">{nextField.label}</span>
+                  {nextField.required && <span className="text-red-500">*</span>}
+                  <br />
+                  <span className="text-sm text-gray-400">{nextField.description}</span>
+              </div>
+          );
+      } else {
+          addMessage("assistant", "Thank you for completing the form.");
+      }
+    } 
+
+    if (currentField?.variant === "Send Image") {
+      const imageToDisplay = currentField?.placeholder_file_url; // Display the first video in the state
+  
+      addMessage(
+          "user",
+          <div className="flex md:h-64 w-full items-center">
+              {displaySendImage(imageToDisplay)}
+          </div>
+      );
+  
+      // Update form data
+      setFormData((prev) => ({
+          ...prev,
+          [currentField.name]: imageToDisplay,
+      }));
+      const nextStep = findNextActiveField(currentStep);
+      setCurrentStep(nextStep);
+  
+      if (nextStep !== -1) {
+          const nextField = formFields[nextStep];
+          addMessage(
+              "assistant",
+              <div>
+                  <span className="label">{nextField.label}</span>
+                  {nextField.required && <span className="text-red-500">*</span>}
+                  <br />
+                  <span className="text-sm text-gray-400">{nextField.description}</span>
+              </div>
+          );
+      } else {
+          addMessage("assistant", "Thank you for completing the form.");
+      }
+    }
+
+    if (currentField?.variant === "Send Video") {
+      const videoToDisplay = currentField?.placeholder_video_url; // Display the first video in the state
+  
+      addMessage(
+          "user",
+          <div className="flex md:h-64 w-full items-center">
+              {displayVideo(videoToDisplay)}
+          </div>
+      );
+  
+      // Update form data
+      setFormData((prev) => ({
+          ...prev,
+          [currentField.name]: videoToDisplay,
+      }));
+  
   
       // Handle next step
       const nextStep = findNextActiveField(currentStep);
@@ -550,7 +630,9 @@ const displayPdf = (imageUrl: string) => {
   }
 
 
-  const error = !["Video Upload", "File Upload", "Image Upload", "PDF Upload"].includes(currentField.variant) && validateInput(currentField, input);
+  const error = !["Video Upload", "File Upload", "Image Upload", "PDF Upload", "Send Image", "Send Video"
+
+  ].includes(currentField.variant) && validateInput(currentField, input);
 
 
     if (error) {

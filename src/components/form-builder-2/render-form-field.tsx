@@ -1365,6 +1365,155 @@ export const renderFormField = (
           </FormControl>
         </FormItem>
       );
+    case "Send Image":
+      return(
+        <FormItem>
+          <div className="flex justify-between items-center">
+            <div>
+              <FormLabel>{field.label}</FormLabel>
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
+          </div>
+          <FormControl>
+            <Card>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center w-full">
+                    <label
+                      htmlFor={`${field.name}-upload`}
+                      className="relative flex flex-col items-center justify-center w-full h-64 border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden"
+                    >
+                      {field?.placeholder_file_url ? (
+                        <>
+                          <Image
+                            src={field?.placeholder_file_url}
+                            alt="Preview"
+                            layout="fill"
+                            className=""
+                          />
+                          {/* <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              removeImage(0);
+                            }}
+                            className="absolute top-2 right-2 z-10"
+                          >
+                            <XIcon className="h-4 w-4" />
+                          </Button> */}
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                          <p className="mb-2 text-sm text-primary">
+                            <span className="font-semibold">
+                              Click to upload
+                            </span>{" "}
+                            or drag and drop
+                          </p>
+                          <p className="text-xs text-primary">
+                            JPG, PNG, or GIF (MAX. 5MB)
+                          </p>
+                        </div>
+                      )}
+                      <Input
+                        id={`${field.name}-upload`}
+                        type="file"
+                        readOnly
+                        ref={fileInputRef}
+                        disabled
+                        accept=".jpg,.jpeg,.png,.gif"
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </FormControl>
+          <FormDescription>{field.description}</FormDescription>
+        </FormItem>
+      )
+      case "Send Video":
+        return(
+          <FormItem>
+            <div className="flex justify-between items-center">
+              <div>
+                <FormLabel>{field.label}</FormLabel>
+                <span className="text-red-500">{field.required && "*"}</span>
+              </div>
+              <FormMessage />
+            </div>
+            <FormControl>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center w-full">
+                      <label
+                        htmlFor={`${field.name}-upload`}
+                        className="relative flex flex-col items-center justify-center w-full h-64 border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden"
+                      >
+                        {field?.placeholder_video_url ? (
+                          <>
+                            {field?.placeholder_video_url.startsWith("http") ? (
+                            /(youtube\.com|youtu\.be)/.test(field?.placeholder_video_url) ? (
+                              <iframe
+                                src={field?.placeholder_video_url.replace("watch?v=", "embed/")}
+                                title="video-preview"
+                                className="h-64 w-full"
+                                frameBorder="0"
+                                allow="autoplay; encrypted-media"
+                                allowFullScreen
+                              />
+                            ) : (
+                              <video
+                                src={field?.placeholder_video_url}
+                                controls
+                                className="h-64 w-full"
+                              />
+                            )
+                          ) : (
+                            <video
+                              src={field?.placeholder_video_url}
+                              controls
+                              className="h-fit w-full"
+                            />
+                          )}
+                          </>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                            <p className="mb-2 text-sm text-primary">
+                              <span className="font-semibold">
+                                Click to upload video
+                              </span>{" "}
+                              
+                            </p>
+                            
+                          </div>
+                        )}
+                        <Input
+                          id={`${field.name}-upload`}
+                          type="file"
+                          readOnly
+                          ref={fileInputRef}
+                          disabled
+                          accept=".mp4, .mov, .avi, .mkv, .webm"
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </FormControl>
+            <FormDescription>{field.description}</FormDescription>
+          </FormItem>
+        )
     case "Text Box":
       return (
         <FormItem>

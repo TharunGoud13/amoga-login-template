@@ -13,6 +13,9 @@ export const generateZodSchema = (
   const processField = (field: FormFieldType): void => {
     if (field.variant === 'Label') return
 
+    if(field.variant === "Send Image") return
+    if(field.variant === "Send Video") return
+
     let fieldSchema: z.ZodTypeAny
 
     switch (field.variant) {
