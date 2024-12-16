@@ -278,6 +278,28 @@ const Page = (props: any) => {
       }
     }
 
+    const sendFileVariant = formJsonData.find(
+      (item) => item.variant === "Send File"
+    )
+
+    if(sendFileVariant) {
+      const video_url = formJsonData.map((item) => item.variant === "Send File");
+      if(video_url){
+        data.send_file_upload_url = formJsonData.map((item) => item.variant === "Send File" && item.placeholder_file_upload_url)
+      }
+    }
+
+    const sendPdfVariant = formJsonData.find(
+      (item) => item.variant === "Send Pdf"
+    )
+
+    if(sendPdfVariant) {
+      const video_url = formJsonData.map((item) => item.variant === "Send Pdf");
+      if(video_url){
+        data.send_file_pdf_url = formJsonData.map((item) => item.variant === "Send Pdf" && item.placeholder_pdf_file_url)
+      }
+    }
+
     const payload = {
       form_id: formData[0].form_id,
       form_name: formData[0].form_name,

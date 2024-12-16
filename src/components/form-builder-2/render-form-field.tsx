@@ -1514,6 +1514,157 @@ export const renderFormField = (
             <FormDescription>{field.description}</FormDescription>
           </FormItem>
         )
+
+        case "Send File":
+          return(
+            <FormItem>
+              <div className="flex justify-between items-center">
+                <div>
+                  <FormLabel>{field.label}</FormLabel>
+                  <span className="text-red-500">{field.required && "*"}</span>
+                </div>
+                <FormMessage />
+              </div>
+              <FormControl>
+                <>
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-center w-full">
+                        <label
+                          htmlFor={`${field.name}-upload`}
+                          className="relative flex flex-col items-center justify-center w-full h-64 border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden"
+                        >
+                          {field?.placeholder_file_upload_url ? (
+                            <>
+                              <div className="text-4xl font-bold text-primary mb-2">
+                            {getFileIcon(field?.placeholder_file_upload_url?.split("/").at(-1))}
+                          </div>
+                          <div className="text-sm flex flex-wrap text-primary line-clamp-2 truncate max-w-[80%]">
+                            {field?.placeholder_file_upload_url.split("/").at(-1)}
+                          </div>
+                            </>
+                          ) : (
+                            <div className="flex flex-col p-2.5 items-center justify-center pt-5 pb-6">
+                              <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                              <p className="mb-2 text-sm text-primary">
+                                <span className="font-semibold">
+                                  Click to upload
+                                </span>{" "}
+                                or drag and drop
+                              </p>
+                              <p className="text-xs text-primary">
+                                DOC, DOCX, XLS, XLSX, CSV (MAX. 5MB)
+                              </p>
+                            </div>
+                          )}
+                          <Input
+                            id={`${field.name}-upload`}
+                            type="file"
+                            readOnly
+                            ref={fileInputRef}
+                            disabled
+                            accept=".doc,.docx,.xls,.xlsx,.csv"
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                    <div className="flex w-full justify-end">
+                    <Button className="m-2 flex flex-end items-end self-end"
+                onClick={(e) => {
+                  e.preventDefault()
+                  const link:any = document.createElement("a");
+                  link.href = field.placeholder_file_upload_url;
+                  link.download =
+                    field?.placeholder_file_upload_url?.split("/").at(-1) || "file";
+                  link.click();
+
+                }}
+                >Download</Button>
+                    </div>
+                  </CardContent>
+                
+                </Card>
+                </>
+              </FormControl>
+              <FormDescription>{field.description}</FormDescription>
+            </FormItem>
+          )
+          case "Send Pdf":
+            return(
+              <FormItem>
+                <div className="flex justify-between items-center">
+                  <div>
+                    <FormLabel>{field.label}</FormLabel>
+                    <span className="text-red-500">{field.required && "*"}</span>
+                  </div>
+                  <FormMessage />
+                </div>
+                <FormControl>
+                  <>
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-center w-full">
+                          <label
+                            htmlFor={`${field.name}-upload`}
+                            className="relative flex flex-col items-center justify-center w-full h-64 border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden"
+                          >
+                            {field?.placeholder_pdf_file_url ? (
+                              <>
+                                <div className="text-4xl font-bold text-primary mb-2">
+                                <FaFilePdf  className="text-red-500"/>
+                            </div>
+                            <div className="text-sm flex flex-wrap text-primary line-clamp-2 truncate max-w-[80%]">
+                              {field?.placeholder_pdf_file_url.split("/").at(-1)}
+                            </div>
+                              </>
+                            ) : (
+                              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                                <p className="mb-2 text-sm text-primary">
+                                  <span className="font-semibold">
+                                    Click to upload
+                                  </span>{" "}
+                                  or drag and drop
+                                </p>
+                                <p className="text-xs text-primary">
+                                  PDF (MAX. 5MB)
+                                </p>
+                              </div>
+                            )}
+                            <Input
+                              id={`${field.name}-upload`}
+                              type="file"
+                              readOnly
+                              ref={fileInputRef}
+                              disabled
+                              accept=".pdf"
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                      </div>
+                      <div className="flex w-full justify-end">
+                      <Button className="m-2 flex flex-end items-end self-end"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    if (field?.placeholder_pdf_file_url) {
+                      window.open(field?.placeholder_pdf_file_url, "_blank"); // Open the file in a new tab
+                    }
+  
+                  }}
+                  >Download</Button>
+                      </div>
+                    </CardContent>
+                  
+                  </Card>
+                  </>
+                </FormControl>
+                <FormDescription>{field.description}</FormDescription>
+              </FormItem>
+            )
     case "Text Box":
       return (
         <FormItem>

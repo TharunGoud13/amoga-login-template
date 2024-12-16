@@ -108,6 +108,8 @@ export default function FormBuilder() {
       radiogroup: [],
       placeholder_file_url: "",
       placeholder_video_url: "",
+      placeholder_file_upload_url: "",
+      placeholder_pdf_file_url: "",
       validation_message: '',
       variant_code: newFieldName
     };

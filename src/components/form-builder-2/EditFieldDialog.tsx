@@ -21,11 +21,12 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select"; // Import Select components
-import {  Link, UploadIcon, X, XIcon } from "lucide-react";
+import {  Dock, File, Link, Table, UploadIcon, X, XIcon } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { toast } from "../ui/use-toast";
 import { ADD_CONNECTIONS, NEXT_PUBLIC_API_KEY } from "@/constants/envConfig";
 import Image from "next/image";
+import { FaFilePdf } from "react-icons/fa";
 
 type EditFieldDialogProps = {
   isOpen: boolean;
@@ -56,8 +57,14 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
   const [apiField, setApiField] = useState("");
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
+  const [filePreviews, setFilePreviews] = useState<string[]>([]);
+  const [pdfPreviews, setPdfPreviews] = useState<string[]>([]);
   const [videoUrl, setVideoUrl] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [fileUrl, setFileUrl] = useState("");
+  const [fileName, setFileName] = useState("");
+  const [pdfName, setPdfName] = useState("");
+  const [pdfUrl, setPdfUrl] = useState("");
   const [uploadError, setUploadError] = useState("");
   const [uploading, setUploading] = useState(false)
   const [isPlaceholderChecked, setIsPlaceholderChecked] = useState(false)
@@ -71,7 +78,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
     setEditedField(field);
   }, [field]);
 
-  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     
       if (e.target.files) {
         setUploading(true)
@@ -118,7 +125,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
       }
     };
 
-    const handleFileSubmit = async (e: any) => {
+    const handleImageSubmit = async (e: any) => {
       setUploading(true)
       e.preventDefault();
       setUploadError("");
@@ -173,6 +180,237 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
         prevPreviews.filter((_, i) => i !== index)
       );
   };
+
+  const getFileIcon = (fileName: any) => {
+    const extension = fileName.split(".").pop().toLowerCase();
+    switch (extension) {
+      case "pdf":
+        return <FaFilePdf className="w-8 h-8 text-red-500" />;
+      case "doc":
+      case "docx":
+        return <Dock className="w-8 h-8 text-blue-500" />;
+      case "xls":
+      case "xlsx":
+      case "csv":
+        return <Table className="w-8 h-8 text-green-500" />;
+      default:
+        return <File className="w-8 h-8 text-gray-500" />;
+    }
+  };
+
+  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    
+    if (e.target.files) {
+      setUploading(true)
+      const newFiles = Array.from(e.target.files);
+      const validFiles = newFiles.filter(
+        (file) =>
+          file.size <= MAX_FILE_SIZE
+      );
+      setFileName(newFiles[0].name)
+
+      if (validFiles.length !== newFiles.length) {
+        setUploadError(
+          "Some files were not added. Please ensure all files are  under 5MB."
+        );
+      } else {
+        setUploadError("");
+      }
+
+      const newPreviews = validFiles.map((file) => URL.createObjectURL(file));
+      setFilePreviews((prevPreviews) => [...prevPreviews, ...newPreviews]);
+        const formData = new FormData();
+        validFiles.forEach((file) => {
+          formData.append("file", file);
+        });
+
+        try {
+          const response = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error("Upload failed");
+          }
+
+          const data = await response.json();
+          setEditedField({ ...editedField, placeholder_file_upload_url: data.url })
+          setUploading(false)
+          
+        } catch (error) {
+          console.error("Upload error:", error);
+          setUploadError("Failed to upload file. Please try again.");
+          setUploading(false)
+        } 
+    }
+  };
+
+  const handleFileSubmit = async (e: any) => {
+    setUploading(true)
+    e.preventDefault();
+    setUploadError("");
+    if (!fileUrl) {
+      setUploadError("Please enter a valid File url");
+      return;
+    }
+    const validFileUrlPattern =
+      /^(https?:\/\/.*\.(doc|docx|xls|xlsx|csv|ppt|pptx|txt))$|^(https?:\/\/docs\.google\.com\/(document|spreadsheets)\/d\/[a-zA-Z0-9-_]+)/i;
+    
+    if (!validFileUrlPattern.test(fileUrl)) {
+      setUploadError(
+        "Invalid File URL. Please provide a valid File Link."
+      );
+      return;
+    }
+    setFilePreviews((prevVideos) => [...prevVideos, fileUrl]);
+    const payload = {
+      url: fileUrl,
+    };
+    
+      try {
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error("Upload failed");
+        }
+
+        const data = await response.json();
+        if (data.url) {
+          setEditedField({ ...editedField, placeholder_file_upload_url: data.url })
+          setUploading(false)
+
+        }
+        setFilePreviews((prevVideos) => [...prevVideos, fileUrl]);
+        // setValue(validImages);
+      } catch (error) {
+        console.error("Upload error:", error);
+        setUploadError("Failed to upload video URL. Please try again.");
+        setUploading(false)
+      }
+    
+  };
+
+  const removeFile = (index: number) => {
+    setFilePreviews((prevPreviews) =>
+      prevPreviews.filter((_, i) => i !== index)
+    );
+};
+
+
+const handlePdfUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    
+  if (e.target.files) {
+    setUploading(true)
+    const newFiles = Array.from(e.target.files);
+    const validFiles = newFiles.filter(
+      (file) =>
+        file.size <= MAX_FILE_SIZE
+    );
+    setPdfName(newFiles[0].name)
+
+    if (validFiles.length !== newFiles.length) {
+      setUploadError(
+        "Some files were not added. Please ensure all files are  under 5MB."
+      );
+    } else {
+      setUploadError("");
+    }
+
+    const newPreviews = validFiles.map((file) => URL.createObjectURL(file));
+    setPdfPreviews((prevPreviews) => [...prevPreviews, ...newPreviews]);
+      const formData = new FormData();
+      validFiles.forEach((file) => {
+        formData.append("file", file);
+      });
+
+      try {
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error("Upload failed");
+        }
+
+        const data = await response.json();
+        setEditedField({ ...editedField, placeholder_pdf_file_url: data.url })
+        setUploading(false)
+        
+      } catch (error) {
+        console.error("Upload error:", error);
+        setUploadError("Failed to upload file. Please try again.");
+        setUploading(false)
+      } 
+  }
+};
+
+const handlePdfSubmit = async (e: any) => {
+  setUploading(true)
+  e.preventDefault();
+  setUploadError("");
+  
+  if (!pdfUrl) {
+    setUploadError("Please enter a valid Pdf file url");
+    return;
+  }
+  const validFileUrlPattern =
+    /^(https?:\/\/.*\.(pdf))$/i;
+  
+  if (!validFileUrlPattern.test(pdfUrl)) {
+    setUploadError(
+      "Invalid File URL. Please provide a valid File Link."
+    );
+    return;
+  }
+  setPdfName(pdfUrl)
+  setPdfPreviews((prevVideos) => [...prevVideos, pdfUrl]);
+  const payload = {
+    url: pdfUrl,
+  };
+  
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const data = await response.json();
+      if (data.url) {
+        setEditedField({ ...editedField, placeholder_pdf_file_url: data.url })
+        
+        setUploading(false)
+
+      }
+      setPdfPreviews((prevVideos) => [...prevVideos, pdfUrl]);
+      // setValue(validImages);
+    } catch (error) {
+      console.error("Upload error:", error);
+      setUploadError("Failed to upload video URL. Please try again.");
+      setUploading(false)
+    }
+  
+};
+
+const removePdf = (index: number) => {
+  setPdfPreviews((prevPreviews) =>
+    prevPreviews.filter((_, i) => i !== index)
+  );
+};
 
   const handleVideoUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -341,6 +579,12 @@ const removeVideo = (index: number) => {
         }
         else if(editedField?.variant === "Send Video"){
           setEditedField({...editedField, placeholder_video_url : data.map((item: any) => item[apiField])[0]})
+        }
+        else if(editedField?.variant === "Send File"){
+          setEditedField({...editedField, placeholder_file_upload_url : data.map((item: any) => item[apiField])[0]})
+        }
+        else if(editedField?.variant === "Send Pdf"){
+          setEditedField({...editedField, placeholder_pdf_file_url : data.map((item: any) => item[apiField])[0]})
         }
        
         
@@ -560,7 +804,7 @@ const removeVideo = (index: number) => {
               }
             />
           </div>
-          <If condition={field?.variant !== "Send Video"}
+          <If condition={(field?.variant !== "Send Video") && (field?.variant !== "Send File") && (field?.variant !== "Send Pdf")}
           render={() => (
           <div>
           <div>
@@ -616,7 +860,7 @@ const removeVideo = (index: number) => {
                         id="file-upload"
                         type="file"
                         disabled={!isPlaceholderChecked || uploading || imageUrl?.length > 0}
-                        onChange={handleFileUpload}
+                        onChange={handleImageUpload}
                         accept=".jpg,.jpeg,.png,.gif"
                         className="hidden"
                       />
@@ -644,7 +888,7 @@ const removeVideo = (index: number) => {
                     />
                     <Button
                       disabled={!isUrlChecked || !imageUrl || imagePreviews?.length > 0}
-                      onClick={handleFileSubmit}
+                      onClick={handleImageSubmit}
                     >
                       <Link className="w-4 h-4 mr-2" />
                       Add URL
@@ -754,6 +998,201 @@ const removeVideo = (index: number) => {
                       <Button
                         disabled={!isUrlChecked || !videoUrl || videoPreviews?.length > 0}
                         onClick={handleVideoSubmit}
+                      >
+                        <Link className="w-4 h-4 mr-2" />
+                        Add URL
+                      </Button>
+                    </div>
+            </div>
+            {uploadError && <span className="text-red-500">{uploadError}</span>}
+            </div>
+
+          )}
+          />
+          <If condition={field?.variant === "Send File"}
+          render={() => (
+            <div>
+            <div>
+              <Label htmlFor="file-upload">
+               <div className="flex items-center gap-2.5 my-2">
+                 <Checkbox checked={isPlaceholderChecked} 
+                 onCheckedChange={() => setIsPlaceholderChecked(!isPlaceholderChecked)} /> Use upload placeholder</div>
+              </Label>
+              
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center w-full">
+                      <label
+                        htmlFor="file-upload"
+                        className={`relative flex flex-col items-center justify-center w-full h-64 border border-primary border-dashed rounded-lg ${!isPlaceholderChecked ? "cursor-not-allowed" : "cursor-pointer"} bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden`}
+                      >
+                        {filePreviews && filePreviews?.length > 0 ? (
+                        <div className="flex flex-col items-center flex-wrap justify-center w-full h-full">
+                          
+                          <div className="text-4xl font-bold text-primary mb-2">
+                            {getFileIcon(fileName)}
+                          </div>
+                          <span className="text-sm text-center w-[50%] overflow-hidden overflow-ellipsis flex-wrap text-primary  truncate ">
+                            {fileName}
+                          </span>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              removeFile(0);
+                            }}
+                            className="absolute top-2 right-2"
+                          >
+                            <XIcon className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col p-2.5 items-center justify-center pt-5 pb-6">
+                          <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                          <p className="mb-2 text-sm text-primary">
+                            <span className="font-semibold">
+                              Click to upload
+                            </span>{" "}
+                            or drag and drop
+                          </p>
+                          <p className="text-xs text-primary">
+                            DOC, DOCX, XLS, XLSX, CSV (MAX. 5MB)
+                          </p>
+                        </div>
+                      )}
+                        <Input
+                          id="file-upload"
+                          type="file"
+                          disabled={!isPlaceholderChecked || uploading || fileUrl?.length > 0}
+                          onChange={handleFileUpload}
+                          accept=".doc,.docx,.xls,.xlsx,.csv"
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  </div>
+            </div>
+            
+            <div>
+              <div className="flex gap-2.5 items-center my-2">
+                <Checkbox checked={isUrlChecked}
+                 onCheckedChange={() => setIsUrlChecked(!isUrlChecked)}
+                 /> Use URL placeholder
+              </div>
+              <div className="mt-2.5 flex items-center gap-2.5">
+                      <Input
+                        value={fileUrl}
+                        placeholder="Enter File URL"
+                        className="border-secondary"
+                        disabled={!isUrlChecked || filePreviews?.length > 0}
+                        onChange={(e) => {
+                          setFileUrl(e.target.value)
+  
+                        }}
+                      />
+                      <Button
+                        disabled={!isUrlChecked || !fileUrl || filePreviews?.length > 0}
+                        onClick={handleFileSubmit}
+                      >
+                        <Link className="w-4 h-4 mr-2" />
+                        Add URL
+                      </Button>
+                    </div>
+            </div>
+            {uploadError && <span className="text-red-500">{uploadError}</span>}
+            </div>
+
+          )}
+          />
+
+<If condition={field?.variant === "Send Pdf"}
+          render={() => (
+            <div>
+            <div>
+              <Label htmlFor="pdf-upload">
+               <div className="flex items-center gap-2.5 my-2">
+                 <Checkbox checked={isPlaceholderChecked} 
+                 onCheckedChange={() => setIsPlaceholderChecked(!isPlaceholderChecked)} /> Use upload placeholder</div>
+              </Label>
+              
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center w-full">
+                      <label
+                        htmlFor="pdf-upload"
+                        className={`relative flex flex-col items-center justify-center w-full h-64 border border-primary border-dashed rounded-lg ${!isPlaceholderChecked ? "cursor-not-allowed" : "cursor-pointer"} bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden`}
+                      >
+                        {pdfPreviews && pdfPreviews?.length > 0 ? (
+                        <div className="flex flex-col items-center flex-wrap justify-center w-full h-full">
+                          
+                          <div className="text-4xl font-bold text-primary mb-2">
+                            <FaFilePdf className="text-red-500" />
+                          </div>
+                          <span className="text-sm  w-[50%] overflow-hidden overflow-ellipsis flex-wrap text-primary text-center  truncate ">
+                            {pdfName}
+                          </span>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              removePdf(0);
+                            }}
+                            className="absolute top-2 right-2"
+                          >
+                            <XIcon className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col p-2.5 items-center justify-center pt-5 pb-6">
+                          <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                          <p className="mb-2 text-sm text-primary">
+                            <span className="font-semibold">
+                              Click to upload
+                            </span>{" "}
+                            or drag and drop
+                          </p>
+                          <p className="text-xs text-primary">
+                            PDF (MAX. 5MB)
+                          </p>
+                        </div>
+                      )}
+                        <Input
+                          id="pdf-upload"
+                          type="file"
+                          disabled={!isPlaceholderChecked || uploading || pdfUrl?.length > 0}
+                          onChange={handlePdfUpload}
+                          accept=".pdf"
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  </div>
+            </div>
+            
+            <div>
+              <div className="flex gap-2.5 items-center my-2">
+                <Checkbox checked={isUrlChecked}
+                 onCheckedChange={() => setIsUrlChecked(!isUrlChecked)}
+                 /> Use URL placeholder
+              </div>
+              <div className="mt-2.5 flex items-center gap-2.5">
+                      <Input
+                        value={pdfUrl}
+                        placeholder="Enter File URL"
+                        className="border-secondary"
+                        disabled={!isUrlChecked || pdfPreviews?.length > 0}
+                        onChange={(e) => {
+                          setPdfUrl(e.target.value)
+  
+                        }}
+                      />
+                      <Button
+                        disabled={!isUrlChecked || !pdfUrl || pdfPreviews?.length > 0}
+                        onClick={handlePdfSubmit}
                       >
                         <Link className="w-4 h-4 mr-2" />
                         Add URL
@@ -1200,7 +1639,9 @@ const removeVideo = (index: number) => {
               "Text Area",
               "Radio Group",
               "Send Image",
-              "Send Video"
+              "Send Video",
+              "Send File",
+              "Send Pdf"
             ].includes(field?.variant ?? "")}
             render={() => (
               <div>
@@ -1239,7 +1680,7 @@ const removeVideo = (index: number) => {
                 disabled={!useAPI}
               />
             </div>
-            <Button className="mt-2" onClick={handleAddApiData}>Add Data</Button>
+            <Button className="mt-2" disabled={!useAPI || !apiURL || !apiField } onClick={handleAddApiData}>Add Data</Button>
             <span className="text-red-500 text-sm" id="api_field_error_msg"></span>
             </div>
             )}

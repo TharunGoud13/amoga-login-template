@@ -1,6 +1,6 @@
 "use client"
 import * as React from "react"
-import { Bot, File, FileText, Table, User, XIcon } from 'lucide-react'
+import { Bot, Dock, File, FileText, Table, User, XIcon } from 'lucide-react'
 import { v4 as uuidv4 } from 'uuid'
 import { Avatar } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -8,7 +8,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { FaArrowUp } from "react-icons/fa6";
 import RenderInputField from "./render-chat-field"
 import Image from "next/image"
-import { FaRegFilePdf } from "react-icons/fa";
+import { FaFilePdf, FaRegFilePdf } from "react-icons/fa";
 
 type Message = {
   id: string
@@ -86,7 +86,7 @@ export function ChatForm({ formFields,apiFieldData }: any) {
       
       case 'doc':
       case 'docx':
-        return <FileText className="w-8 h-8 text-blue-500" />;
+        return <Dock className="w-8 h-8 text-blue-500" />;
       case 'xls':
       case 'xlsx':
       case 'csv':
@@ -168,7 +168,7 @@ console.log("formFields----",formFields)
 const displayVideo = (videoUrl: string) => {
   if (/(youtube\.com|youtu\.be)/.test(videoUrl)) {
       return (
-        <div className="md:h-64 w-full relative">
+        <div className="md:h-64 md:w-[80vw] w-full relative">
         <iframe
               src={videoUrl.replace('watch?v=', 'embed/')}
               title="video-preview"
@@ -225,6 +225,63 @@ const displayFile = (imageUrl: string) => {
   );
 
 };
+
+const displaySendFile = (fileName: any) => {
+  console.log("fileName-----", fileName);
+
+  return (
+    <div className="flex flex-col md:w-[80vw] flex-wrap items-center p-4 gap-2.5 rounded-lg">
+      {getFileIcon(fileName?.placeholder_file_upload_url)}
+      <span
+        className="text-sm flex-wrap text-wrap w-[175px]  md:w-1/2 truncate overflow-hidden text-ellipsis"
+        title={fileName?.placeholder_file_upload_url?.split("/").at(-1)} // Tooltip for full file name
+      >
+        {fileName?.placeholder_file_upload_url?.split("/").at(-1)}
+      </span>
+      <div className="flex w-full justify-center">
+          <Button className="m-2 flex  flex-end items-end self-end"
+                onClick={(e) => {
+                  e.preventDefault()
+                  const link:any = document.createElement("a");
+                  link.href = fileName?.placeholder_file_upload_url;
+                  link.download =
+                  fileName?.placeholder_file_upload_url?.split("/").at(-1) || "file";
+                  link.click();
+
+                }}
+                >Download</Button>
+        </div>
+    </div>
+  );
+};
+
+const displaySendPdf = (fileName: any) => {
+  console.log("fileName-----", fileName);
+
+  return (
+    <div className="flex flex-col md:w-[80vw] text-center flex-wrap items-center p-4 gap-2.5 rounded-lg">
+      <FaFilePdf className="text-red-500 h-5 w-5"/>
+      <span
+        className="text-sm flex-wrap w-[175px] text-w text-center   md:w-1/2 truncate overflow-hidden text-ellipsis"
+        title={fileName?.split("/").at(-1)} // Tooltip for full file name
+      >
+        {fileName?.split("/").at(-1)}
+      </span>
+      <div className="flex w-full justify-center">
+          <Button className="m-2 flex  flex-end items-end self-end"
+                onClick={(e) => {
+                  e.preventDefault()
+                  if (fileName) {
+                    window.open(fileName, "_blank"); // Open the file in a new tab
+                  }
+
+                }}
+                >Download</Button>
+        </div>
+    </div>
+  );
+};
+
 
 const displayPdf = (imageUrl: string) => {
   return (
@@ -388,6 +445,74 @@ const displayPdf = (imageUrl: string) => {
   
   
       // Handle next step
+      const nextStep = findNextActiveField(currentStep);
+      setCurrentStep(nextStep);
+  
+      if (nextStep !== -1) {
+          const nextField = formFields[nextStep];
+          addMessage(
+              "assistant",
+              <div>
+                  <span className="label">{nextField.label}</span>
+                  {nextField.required && <span className="text-red-500">*</span>}
+                  <br />
+                  <span className="text-sm text-gray-400">{nextField.description}</span>
+              </div>
+          );
+      } else {
+          addMessage("assistant", "Thank you for completing the form.");
+      }
+    }
+
+    if (currentField?.variant === "Send File") {
+      const fileToDisplay = currentField; // Display the first video in the state
+  
+      addMessage(
+          "user",
+          <div className="flex md:h-64 w-[250px] md:w-full items-center">
+              {displaySendFile(fileToDisplay)}
+          </div>
+      );
+  
+      // Update form data
+      setFormData((prev) => ({
+          ...prev,
+          [currentField.name]: fileToDisplay,
+      }));
+      const nextStep = findNextActiveField(currentStep);
+      setCurrentStep(nextStep);
+  
+      if (nextStep !== -1) {
+          const nextField = formFields[nextStep];
+          addMessage(
+              "assistant",
+              <div>
+                  <span className="label">{nextField.label}</span>
+                  {nextField.required && <span className="text-red-500">*</span>}
+                  <br />
+                  <span className="text-sm text-gray-400">{nextField.description}</span>
+              </div>
+          );
+      } else {
+          addMessage("assistant", "Thank you for completing the form.");
+      }
+    }
+
+    if (currentField?.variant === "Send Pdf") {
+      const fileToDisplay = currentField?.placeholder_pdf_file_url; // Display the first video in the state
+  
+      addMessage(
+          "user",
+          <div className="flex md:h-64 w-full items-center">
+              {displaySendPdf(fileToDisplay)}
+          </div>
+      );
+  
+      // Update form data
+      setFormData((prev) => ({
+          ...prev,
+          [currentField.name]: fileToDisplay,
+      }));
       const nextStep = findNextActiveField(currentStep);
       setCurrentStep(nextStep);
   
@@ -630,7 +755,7 @@ const displayPdf = (imageUrl: string) => {
   }
 
 
-  const error = !["Video Upload", "File Upload", "Image Upload", "PDF Upload", "Send Image", "Send Video"
+  const error = !["Video Upload", "File Upload", "Image Upload", "PDF Upload", "Send Image", "Send Video", "Send File", "Send Pdf"
 
   ].includes(currentField.variant) && validateInput(currentField, input);
 
@@ -761,6 +886,10 @@ const displayPdf = (imageUrl: string) => {
               {!(formFields[currentStep]?.variant === "File Upload" || 
                 formFields[currentStep]?.variant === "Image Upload" || 
                 formFields[currentStep]?.variant === "PDF Upload" || 
+                formFields[currentStep]?.variant === "Send Image" || 
+                formFields[currentStep]?.variant === "Send Video" || 
+                formFields[currentStep]?.variant === "Send File" || 
+                formFields[currentStep]?.variant === "Send Pdf" || 
                 formFields[currentStep]?.variant === "Video Upload") &&
               <Button
                 onClick={handleSubmit}
@@ -774,6 +903,10 @@ const displayPdf = (imageUrl: string) => {
             {(formFields[currentStep]?.variant === "File Upload" || 
               formFields[currentStep]?.variant === "Image Upload" || 
               formFields[currentStep]?.variant === "PDF Upload" || 
+              formFields[currentStep]?.variant === "Send Image" || 
+              formFields[currentStep]?.variant === "Send Video" || 
+              formFields[currentStep]?.variant === "Send File" || 
+              formFields[currentStep]?.variant === "Send Pdf" || 
               formFields[currentStep]?.variant === "Video Upload") &&
             <Button
                 onClick={handleSubmit}

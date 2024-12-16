@@ -1004,6 +1004,120 @@ const RenderInputField = ({
                   </>
                 </>
               )
+              case "Send File":
+                return(
+                  <>
+                    <>
+                    <Label htmlFor="send-file-upload">Uploaded File</Label>
+                      <Card>
+                        <CardContent className="p-6">
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-center w-full">
+                              <label
+                                htmlFor="send-file-upload"
+                                className="relative flex flex-col text-wrap w-[200px] items-center justify-center md:w-full h-64 border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden"
+                              >
+                                
+                                {currentField?.placeholder_file_upload_url ? (
+                                  <>
+                                  <div className="text-4xl font-bold text-primary mb-2">
+                            {getFileIcon(currentField?.placeholder_file_upload_url?.split("/").at(-1))}
+                          </div>
+                                    <div className="text-sm w-[200px] text-wrap p-2 flex flex-wrap text-primary truncate md:max-w-[80%]">
+                                        {currentField?.placeholder_file_upload_url.split("/").at(-1)}
+                                    </div>
+                                    
+                                  </>
+                                ) : (
+                                  <div className="flex flex-col p-2.5 items-center justify-center pt-5 pb-6">
+                                    <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                                    <p className="mb-2 text-sm text-primary">
+                                      <span className="font-semibold">
+                                        Click to upload
+                                      </span>{" "}
+                                      or drag and drop
+                                    </p>
+                                    <p className="text-xs text-primary">
+                                    DOC, DOCX, XLS, XLSX, CSV (MAX. 5MB)
+                                    </p>
+                                  </div>
+                                )}
+                                <Input
+                                  id="send-file-upload"
+                                  type="file"
+                                  readOnly
+                                  // ref={fileInputRef}
+                                  disabled
+                                  accept=".doc,.docx,.xls,.xlsx,.csv"
+                                  className="hidden"
+                                />
+                              </label>
+                            </div>
+                          </div>
+                         
+                        </CardContent>
+                        
+                      </Card>
+                    </>
+                  </>
+                )
+                case "Send Pdf":
+                  return(
+                    <>
+                      <>
+                      <Label htmlFor="send-pdf-upload">Uploaded Pdf File</Label>
+                        <Card>
+                          <CardContent className="p-6">
+                            <div className="space-y-4">
+                              <div className="flex items-center justify-center w-full">
+                                <label
+                                  htmlFor="send-pdf-upload"
+                                  className="relative flex flex-col items-center justify-center w-[200px] md:w-full h-64 border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden"
+                                >
+                                  
+                                  {currentField?.placeholder_pdf_file_url ? (
+                                    <>
+                                    <div className="text-4xl font-bold text-primary mb-2">
+                              <FaFilePdf className="text-red-500" />
+                            </div>
+                                      <div className="text-sm flex flex-wrap text-wrap text-primary  truncate max-w-[80%]">
+                                          {currentField?.placeholder_pdf_file_url.split("/").at(-1)}
+                                      </div>
+                                      
+                                    </>
+                                  ) : (
+                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                      <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                                      <p className="mb-2 text-sm text-primary">
+                                        <span className="font-semibold">
+                                          Click to upload
+                                        </span>{" "}
+                                        or drag and drop
+                                      </p>
+                                      <p className="text-xs text-primary">
+                                      PDF (MAX. 5MB)
+                                      </p>
+                                    </div>
+                                  )}
+                                  <Input
+                                    id="send-pdf-upload"
+                                    type="file"
+                                    readOnly
+                                    // ref={fileInputRef}
+                                    disabled
+                                    accept=".pdf"
+                                    className="hidden"
+                                  />
+                                </label>
+                              </div>
+                            </div>
+                           
+                          </CardContent>
+                          
+                        </Card>
+                      </>
+                    </>
+                  )
 
       case "Combobox":
       return (
