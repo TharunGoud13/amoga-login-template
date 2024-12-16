@@ -303,25 +303,18 @@ const removeVideo = (index: number) => {
 
   }
 
-  const handleSave = async() => {
-    if(useAPI){
-      setRadioGroup("")
-      
-      
+  const handleAddApiData = async() => {
+    setUploading(true);
     const validApis = await fetchValidApi();
-    
-
-    const isValid = validApis.filter((item:any) => item.api_url === apiURL)
-   
+    const isValid = validApis.filter((item:any) => item.api_url === apiURL);
 
     if(isValid.length === 0){
-      toast({description: "Invalid API URL", variant: "destructive"})
-    }
-
-    if(!isValid || !apiURL || !apiField){
-      toast({description: "Something went wrong", variant: "destructive"})
-    }
-
+          toast({description: "Invalid API URL", variant: "destructive"})
+        }
+    
+        if(!isValid || !apiURL || !apiField){
+          toast({description: "Something went wrong", variant: "destructive"})
+        }
     if(isValid && isValid.length > 0 && apiURL && apiField){
       const {key, secret} = isValid && isValid[0];
 
@@ -338,19 +331,33 @@ const removeVideo = (index: number) => {
           toast({description: "Failed to fetch data", variant: "destructive"})
         }
         const data = await response.json()
-        const firstNameValues = data.map((item: any) => item[apiField]);
-        setApiFieldData(firstNameValues)
+        setUploading(false);
+        if(editedField?.variant === "Radio Group"){
+          const firstNameValues = data.map((item: any) => item[apiField]);
+          setApiFieldData(firstNameValues)
+        }
+        if(editedField?.variant === "Send Image"){
+        setEditedField({...editedField, placeholder_file_url : data.map((item: any) => item[apiField])[0]})
+        }
+        else if(editedField?.variant === "Send Video"){
+          setEditedField({...editedField, placeholder_video_url : data.map((item: any) => item[apiField])[0]})
+        }
+       
+        
+        
       
-        if(firstNameValues) {
+        if(data) {
           toast({
             description: "Options added from API successfully",
             variant: "default",
           });
         } else {
           toast({
-            description: "No valid `firstName` values found",
+            description: "No valid  values found",
             variant: "destructive",
           });
+        setUploading(false);
+
         }
       }
       catch(error){
@@ -358,7 +365,65 @@ const removeVideo = (index: number) => {
 
       }
     }
-  } 
+
+  }
+
+  const handleSave = async() => {
+  //   if(useAPI){
+  //     setRadioGroup("")
+      
+      
+  //   const validApis = await fetchValidApi();
+    
+
+  //   const isValid = validApis.filter((item:any) => item.api_url === apiURL)
+   
+
+  //   if(isValid.length === 0){
+  //     toast({description: "Invalid API URL", variant: "destructive"})
+  //   }
+
+  //   if(!isValid || !apiURL || !apiField){
+  //     toast({description: "Something went wrong", variant: "destructive"})
+  //   }
+
+  //   if(isValid && isValid.length > 0 && apiURL && apiField){
+  //     const {key, secret} = isValid && isValid[0];
+
+  //     try{
+  //       const requestOptions = {
+  //         method: "GET",
+  //         headers: {
+  //           [key]: secret,
+  //           'Content-Type': 'application/json'
+  //         }
+  //       }
+  //       const response = await fetch(apiURL, requestOptions)
+  //       if(!response.ok){
+  //         toast({description: "Failed to fetch data", variant: "destructive"})
+  //       }
+  //       const data = await response.json()
+  //       const firstNameValues = data.map((item: any) => item[apiField]);
+  //       setApiFieldData(firstNameValues)
+      
+  //       if(firstNameValues) {
+  //         toast({
+  //           description: "Options added from API successfully",
+  //           variant: "default",
+  //         });
+  //       } else {
+  //         toast({
+  //           description: "No valid `firstName` values found",
+  //           variant: "destructive",
+  //         });
+  //       }
+  //     }
+  //     catch(error){
+  //       toast({ description: "Failed to fetch data", variant: "destructive" })
+
+  //     }
+  //   }
+  // } 
     if (editedField) {
       const isDuplicate =
       existingField.includes(editedField.name) &&
@@ -1133,7 +1198,9 @@ const removeVideo = (index: number) => {
               "Dropdown",
               "Check Box",
               "Text Area",
-              "Radio Group"
+              "Radio Group",
+              "Send Image",
+              "Send Video"
             ].includes(field?.variant ?? "")}
             render={() => (
               <div>
@@ -1172,6 +1239,7 @@ const removeVideo = (index: number) => {
                 disabled={!useAPI}
               />
             </div>
+            <Button className="mt-2" onClick={handleAddApiData}>Add Data</Button>
             <span className="text-red-500 text-sm" id="api_field_error_msg"></span>
             </div>
             )}
