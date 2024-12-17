@@ -9,6 +9,7 @@ import { FaArrowUp } from "react-icons/fa6";
 import RenderInputField from "./render-chat-field"
 import Image from "next/image"
 import { FaFilePdf, FaRegFilePdf } from "react-icons/fa";
+import SendMediaCard from "./field-components/SendMediaCard"
 
 type Message = {
   id: string
@@ -532,6 +533,39 @@ const displayPdf = (imageUrl: string) => {
       }
     }
 
+    if(currentField?.variant === "Send Media Card"){
+      addMessage(
+        "user",
+        <div className="flex w-full items-center">
+            <SendMediaCard field={currentField} />
+        </div>
+    );
+
+    // Update form data
+    setFormData((prev) => ({
+        ...prev,
+        [currentField.name]: currentField,
+    }));
+    const nextStep = findNextActiveField(currentStep);
+    setCurrentStep(nextStep);
+
+    if (nextStep !== -1) {
+        const nextField = formFields[nextStep];
+        addMessage(
+            "assistant",
+            <div>
+                <span className="label">{nextField.label}</span>
+                {nextField.required && <span className="text-red-500">*</span>}
+                <br />
+                <span className="text-sm text-gray-400">{nextField.description}</span>
+            </div>
+        );
+    } else {
+        addMessage("assistant", "Thank you for completing the form.");
+    }
+
+    }
+
     if (selectedFile.length > 0) {
       const fileToDisplay = selectedFile[0]; // Display the first video in the state
   
@@ -755,7 +789,8 @@ const displayPdf = (imageUrl: string) => {
   }
 
 
-  const error = !["Video Upload", "File Upload", "Image Upload", "PDF Upload", "Send Image", "Send Video", "Send File", "Send Pdf"
+  const error = !["Video Upload", "File Upload", "Image Upload", "PDF Upload", "Send Image", "Send Video", "Send File", "Send Pdf",
+    "Send Media Card"
 
   ].includes(currentField.variant) && validateInput(currentField, input);
 
@@ -825,7 +860,7 @@ const displayPdf = (imageUrl: string) => {
               </Avatar>
             )}
             <div
-              className={`relative py-[8px]  max-w-[80%] rounded-[10px] ${
+              className={`relative py-[8px]  max-w-[90%] rounded-[10px] ${
                 message.role === "user"
                   ? "border-primary border  text-primary px-[8px]  rounded-br-none shadow-[0_4px_8px_rgba(0,0,0,0.25)]"
                   : " w-[80%] rounded-[5px]"
@@ -890,6 +925,7 @@ const displayPdf = (imageUrl: string) => {
                 formFields[currentStep]?.variant === "Send Video" || 
                 formFields[currentStep]?.variant === "Send File" || 
                 formFields[currentStep]?.variant === "Send Pdf" || 
+                formFields[currentStep]?.variant === "Send Media Card" || 
                 formFields[currentStep]?.variant === "Video Upload") &&
               <Button
                 onClick={handleSubmit}
@@ -907,6 +943,7 @@ const displayPdf = (imageUrl: string) => {
               formFields[currentStep]?.variant === "Send Video" || 
               formFields[currentStep]?.variant === "Send File" || 
               formFields[currentStep]?.variant === "Send Pdf" || 
+              formFields[currentStep]?.variant === "Send Media Card" || 
               formFields[currentStep]?.variant === "Video Upload") &&
             <Button
                 onClick={handleSubmit}

@@ -43,6 +43,7 @@ import { FaFilePdf } from "react-icons/fa";
 import { FcDocument } from "react-icons/fc";
 import { PiMicrosoftExcelLogoDuotone } from "react-icons/pi";
 import { FaRegFilePdf } from "react-icons/fa";
+import SendMediaCard from "./field-components/SendMediaCard";
 
 const ALLOWED_FILES_TYPES = [
   "application/pdf",
@@ -1118,6 +1119,12 @@ const RenderInputField = ({
                       </>
                     </>
                   )
+              case "Send Media Card":
+                return(
+                  <div className="w-full">
+                  <SendMediaCard field={currentField}/>
+                  </div>
+                )
 
       case "Combobox":
       return (

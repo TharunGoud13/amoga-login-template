@@ -300,6 +300,17 @@ const Page = (props: any) => {
       }
     }
 
+    const sendMediaCardVariant = formJsonData.find((item) => item.variant === "Send Media Card");
+
+    if (sendMediaCardVariant) {
+      const media_url = formJsonData.map((item) => item.variant === "Send Media Card")
+      if(media_url){
+        data.media_url = formJsonData.map((item) => item.variant === "Send Media Card" && item.media_card_data?.media_url)
+        data.card_type = formJsonData.map((item) => item.variant === "Send Media Card" && item.media_card_data?.card_type)
+        data.html_content = formJsonData.map((item) => item.variant === "Send Media Card" && item.media_card_data?.custom_html)
+      }
+    }
+
     const payload = {
       form_id: formData[0].form_id,
       form_name: formData[0].form_name,

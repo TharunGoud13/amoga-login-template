@@ -17,6 +17,7 @@ export const generateZodSchema = (
     if(field.variant === "Send Video") return
     if(field.variant === "Send File") return
     if(field.variant === "Send Pdf") return
+    if(field.variant === "Send Media Card") return
 
     let fieldSchema: z.ZodTypeAny
 

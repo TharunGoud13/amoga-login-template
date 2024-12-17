@@ -105,6 +105,7 @@ import BarChartPage from "../ui/bar-chart-page";
 import { Card, CardContent } from "../ui/card";
 import Image from "next/image";
 import { FaFilePdf } from "react-icons/fa";
+import SendMediaCard from "./field-components/SendMediaCard";
 
 const languages = [
   { label: "English", value: "en" },
@@ -1940,6 +1941,12 @@ export const renderFormField = (
           />
         </div>
       );
+    case "Send Media Card":
+      return(
+        <div>
+          <SendMediaCard field={field} />
+        </div>
+      )
     case "Media Card & Social Icons":
       return (
         <MediaSocialPage

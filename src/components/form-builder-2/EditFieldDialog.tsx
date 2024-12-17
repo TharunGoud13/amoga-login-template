@@ -21,12 +21,13 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select"; // Import Select components
-import {  Dock, File, Link, Table, UploadIcon, X, XIcon } from "lucide-react";
+import {  CheckSquare, Dock, File, Heart, Link, MessageCircle, Share2, Star, Table, UploadIcon, X, XIcon } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { toast } from "../ui/use-toast";
 import { ADD_CONNECTIONS, NEXT_PUBLIC_API_KEY } from "@/constants/envConfig";
 import Image from "next/image";
 import { FaFilePdf } from "react-icons/fa";
+import { Textarea } from "../ui/textarea";
 
 type EditFieldDialogProps = {
   isOpen: boolean;
@@ -59,7 +60,9 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
   const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
   const [filePreviews, setFilePreviews] = useState<string[]>([]);
   const [pdfPreviews, setPdfPreviews] = useState<string[]>([]);
+  const [mediaCardPreviews, setMediaCardPreviews] = useState<string>("");
   const [videoUrl, setVideoUrl] = useState("");
+  const [mediaCardUrl, setMediaCardUrl] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [fileUrl, setFileUrl] = useState("");
   const [fileName, setFileName] = useState("");
@@ -72,6 +75,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
   const MAX_VIDEO_SIZE = 2 * 1024 * 1024;
 
+  const CONTENT_TYPES = ['Image', 'Video', 'File', 'Pdf', 'Page URL', 'Carousel', 'Data card', 'Chart']
 
 
   useEffect(() => {
@@ -515,6 +519,112 @@ const removeVideo = (index: number) => {
     );
 };
 
+const handleMediaUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    
+  if (e.target.files) {
+    setUploading(true)
+    const newMedia = Array.from(e.target.files);
+    const validMedia = newMedia.filter(
+      (file) =>
+        file.size <= MAX_FILE_SIZE
+    );
+
+    if (validMedia.length !== newMedia.length) {
+      setUploadError(
+        "Some files were not added. Please ensure all files are images (JPG, PNG, or GIF) and under 5MB."
+      );
+    } else {
+      setUploadError("");
+    }
+
+    const newPreviews = validMedia.map((file) => URL.createObjectURL(file));
+    setMediaCardPreviews(e.target.files[0]?.name);
+      const formData = new FormData();
+      validMedia.forEach((file) => {
+        formData.append("file", file);
+      });
+
+      try {
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error("Upload failed");
+        }
+
+        const data = await response.json();
+        setEditedField({
+          ...editedField,
+          media_card_data: {
+            ...editedField.media_card_data,
+            media_url: data.url,            
+          },
+        });
+        setUploading(false)
+        
+      } catch (error) {
+        console.error("Upload error:", error);
+        setUploadError("Failed to upload file. Please try again.");
+        setUploading(false)
+      } 
+  }
+};
+
+const handleMediaSubmit = async (e: any) => {
+  setUploading(true)
+  e.preventDefault();
+  setUploadError("");
+  if (!mediaCardUrl) {
+    setUploadError("Please enter a valid video url");
+    return;
+  }
+  
+  setMediaCardPreviews(mediaCardUrl);
+  const payload = {
+    url: mediaCardUrl,
+  };
+  
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const data = await response.json();
+      if (data.url) {
+        setEditedField({ 
+          ...editedField,
+          media_card_data: {
+             ...editedField.media_card_data,
+              media_url: data.url,            
+            },
+         });
+        setUploading(false)
+
+      }
+      setMediaCardPreviews(mediaCardUrl);
+      // setValue(validImages);
+    } catch (error) {
+      console.error("Upload error:", error);
+      setUploadError("Failed to upload video URL. Please try again.");
+      setUploading(false)
+    }
+  
+};
+
+const removeMedia = () => {
+  setMediaCardPreviews("");
+};
+
   
 
   const fetchValidApi = async() => {
@@ -585,6 +695,17 @@ const removeVideo = (index: number) => {
         }
         else if(editedField?.variant === "Send Pdf"){
           setEditedField({...editedField, placeholder_pdf_file_url : data.map((item: any) => item[apiField])[0]})
+        }
+        else if(editedField?.variant === "Send Media Card"){
+          setEditedField({
+            ...editedField,
+            media_card_data: {
+              ...editedField.media_card_data,
+              media_url: data.map((item: any) => item[apiField])[0] || "",
+              custom_html: data.map((item: any) => item.html_content)[0],
+              card_type: data.map((item: any) => item.card_type)[0],
+            },
+          });
         }
        
         
@@ -1688,7 +1809,236 @@ const removeVideo = (index: number) => {
         </div>
         </TabsContent>
         <TabsContent value="cards">
-          Card content goes here.
+        <If condition={field?.variant !== "Send Media Card"}
+          render={() => (
+            <div>
+               Card content goes here.
+            </div>
+          )}
+          />
+          <If condition={field?.variant === "Send Media Card"}
+          render={() => (
+            <div className="space-y-2.5">
+              <>
+              <Label htmlFor="media-card">Content Type</Label>
+              <Select 
+              onValueChange={(value) => {
+                setEditedField({
+                  ...editedField,
+                  media_card_data: {
+                    ...editedField.media_card_data,
+                    card_type: value
+                  }
+                })
+              }}>
+                <SelectTrigger id="media-card">
+                  <SelectValue placeholder="Select media type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CONTENT_TYPES?.map((item:string, index:number) => (
+                    <SelectItem key={index} value={item}>
+                      {item}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              </>
+              {/* -------------------------------- */}
+              <div>
+            <Label htmlFor="file-upload">
+             <div className="flex items-center gap-2.5 my-2">
+               <Checkbox checked={isPlaceholderChecked} 
+               onCheckedChange={() => setIsPlaceholderChecked(!isPlaceholderChecked)} /> Use upload placeholder</div>
+            </Label>
+            
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center w-full">
+                    <label
+                      htmlFor="file-upload"
+                      className={`relative flex flex-col items-center justify-center w-full h-64 border border-primary border-dashed rounded-lg ${!isPlaceholderChecked ? "cursor-not-allowed" : "cursor-pointer"} bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden`}
+                    >
+                      {mediaCardPreviews.length > 0 ? (
+                        <>
+                          {mediaCardPreviews}
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              removeMedia();
+                            }}
+                            className="absolute top-2 right-2 z-10"
+                          >
+                            <XIcon className="h-4 w-4" />
+                          </Button>
+                        </>
+                      ) : (
+                        <div className={`flex ${!isPlaceholderChecked && "bg-gray-100 cursor-not-allowed"} flex-col items-center justify-center pt-5 pb-6`}>
+                          <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                          <p className="mb-2 text-sm text-primary">
+                            <span className="font-semibold">
+                              Click to upload
+                            </span>{" "}
+                            or drag and drop
+                          </p>
+                        </div>
+                      )}
+                      <Input
+                        id="file-upload"
+                        type="file"
+                        disabled={!isPlaceholderChecked || uploading || mediaCardPreviews?.length > 0}
+                        onChange={handleMediaUpload}
+                        
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+          </div>
+          
+          <div>
+            <div className="flex gap-2.5 items-center my-2">
+              <Checkbox checked={isUrlChecked}
+               onCheckedChange={() => setIsUrlChecked(!isUrlChecked)}
+               /> Use URL placeholder
+            </div>
+            <div className="mt-2.5 flex items-center gap-2.5">
+                    <Input
+                      value={mediaCardUrl}
+                      placeholder="Enter File URL"
+                      className="border-secondary"
+                      disabled={!isUrlChecked || mediaCardPreviews?.length > 0}
+                      onChange={(e) => {
+                        setMediaCardUrl(e.target.value)
+
+                      }}
+                    />
+                    <Button
+                      disabled={!isUrlChecked || !mediaCardUrl || mediaCardPreviews?.length > 0}
+                      onClick={handleMediaSubmit}
+                    >
+                      <Link className="w-4 h-4 mr-2" />
+                      Add URL
+                    </Button>
+                  </div>
+          </div>
+          {uploadError && <span className="text-red-500">{uploadError}</span>}
+            {/* ----------------- */}
+          <Label htmlFor="custom-html">Custom HTML</Label>
+          <Textarea id="custom-html" className="min-h-[100px]"  onChange={(e) => {
+            setEditedField({...editedField, 
+              media_card_data: {
+                ...editedField.media_card_data,
+                custom_html: e.target.value
+              }
+            })}
+          }
+            
+          />
+          {/* -----------------*/}
+          <div className="space-y-2">
+          <Label htmlFor="card-json">Card JSON</Label>
+          <Textarea
+          onChange={(e) => {
+            setEditedField({...editedField, 
+              media_card_data: {
+                ...editedField.media_card_data,
+                card_json: e.target.value
+              }
+            })
+
+          }}
+            id="card-json"
+            placeholder="Enter Card JSON here"
+            className="min-h-[100px] text-sm"
+          />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="like-url" className="flex items-center gap-2">
+            <Heart className="h-4 w-4" />
+            Like URL
+          </Label>
+          <Input id="like-url" placeholder="Enter Like redirection URL" />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="favorite-url" className="flex items-center gap-2">
+            <Star className="h-4 w-4" />
+            Favorite URL
+          </Label>
+          <Input id="favorite-url" placeholder="Enter Favorite redirection URL" />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="task-url" className="flex items-center gap-2">
+            <CheckSquare className="h-4 w-4" />
+            Task URL
+          </Label>
+          <Input id="task-url" placeholder="Enter Task redirection URL" />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="chat-url" className="flex items-center gap-2">
+            <MessageCircle className="h-4 w-4" />
+            Chat URL
+          </Label>
+          <Input id="chat-url" placeholder="Enter Chat redirection URL" />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="share-url" className="flex items-center gap-2">
+            <Share2 className="h-4 w-4" />
+            Share URL
+          </Label>
+          <Input id="share-url" placeholder="Enter Share redirection URL" />
+        </div>
+        <div>
+          
+            <div className="flex w-fit items-center gap-1 border p-3 rounded">
+              <Checkbox
+                checked={useAPI}
+                onCheckedChange={() =>
+                  setUseAPI(!useAPI)
+                }
+              />
+              <Label>Use API</Label>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="apiURL">API URL</Label>
+              <Input
+                id="apiURL"
+                type="text"
+                value={apiURL}
+                onChange={(e) => setAPIURL(e.target.value)}
+                placeholder="Enter API URL"
+                
+                disabled={!useAPI}
+              />
+            </div>
+            <span className="text-red-500 text-sm" id="api_url_error_msg"></span>
+            <div className="space-y-2">
+              <Label htmlFor="apiURL">API Field</Label>
+              <Input
+                id="apiURL"
+                type="text"
+                value={apiField}
+                onChange={(e) => setApiField(e.target.value)}
+                placeholder="Enter API Field"
+                
+                disabled={!useAPI}
+              />
+            </div>
+            <Button className="mt-2" disabled={!useAPI || !apiURL || !apiField } onClick={handleAddApiData}>Add Data</Button>
+            <span className="text-red-500 text-sm" id="api_field_error_msg"></span>
+            </div>
+
+          </div>
+          
+          )}
+          />
         </TabsContent>
         <TabsContent value="connection">
         Connection content goes here.

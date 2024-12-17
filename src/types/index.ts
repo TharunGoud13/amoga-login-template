@@ -44,6 +44,19 @@ export type FormFieldType = {
   description?: string
   options?: string[]
   combobox?: string[]
+  media_card_data?: {
+    media_url?: string
+    card_type?: string
+    custom_html?: string
+    card_json?: string
+    action_urls?: {
+      like?: string
+      favorite?: string
+      task?: string
+      chat?: string
+      share?: string
+    }
+  }
   multiselect?: string[]
   radiogroup?: string[]
   placeholder_file_url?: string

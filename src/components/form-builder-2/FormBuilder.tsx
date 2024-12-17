@@ -111,7 +111,20 @@ export default function FormBuilder() {
       placeholder_file_upload_url: "",
       placeholder_pdf_file_url: "",
       validation_message: '',
-      variant_code: newFieldName
+      variant_code: newFieldName,
+      media_card_data: {
+        media_url: "",
+        card_type: "",
+        card_json: "",
+        custom_html: "",
+        action_urls: {
+          like: "",
+          favorite: "",
+          task: "",
+          chat: "",
+          share: "",
+        }
+      }
     };
     setFormFields([...formFields, newField]);
   };
