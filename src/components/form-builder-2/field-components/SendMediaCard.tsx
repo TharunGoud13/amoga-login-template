@@ -13,6 +13,8 @@ import React from "react";
 import { FaFilePdf } from "react-icons/fa";
 import DataCard from "./MediaPieChart";
 import MediaDataLineChart from "./MediaDataLineChart";
+import MediaDataBarChart from "./MediaDataBarChart";
+import MediaDataBarHorizontalChart from "./MediaDataBarHorizontalChart";
 
 const getFileIcon = (fileName: any) => {
     const extension = fileName.split(".").pop().toLowerCase();
@@ -44,6 +46,8 @@ const SendMediaCard = ({ field }: any) => {
     card_json = [],
     component_name = ''
   } = field?.media_card_data || {};
+
+  const totalRevenue = card_json?.reduce((sum: number, item: any) => sum + item.revenue, 0) || 0
   
   return (
     <div>
@@ -124,10 +128,24 @@ const SendMediaCard = ({ field }: any) => {
                 </div>
             )}
             {card_type === "Data card" && (
-              component_name === "Pie Chart" ?
+              <div className="h-full">
+                  <Card className="h-full">
+                  <CardHeader>
+                    <CardDescription>Total Revenue</CardDescription>
+                    <CardTitle>${totalRevenue}</CardTitle>
+                  </CardHeader>
+                  </Card>
+                </div>
+            )}
+            {card_type === "Chart card" && (
+              component_name === "Data Card Donut Chart" ?
               <DataCard field={field} />
-              : component_name === "Line Chart" ? 
+              : component_name === "Data Card Line Chart" ? 
               <MediaDataLineChart field={field}  />
+              : component_name === "Data Card Bar Chart" ? 
+              <MediaDataBarChart field={field}  />
+              : component_name === "Data Card Bar Chart Horizontal" ?
+              <MediaDataBarHorizontalChart field={field} />
               : null
             )}
           </div>

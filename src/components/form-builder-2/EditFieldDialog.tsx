@@ -76,7 +76,8 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
   const MAX_VIDEO_SIZE = 2 * 1024 * 1024;
 
-  const CONTENT_TYPES = ['Image', 'Video', 'File', 'Pdf', 'Page URL', 'Carousel', 'Data card', 'Chart']
+  const CONTENT_TYPES = ['Image', 'Video', 'File', 'Pdf', 'Page URL', 'Carousel', 'Data card', 'Chart card']
+  const COMPONENT_NAMES = ['Data Card Text','Data Card Line Chart','Data Card Bar Chart','Data Card Bar Chart Horizontal','Data Card Donut Chart']
 
 
   useEffect(() => {
@@ -706,6 +707,8 @@ const removeMedia = () => {
               custom_html: data.map((item: any) => item.html_content)[0],
               card_type: selectedValue === "Data card" 
                 ? "Data card" 
+                : selectedValue === "Chart card" ? 
+                "Chart card"
                 : data.map((item: any) => item.card_type)[0],
               card_json: data.map((item: any) => item.custom_json_one)[0]
             },
@@ -2003,14 +2006,27 @@ const removeMedia = () => {
         </div>
         <div>
           <Label htmlFor="component-name">Component Name</Label>
-          <Input placeholder="Enter Component Name" 
-          onChange={(e) => {
-            setEditedField({...editedField, 
-              media_card_data: {
-                ...editedField.media_card_data,
-                component_name: e.target.value
-              }})
-          }} id="component-name"/>
+          <Select 
+              onValueChange={(value) => {
+                setEditedField({
+                  ...editedField,
+                  media_card_data: {
+                    ...editedField.media_card_data,
+                    component_name: value
+                  }
+                })
+              }}>
+                <SelectTrigger id="component-name">
+                  <SelectValue placeholder="Select Component Name" />
+                </SelectTrigger>
+                <SelectContent>
+                  {COMPONENT_NAMES?.map((item:string, index:number) => (
+                    <SelectItem key={index} value={item}>
+                      {item}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
           </div>
         <div>
           
