@@ -72,6 +72,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
   const [uploading, setUploading] = useState(false)
   const [isPlaceholderChecked, setIsPlaceholderChecked] = useState(false)
   const [isUrlChecked, setIsUrlChecked] = useState(false)
+  const [selectedValue, setSelectedValue] = useState("")
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
   const MAX_VIDEO_SIZE = 2 * 1024 * 1024;
 
@@ -703,7 +704,10 @@ const removeMedia = () => {
               ...editedField.media_card_data,
               media_url: data.map((item: any) => item[apiField])[0] || "",
               custom_html: data.map((item: any) => item.html_content)[0],
-              card_type: data.map((item: any) => item.card_type)[0],
+              card_type: selectedValue === "Data card" 
+                ? "Data card" 
+                : data.map((item: any) => item.card_type)[0],
+              card_json: data.map((item: any) => item.custom_json_one)[0]
             },
           });
         }
@@ -1829,7 +1833,8 @@ const removeMedia = () => {
                     ...editedField.media_card_data,
                     card_type: value
                   }
-                })
+                }),
+                setSelectedValue(value)
               }}>
                 <SelectTrigger id="media-card">
                   <SelectValue placeholder="Select media type" />
@@ -1888,7 +1893,7 @@ const removeMedia = () => {
                       <Input
                         id="file-upload"
                         type="file"
-                        disabled={!isPlaceholderChecked || uploading || mediaCardPreviews?.length > 0}
+                        disabled={!isPlaceholderChecked || uploading || mediaCardPreviews?.length > 0 || selectedValue === "Page URL" || selectedValue === "Data card"}
                         onChange={handleMediaUpload}
                         
                         className="hidden"
@@ -1942,10 +1947,11 @@ const removeMedia = () => {
           <Label htmlFor="card-json">Card JSON</Label>
           <Textarea
           onChange={(e) => {
+            const parsedData = new Function(`return ${e.target.value}`)();
             setEditedField({...editedField, 
               media_card_data: {
                 ...editedField.media_card_data,
-                card_json: e.target.value
+                card_json: parsedData
               }
             })
 
@@ -1995,6 +2001,10 @@ const removeMedia = () => {
           </Label>
           <Input id="share-url" placeholder="Enter Share redirection URL" />
         </div>
+        <div>
+          <Label htmlFor="chart-type">Chart Type</Label>
+          <Input placeholder="Enter Chart Type" id="chart-type"/>
+          </div>
         <div>
           
             <div className="flex w-fit items-center gap-1 border p-3 rounded">

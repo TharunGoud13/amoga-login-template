@@ -2,6 +2,7 @@ import { FieldType } from '@/types'
 import { Area } from 'recharts';
 
 export const fieldTypes: FieldType[] = [
+  // {name: "Send Media Card", isNew: false },
   { name: 'Text Area', isNew: false },
   { name: 'Check box label', isNew: false },
   { name: 'Label', isNew: false },

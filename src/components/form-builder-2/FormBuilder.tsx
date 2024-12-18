@@ -115,7 +115,7 @@ export default function FormBuilder() {
       media_card_data: {
         media_url: "",
         card_type: "",
-        card_json: "",
+        card_json: [],
         custom_html: "",
         action_urls: {
           like: "",

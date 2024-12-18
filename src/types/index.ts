@@ -48,7 +48,7 @@ export type FormFieldType = {
     media_url?: string
     card_type?: string
     custom_html?: string
-    card_json?: string
+    card_json?: string[]
     action_urls?: {
       like?: string
       favorite?: string

@@ -7,14 +7,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Bookmark, Dock, File, Heart, MessageCircle, Share, Share2, Table } from "lucide-react";
+import { Bookmark, Dock, File, Heart, Link, MessageCircle, Share, Share2, Table, ImageDown } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 import { FaFilePdf } from "react-icons/fa";
+import DataCard from "./DataCard";
 
 const getFileIcon = (fileName: any) => {
     const extension = fileName.split(".").pop().toLowerCase();
     switch (extension) {
+      case "png":
+        case "jpg":
+          return <ImageDown className="w-8 h-8" />;
+      case "mp4":
       case "pdf":
         return <FaFilePdf className="w-8 h-8 text-red-500" />;
       case "doc":
@@ -35,7 +40,7 @@ const SendMediaCard = ({ field }: any) => {
     custom_html = '',
     card_type = '',
     media_url = '',
-    card_json = '',
+    card_json = [],
   } = field?.media_card_data || {};
   
   return (
@@ -89,6 +94,35 @@ const SendMediaCard = ({ field }: any) => {
                   {media_url.split("/").at(-1)}
                 </div>
               </div>
+            )}
+            {media_url && card_type === "Page URL" && (
+              <div className="flex flex-col justify-center items-center h-full">
+                <div className="flex gap-2.5 max-w-[80%] flex-wrap items-center">
+                <div className="flex items-center gap-2 w-full">
+                  {getFileIcon(media_url)}
+                  <span className="flex-1 text-primary text-sm break-words overflow-hidden text-ellipsis">
+                    {media_url}
+                  </span>
+                </div>
+              <div className="flex  justify-center w-full">
+                <a
+                  href={media_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center"
+                >
+                  <Button type="button" className="flex  items-center gap-1">
+                    <Link className="h-5 w-5" />
+                    Open Link
+                  </Button>
+                </a>
+                </div>
+                  </div>
+                  
+                </div>
+            )}
+            {card_type === "Data card" && (
+              <DataCard field={field} />
             )}
           </div>
           <div className="p-2.5">
