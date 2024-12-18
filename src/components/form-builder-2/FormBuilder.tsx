@@ -123,7 +123,8 @@ export default function FormBuilder() {
           task: "",
           chat: "",
           share: "",
-        }
+        },
+        component_name: ""
       }
     };
     setFormFields([...formFields, newField]);

@@ -2002,8 +2002,15 @@ const removeMedia = () => {
           <Input id="share-url" placeholder="Enter Share redirection URL" />
         </div>
         <div>
-          <Label htmlFor="chart-type">Chart Type</Label>
-          <Input placeholder="Enter Chart Type" id="chart-type"/>
+          <Label htmlFor="component-name">Component Name</Label>
+          <Input placeholder="Enter Component Name" 
+          onChange={(e) => {
+            setEditedField({...editedField, 
+              media_card_data: {
+                ...editedField.media_card_data,
+                component_name: e.target.value
+              }})
+          }} id="component-name"/>
           </div>
         <div>
           

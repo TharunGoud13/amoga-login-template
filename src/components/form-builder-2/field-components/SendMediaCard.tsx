@@ -11,7 +11,8 @@ import { Bookmark, Dock, File, Heart, Link, MessageCircle, Share, Share2, Table,
 import Image from "next/image";
 import React from "react";
 import { FaFilePdf } from "react-icons/fa";
-import DataCard from "./DataCard";
+import DataCard from "./MediaPieChart";
+import MediaDataLineChart from "./MediaDataLineChart";
 
 const getFileIcon = (fileName: any) => {
     const extension = fileName.split(".").pop().toLowerCase();
@@ -41,6 +42,7 @@ const SendMediaCard = ({ field }: any) => {
     card_type = '',
     media_url = '',
     card_json = [],
+    component_name = ''
   } = field?.media_card_data || {};
   
   return (
@@ -122,7 +124,11 @@ const SendMediaCard = ({ field }: any) => {
                 </div>
             )}
             {card_type === "Data card" && (
+              component_name === "Pie Chart" ?
               <DataCard field={field} />
+              : component_name === "Line Chart" ? 
+              <MediaDataLineChart field={field}  />
+              : null
             )}
           </div>
           <div className="p-2.5">

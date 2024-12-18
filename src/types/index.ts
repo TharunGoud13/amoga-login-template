@@ -56,6 +56,7 @@ export type FormFieldType = {
       chat?: string
       share?: string
     }
+    component_name?: string
   }
   multiselect?: string[]
   radiogroup?: string[]
