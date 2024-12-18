@@ -29,7 +29,7 @@ import {
 } from "../ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { cn } from "@/lib/utils";
-import { Check, ChevronsUpDown, DownloadCloud, ExternalLink, File, FileText, ImageIcon, Link, Table, UploadIcon, XIcon } from "lucide-react";
+import { CalendarIcon, Check, ChevronsUpDown, Clock, DownloadCloud, ExternalLink, File, FileText, ImageIcon, Link, Table, UploadIcon, XIcon } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
 import { MultiSelector, MultiSelectorContent, MultiSelectorInput, MultiSelectorItem, MultiSelectorList, MultiSelectorTrigger } from "../ui/multi-select";
 import { MediaCard } from "../ui/media-card";
@@ -44,6 +44,8 @@ import { FcDocument } from "react-icons/fc";
 import { PiMicrosoftExcelLogoDuotone } from "react-icons/pi";
 import { FaRegFilePdf } from "react-icons/fa";
 import SendMediaCard from "./field-components/SendMediaCard";
+import { format } from "date-fns";
+import { SimpleDateTimeDisplay } from "../ui/DateTimeDisplay";
 
 const ALLOWED_FILES_TYPES = [
   "application/pdf",
@@ -122,6 +124,11 @@ const RenderInputField = ({
   const [imageUrl, setImageUrl] = useState<string>("");
   const [fileUrl, setFileUrl] = useState<string>("");
   const [pdfUrl, setPdfUrl] = useState<string>("");
+  const [time, setTime] = useState<string>();
+  const [fromTime, setFromTime] = useState<string>();
+  const [toTime, setToTime] = useState<string>();
+  const [fromDate, setFromDate] = useState<Date>();
+  const [toDate, setToDate] = useState<Date>();
 
   const MAX_VIDEO_SIZE = 2 * 1024 * 1024
   const MAX_IMAGE_SIZE = 5 * 1024 * 1024
@@ -434,19 +441,144 @@ const RenderInputField = ({
           className="rounded-md border"
         />
       );
-    case "Date Time":
-      return (
-        <DatetimePicker
-          onChange={(newDate) => {
-            setInput(newDate ? new Date(newDate).toDateString() : "");
-          }}
-          className="text-primary bg-secondary"
-          format={[
-            ["months", "days", "years"],
-            ["hours", "minutes", "am/pm"],
-          ]}
-        />
-      );
+      case "Time":
+        return (
+          <Input
+            type="time"
+            id="time"
+            value={time}
+            onChange={(e) => {
+              const newTime = e.target.value
+              setTime(newTime)
+              setInput(newTime)}}
+          />
+        );
+        case "From Time to To Time":
+          return(
+                  <div className="flex items-center space-x-2">
+                    <div className="grid w-full max-w-sm items-center gap-1.5">
+                      <Label htmlFor="fromTime">From Time</Label>
+                      <Input
+                        type="time"
+                        id="fromTime"
+                        value={fromTime}
+                        onChange={(e) => {
+                          const newFromTime = e.target.value;
+                          setFromTime(newFromTime); 
+                          setInput(newFromTime)
+                          
+                        }}
+                      />
+                    </div>
+                    <Clock className="h-4 w-4" />
+                    <div className="grid w-full max-w-sm items-center gap-1.5">
+                      <Label htmlFor="toTime">To Time</Label>
+                      <Input
+                        type="time"
+                        id="toTime"
+                        value={toTime}
+                        onChange={(e) => {
+                          const newToTime = e.target.value;
+                          setToTime(newToTime); 
+                          setInput(`From: ${fromTime} To: ${newToTime}`);
+                          
+                        }}
+                      />
+                    </div>
+                  </div>
+          )
+          case "From Date to To Date":
+        return (
+            <div className="flex w-full justify-between items-center">
+              <div className="flex w-full items-center space-x-2">
+                {/* From Date */}
+                <div className="grid w-full  items-center gap-1.5">
+                  <Label htmlFor="fromDate">From Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !fromDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {fromDate ? format(fromDate, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={fromDate}
+                        onSelect={(newDate) => {
+                          setFromDate(newDate); 
+                          
+                        }}
+                        initialFocus
+                        
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                {/* Separator */}
+                <CalendarIcon className="h-4 w-4" />
+                {/* To Date */}
+                <div className="grid w-full  items-center gap-1.5">
+                  <Label htmlFor="toDate">To Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !toDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {toDate ? format(toDate, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={toDate}
+                        onSelect={(newDate) => {
+                          setToDate(newDate); 
+                          setInput(
+                            `From ${fromDate ? format(fromDate, "yyyy-MM-dd") : "N/A"} to ${newDate ? format(newDate, "yyyy-MM-dd") : "N/A"}`
+                          );
+                          
+                        }}
+                        initialFocus
+                        
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+            </div>
+        );
+      case "Date Time":
+              return(
+                <div className="w-full">
+                 <SimpleDateTimeDisplay onDateTimeSelect={(selectedDateTime) => setInput(selectedDateTime)} form={undefined} field={undefined}  />
+                 </div>
+              )
+      
+    // case "Date Time":
+    //   return (
+    //     <DatetimePicker
+    //       onChange={(newDate) => {
+    //         setInput(newDate ? new Date(newDate).toDateString() : "");
+    //       }}
+    //       className="text-primary bg-secondary"
+    //       format={[
+    //         ["months", "days", "years"],
+    //         ["hours", "minutes", "am/pm"],
+    //       ]}
+    //     />
+    //   );
     // case "Dropdown":
     //   return (
     //     <Select

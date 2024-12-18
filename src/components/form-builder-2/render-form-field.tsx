@@ -61,6 +61,7 @@ import {
   CalendarIcon,
   Check,
   ChevronsUpDown,
+  Clock,
   Dock,
   ExternalLink,
   File,
@@ -106,6 +107,7 @@ import { Card, CardContent } from "../ui/card";
 import Image from "next/image";
 import { FaFilePdf } from "react-icons/fa";
 import SendMediaCard from "./field-components/SendMediaCard";
+import { SimpleDateTimeDisplay } from "../ui/DateTimeDisplay";
 
 const languages = [
   { label: "English", value: "en" },
@@ -174,7 +176,12 @@ export const renderFormField = (
   const [images, setImages] = useState<File[]>([]);
   const [videos, setVideos] = useState<string[]>([]);
   const [date, setDate] = useState<Date>();
-  const [datetime, setDatetime] = useState<Date>();
+  const [time, setTime] = useState<string>();
+  const [fromTime, setFromTime] = useState<string>();
+  const [toTime, setToTime] = useState<string>();
+  const [fromDate, setFromDate] = useState<Date>();
+  const [toDate, setToDate] = useState<Date>();
+  const [dateTime, setDateTime] = useState<string>();
   const [smartDatetime, setSmartDatetime] = useState<Date | null>();
   const [countryName, setCountryName] = useState<string>("");
   const [stateName, setStateName] = useState<string>("");
@@ -207,6 +214,14 @@ export const renderFormField = (
     field.value = url;
     setValue(url);
   };
+
+  // useEffect(() => {
+  //   form.setValue(field.name, dateTime, {
+  //     shouldValidate: true,
+  //     shouldDirty: true,
+  //   }); 
+
+  // },[dateTime])
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -938,8 +953,8 @@ export const renderFormField = (
           <FormDescription>{field.description}</FormDescription>
         </FormItem>
       );
-    case "Date Time":
-      return (
+    case "Time":
+      return(
         <FormItem className="flex flex-col">
           <div className="flex justify-between items-center">
             <div>
@@ -948,28 +963,214 @@ export const renderFormField = (
             </div>
             <FormMessage />
           </div>
-          <DatetimePicker
-            {...field}
-            value={datetime}
-            // onChange={setDatetime}
-            onChange={(newDate) => {
-              setDatetime(newDate);
-              form.setValue(field.name, newDate, {
-                shouldValidate: true,
-                shouldDirty: true,
-              });
-            }}
-            className={
-              form.formState.errors?.[field.name] ? "border-red-500" : ""
-            }
-            format={[
-              ["months", "days", "years"],
-              ["hours", "minutes", "am/pm"],
-            ]}
-          />
+              <FormControl>
+                <Input type="time" id="time" value={time} 
+                onChange={(e) => {
+                  const newTime = e.target.value;
+                  setTime(newTime); 
+                  form.setValue(field.name, newTime, {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                  }); 
+                }}
+                />
+              </FormControl>
+            
           <FormDescription>{field.description}</FormDescription>
         </FormItem>
-      );
+      )
+    case "From Time to To Time":
+      return(
+        <FormItem className="flex flex-col">
+          <div className="flex justify-between items-center">
+            <div>
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
+          </div>
+              <FormControl>
+              <div className="flex items-center space-x-2">
+                <div className="grid w-full max-w-sm items-center gap-1.5">
+                  <Label htmlFor="fromTime">From Time</Label>
+                  <Input
+                    type="time"
+                    id="fromTime"
+                    value={fromTime}
+                    onChange={(e) => {
+                      const newFromTime = e.target.value;
+                      setFromTime(newFromTime); 
+                      form.setValue(`${field.name}.fromTime`, newFromTime, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                      });
+                    }}
+                  />
+                </div>
+                <Clock className="h-4 w-4" />
+                <div className="grid w-full max-w-sm items-center gap-1.5">
+                  <Label htmlFor="toTime">To Time</Label>
+                  <Input
+                    type="time"
+                    id="toTime"
+                    value={toTime}
+                    onChange={(e) => {
+                      const newToTime = e.target.value;
+                      setToTime(newToTime); 
+                      form.setValue(`${field.name}.toTime`,  newToTime, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                      });
+                    }}
+                  />
+                </div>
+              </div>
+              </FormControl>
+            
+          <FormDescription>{field.description}</FormDescription>
+        </FormItem>
+      )
+      case "From Date to To Date":
+        return (
+          <FormItem className="flex flex-col">
+            <div className="flex justify-between items-center">
+              <div>
+                <FormLabel>{field.label}</FormLabel>{" "}
+                <span className="text-red-500">{field.required && "*"}</span>
+              </div>
+              <FormMessage />
+            </div>
+            <FormControl>
+              <div className="flex items-center space-x-2">
+                {/* From Date */}
+                <div className="grid w-full max-w-sm items-center gap-1.5">
+                  <Label htmlFor="fromDate">From Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !fromDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {fromDate ? format(fromDate, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={fromDate}
+                        onSelect={(newDate) => {
+                          setFromDate(newDate); // Update local state
+                          form.setValue(`${field.name}.fromDate`, newDate, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          }); // Set form value
+                        }}
+                        initialFocus
+                        className={
+                          form.formState.errors?.[`${field.name}.fromDate`]
+                            ? "border-red-500"
+                            : ""
+                        }
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                {/* Separator */}
+                <CalendarIcon className="h-4 w-4" />
+                {/* To Date */}
+                <div className="grid w-full max-w-sm items-center gap-1.5">
+                  <Label htmlFor="toDate">To Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !toDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {toDate ? format(toDate, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={toDate}
+                        onSelect={(newDate) => {
+                          setToDate(newDate); // Update local state
+                          form.setValue(`${field.name}.toDate`, newDate, {
+                            shouldValidate: true,
+                            shouldDirty: true,
+                          }); // Set form value
+                        }}
+                        initialFocus
+                        className={
+                          form.formState.errors?.[`${field.name}.toDate`]
+                            ? "border-red-500"
+                            : ""
+                        }
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+            </FormControl>
+            <FormDescription>{field.description}</FormDescription>
+          </FormItem>
+        );
+      case "Date Time":
+        return(
+          <FormItem className="flex flex-col">
+            <div className="flex justify-between items-center">
+             <div>
+               <FormLabel>{field.label}</FormLabel>{" "}
+               <span className="text-red-500">{field.required && "*"}</span>
+             </div>
+             <FormMessage />
+           </div>
+           <SimpleDateTimeDisplay onDateTimeSelect={(selectedDateTime) => {setDateTime(selectedDateTime)}}
+           form={form} field={field}
+           />
+            </FormItem>
+        )
+      
+    // case "Date Time":
+    //   return (
+    //     <FormItem className="flex flex-col">
+    //       <div className="flex justify-between items-center">
+    //         <div>
+    //           <FormLabel>{field.label}</FormLabel>{" "}
+    //           <span className="text-red-500">{field.required && "*"}</span>
+    //         </div>
+    //         <FormMessage />
+    //       </div>
+    //       <DatetimePicker
+    //         {...field}
+    //         value={datetime}
+    //         // onChange={setDatetime}
+    //         onChange={(newDate) => {
+    //           setDatetime(newDate);
+    //           form.setValue(field.name, newDate, {
+    //             shouldValidate: true,
+    //             shouldDirty: true,
+    //           });
+    //         }}
+    //         className={
+    //           form.formState.errors?.[field.name] ? "border-red-500" : ""
+    //         }
+    //         format={[
+    //           ["months", "days", "years"],
+    //           ["hours", "minutes", "am/pm"],
+    //         ]}
+    //       />
+    //       <FormDescription>{field.description}</FormDescription>
+    //     </FormItem>
+    //   );
     case "File Upload":
       return (
         <FormItem>

@@ -1,5 +1,4 @@
 export default function getUserOS(){
-    console.log("navigator---",navigator)
     let Name;
     if(navigator.appVersion.indexOf("Win")!=-1) Name="Windows";
     else if(navigator.appVersion.indexOf("Mac")!=-1) Name="MacOS";

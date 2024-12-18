@@ -62,9 +62,27 @@ export const generateZodSchema = (
       case 'Date':
         fieldSchema = z.coerce.date()
         break
-      case 'Date Time':
-        fieldSchema = z.coerce.date()
-        break
+      case 'Time':
+        fieldSchema = z
+          .string()
+          .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Invalid time format. Use HH:mm.");
+        break;
+        
+        case "From Date to To Date":
+          fieldSchema = z.object({
+            fromDate: z.coerce.date(),
+            toDate: z.coerce.date(),
+          }).refine(
+            (data) => data.toDate > data.fromDate,
+            { message: "'To Date' must be later than 'From Date'", path: ["toDate"] }
+          );
+          break;
+        
+        
+
+      // case 'Date Time':
+      //   fieldSchema = z.coerce.date()
+      //   break
         case "Tab Seperator":
       
       case 'Location Select':
@@ -375,7 +393,7 @@ export const generateDefaultValues = (
       case 'Tags Input':
         defaultValues[field.name] = []
         break
-      case 'Date Time':
+      // case 'Date Time':
       case 'Smart Datetime Input':
       case 'Date':
         defaultValues[field.name] = new Date()
@@ -398,7 +416,7 @@ export const generateDefaultValuesString = (
     } else if (field.variant === 'Tags Input') {
       defaultValues[field.name] = ['test']
     } else if (
-      field.variant === 'Date Time' ||
+      // field.variant === 'Date Time' ||
       field.variant === 'Smart Datetime Input' ||
       field.variant === 'Date'
     ) {
