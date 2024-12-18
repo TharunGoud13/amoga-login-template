@@ -1,14 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { TrendingUp } from "lucide-react"
-import { Label, Pie, PieChart } from "recharts"
+import { Label, Pie, PieChart, Cell } from "recharts"
 
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -19,25 +17,37 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
-const chartConfig = {
-  Jan: { label: "January", color: "#FF6384" },
-  Feb: { label: "February", color: "#36A2EB" },
-  Mar: { label: "March", color: "#FFCE56" },
-  Apr: { label: "April", color: "#4BC0C0" },
-  May: { label: "May", color: "#9966FF" },
-  Jun: { label: "June", color: "#FF9F40" },
-  Jul: { label: "July", color: "#FF6384" },
-  Aug: { label: "August", color: "#36A2EB" },
-} satisfies ChartConfig
+// Color palette for months using Tailwind HSL variables
+const CHART_COLORS = [
+  "hsl(var(--chart-1))",   // Blue
+  "hsl(var(--chart-2))",   // Green
+  "hsl(var(--chart-3))",   // Red
+  "hsl(var(--chart-4))",   // Purple
+  "hsl(var(--chart-5))",   // Orange
+  "hsl(var(--chart-1))",   // Teal
+  "hsl(var(--chart-2))",   // Pink
+  "hsl(var(--chart-3))"    // Yellow
+]
 
-export default function MediaPieChart({ field }: any) {
+export default function MediaPieChart({field}: any) {
   const { card_json } = field?.media_card_data || {};
+  
+  // Calculate total revenue
   const totalRevenue = card_json?.reduce((sum: number, item: any) => sum + item.revenue, 0) || 0
+  
+  // Generate chartConfig dynamically
+  const chartConfig = card_json?.reduce((config: ChartConfig, item: any, index: number) => {
+    config[item.month] = {
+      label: item.month,
+      color: CHART_COLORS[index % CHART_COLORS.length]
+    }
+    return config
+  }, {}) as ChartConfig
 
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
-        <CardTitle>Pie Chart - Donut with Text</CardTitle>
+        <CardTitle>Monthly Revenue</CardTitle>
         <CardDescription>${totalRevenue.toLocaleString()}</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
@@ -56,8 +66,13 @@ export default function MediaPieChart({ field }: any) {
               nameKey="month"
               innerRadius={60}
               strokeWidth={5}
-              fill={"#8884d8"}
             >
+              {card_json.map((entry: any, index: number) => (
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={CHART_COLORS[index % CHART_COLORS.length]} 
+                />
+              ))}
               <Label
                 content={({ viewBox }) => {
                   if (viewBox && "cx" in viewBox && "cy" in viewBox) {
