@@ -1041,7 +1041,7 @@ export const renderFormField = (
               <FormMessage />
             </div>
             <FormControl>
-              <div className="flex items-center space-x-2">
+              <div className="flex gap-2 md:gap-0 flex-col md:flex-row items-center space-x-2">
                 {/* From Date */}
                 <div className="grid w-full max-w-sm items-center gap-1.5">
                   <Label htmlFor="fromDate">From Date</Label>
@@ -1080,7 +1080,7 @@ export const renderFormField = (
                   </Popover>
                 </div>
                 {/* Separator */}
-                <CalendarIcon className="h-4 w-4" />
+                {/* <CalendarIcon className="h-4 w-4" /> */}
                 {/* To Date */}
                 <div className="grid w-full max-w-sm items-center gap-1.5">
                   <Label htmlFor="toDate">To Date</Label>

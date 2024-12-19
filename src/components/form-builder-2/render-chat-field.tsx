@@ -490,7 +490,7 @@ const RenderInputField = ({
           case "From Date to To Date":
         return (
             <div className="flex w-full justify-between items-center">
-              <div className="flex w-full items-center space-x-2">
+              <div className="flex flex-col gap-2 md:gap-0 md:flex-row w-full items-center space-x-2">
                 {/* From Date */}
                 <div className="grid w-full  items-center gap-1.5">
                   <Label htmlFor="fromDate">From Date</Label>
@@ -522,7 +522,7 @@ const RenderInputField = ({
                   </Popover>
                 </div>
                 {/* Separator */}
-                <CalendarIcon className="h-4 w-4" />
+                {/* <CalendarIcon className="h-4 w-4" /> */}
                 {/* To Date */}
                 <div className="grid w-full  items-center gap-1.5">
                   <Label htmlFor="toDate">To Date</Label>
