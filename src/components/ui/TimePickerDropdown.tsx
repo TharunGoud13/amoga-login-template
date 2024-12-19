@@ -36,8 +36,8 @@ export function TimePickerDropdown({
               className={cn(
                 "w-full rounded-sm px-2 py-1 text-left text-sm transition-colors",
                 selectedHour === hour
-                  ? "bg-blue-500 text-white"
-                  : "hover:bg-blue-50"
+                  ? "bg-primary text-secondary"
+                  : "hover:bg-secondary/50"
               )}
             >
               {hour}
@@ -54,8 +54,8 @@ export function TimePickerDropdown({
               className={cn(
                 "w-full rounded-sm px-2 py-1 text-left text-sm transition-colors",
                 selectedMinute === minute
-                  ? "bg-blue-500 text-white"
-                  : "hover:bg-blue-50"
+                  ? "bg-secondary text-primary"
+                  : "hover:bg-secondary/50"
               )}
             >
               {minute}
@@ -72,8 +72,8 @@ export function TimePickerDropdown({
               className={cn(
                 "w-full rounded-sm px-2 py-1 text-left text-sm transition-colors",
                 selectedPeriod === period
-                  ? "bg-blue-500 text-white"
-                  : "hover:bg-blue-50"
+                  ? "bg-secondary text-primary"
+                  : "hover:bg-secondary/10"
               )}
             >
               {period}

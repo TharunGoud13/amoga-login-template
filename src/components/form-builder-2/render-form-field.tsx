@@ -108,6 +108,9 @@ import Image from "next/image";
 import { FaFilePdf } from "react-icons/fa";
 import SendMediaCard from "./field-components/SendMediaCard";
 import { SimpleDateTimeDisplay } from "../ui/DateTimeDisplay";
+import { TimePicker } from "../ui/TimePicker";
+import { DateTimePicker } from "../ui/DateTimePicker";
+import { TimeRangePicker } from "../ui/TimeRangePicker";
 
 const languages = [
   { label: "English", value: "en" },
@@ -177,8 +180,8 @@ export const renderFormField = (
   const [videos, setVideos] = useState<string[]>([]);
   const [date, setDate] = useState<Date>();
   const [time, setTime] = useState<string>();
-  const [fromTime, setFromTime] = useState<string>();
-  const [toTime, setToTime] = useState<string>();
+  const [fromTime, setFromTime] = useState<Date>(new Date())
+  const [toTime, setToTime] = useState<Date>(new Date(new Date().setHours(new Date().getHours() + 1)))
   const [fromDate, setFromDate] = useState<Date>();
   const [toDate, setToDate] = useState<Date>();
   const [dateTime, setDateTime] = useState<string>();
@@ -206,6 +209,8 @@ export const renderFormField = (
   const [pdfUploadError, setPdfUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/gif"];
+  const [timePickerDate, setTimePickerDate] = useState<Date>(new Date());
+  const [enhancedDate, setEnhancedDate] = useState<Date>(new Date());
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
   const MAX_VIDEO_SIZE = 2 * 1024 * 1024;
 
@@ -964,7 +969,7 @@ export const renderFormField = (
             <FormMessage />
           </div>
               <FormControl>
-                <Input type="time" id="time" value={time} 
+                {/* <Input type="time" id="time" value={time} 
                 onChange={(e) => {
                   const newTime = e.target.value;
                   setTime(newTime); 
@@ -973,12 +978,65 @@ export const renderFormField = (
                     shouldDirty: true,
                   }); 
                 }}
-                />
+                /> */}
+                <TimePicker value={timePickerDate} onChange={setTimePickerDate} setInput={() => {}}
+                  form={form} field={field}/>
               </FormControl>
             
           <FormDescription>{field.description}</FormDescription>
         </FormItem>
       )
+    // case "From Time to To Time":
+    //   return(
+    //     <FormItem className="flex flex-col">
+    //       <div className="flex justify-between items-center">
+    //         <div>
+    //           <FormLabel>{field.label}</FormLabel>{" "}
+    //           <span className="text-red-500">{field.required && "*"}</span>
+    //         </div>
+    //         <FormMessage />
+    //       </div>
+    //           <FormControl>
+    //           <div className="flex items-center space-x-2">
+    //             <div className="grid w-full max-w-sm items-center gap-1.5">
+    //               <Label htmlFor="fromTime">From Time</Label>
+    //               <Input
+    //                 type="time"
+    //                 id="fromTime"
+    //                 value={fromTime}
+    //                 onChange={(e) => {
+    //                   const newFromTime = e.target.value;
+    //                   setFromTime(newFromTime); 
+    //                   form.setValue(`${field.name}.fromTime`, newFromTime, {
+    //                     shouldValidate: true,
+    //                     shouldDirty: true,
+    //                   });
+    //                 }}
+    //               />
+    //             </div>
+    //             <Clock className="h-4 w-4" />
+    //             <div className="grid w-full max-w-sm items-center gap-1.5">
+    //               <Label htmlFor="toTime">To Time</Label>
+    //               <Input
+    //                 type="time"
+    //                 id="toTime"
+    //                 value={toTime}
+    //                 onChange={(e) => {
+    //                   const newToTime = e.target.value;
+    //                   setToTime(newToTime); 
+    //                   form.setValue(`${field.name}.toTime`,  newToTime, {
+    //                     shouldValidate: true,
+    //                     shouldDirty: true,
+    //                   });
+    //                 }}
+    //               />
+    //             </div>
+    //           </div>
+    //           </FormControl>
+            
+    //       <FormDescription>{field.description}</FormDescription>
+    //     </FormItem>
+    //   )
     case "From Time to To Time":
       return(
         <FormItem className="flex flex-col">
@@ -990,41 +1048,15 @@ export const renderFormField = (
             <FormMessage />
           </div>
               <FormControl>
-              <div className="flex items-center space-x-2">
-                <div className="grid w-full max-w-sm items-center gap-1.5">
-                  <Label htmlFor="fromTime">From Time</Label>
-                  <Input
-                    type="time"
-                    id="fromTime"
-                    value={fromTime}
-                    onChange={(e) => {
-                      const newFromTime = e.target.value;
-                      setFromTime(newFromTime); 
-                      form.setValue(`${field.name}.fromTime`, newFromTime, {
-                        shouldValidate: true,
-                        shouldDirty: true,
-                      });
-                    }}
-                  />
-                </div>
-                <Clock className="h-4 w-4" />
-                <div className="grid w-full max-w-sm items-center gap-1.5">
-                  <Label htmlFor="toTime">To Time</Label>
-                  <Input
-                    type="time"
-                    id="toTime"
-                    value={toTime}
-                    onChange={(e) => {
-                      const newToTime = e.target.value;
-                      setToTime(newToTime); 
-                      form.setValue(`${field.name}.toTime`,  newToTime, {
-                        shouldValidate: true,
-                        shouldDirty: true,
-                      });
-                    }}
-                  />
-                </div>
-              </div>
+              <TimeRangePicker
+                fromTime={fromTime}
+                toTime={toTime}
+                onFromTimeChange={setFromTime}
+                onToTimeChange={setToTime}
+                form={form}
+                field={field}
+                setInput={() => {}}
+          />
               </FormControl>
             
           <FormDescription>{field.description}</FormDescription>
@@ -1123,6 +1155,22 @@ export const renderFormField = (
             <FormDescription>{field.description}</FormDescription>
           </FormItem>
         );
+      // case "Date Time":
+      //   return(
+      //     <FormItem className="flex flex-col">
+      //       <div className="flex justify-between items-center">
+      //        <div>
+      //          <FormLabel>{field.label}</FormLabel>{" "}
+      //          <span className="text-red-500">{field.required && "*"}</span>
+      //        </div>
+      //        <FormMessage />
+      //      </div>
+      //      <SimpleDateTimeDisplay onDateTimeSelect={(selectedDateTime) => {setDateTime(selectedDateTime)}}
+      //      form={form} field={field}
+      //      />
+      //       </FormItem>
+      //   )
+
       case "Date Time":
         return(
           <FormItem className="flex flex-col">
@@ -1133,11 +1181,11 @@ export const renderFormField = (
              </div>
              <FormMessage />
            </div>
-           <SimpleDateTimeDisplay onDateTimeSelect={(selectedDateTime) => {setDateTime(selectedDateTime)}}
-           form={form} field={field}
-           />
+           <DateTimePicker value={enhancedDate} onChange={setEnhancedDate}
+           setInput={() => {}} form={form} field={field} />
             </FormItem>
         )
+    
       
     // case "Date Time":
     //   return (

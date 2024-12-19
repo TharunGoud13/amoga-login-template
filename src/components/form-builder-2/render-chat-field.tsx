@@ -46,6 +46,9 @@ import { FaRegFilePdf } from "react-icons/fa";
 import SendMediaCard from "./field-components/SendMediaCard";
 import { format } from "date-fns";
 import { SimpleDateTimeDisplay } from "../ui/DateTimeDisplay";
+import { TimePicker } from "../ui/TimePicker";
+import { DateTimePicker } from "../ui/DateTimePicker";
+import { TimeRangePicker } from "../ui/TimeRangePicker";
 
 const ALLOWED_FILES_TYPES = [
   "application/pdf",
@@ -125,10 +128,12 @@ const RenderInputField = ({
   const [fileUrl, setFileUrl] = useState<string>("");
   const [pdfUrl, setPdfUrl] = useState<string>("");
   const [time, setTime] = useState<string>();
-  const [fromTime, setFromTime] = useState<string>();
-  const [toTime, setToTime] = useState<string>();
+  const [timePickerDate, setTimePickerDate] = useState<Date>(new Date())
+  const [fromTime, setFromTime] = useState<Date>(new Date())
+  const [toTime, setToTime] = useState<Date>(new Date(new Date().setHours(new Date().getHours() + 1)))
   const [fromDate, setFromDate] = useState<Date>();
   const [toDate, setToDate] = useState<Date>();
+  const [enhancedDate, setEnhancedDate] = useState<Date>(new Date());
 
   const MAX_VIDEO_SIZE = 2 * 1024 * 1024
   const MAX_IMAGE_SIZE = 5 * 1024 * 1024
@@ -441,50 +446,35 @@ const RenderInputField = ({
           className="rounded-md border"
         />
       );
-      case "Time":
-        return (
-          <Input
-            type="time"
-            id="time"
-            value={time}
-            onChange={(e) => {
-              const newTime = e.target.value
-              setTime(newTime)
-              setInput(newTime)}}
-          />
-        );
+      // case "Time":
+      //   return (
+      //     <Input
+      //       type="time"
+      //       id="time"
+      //       value={time}
+      //       onChange={(e) => {
+      //         const newTime = e.target.value
+      //         setTime(newTime)
+      //         setInput(newTime)}}
+      //     />
+      //   );
+    case "Time":
+      return(
+        <TimePicker value={timePickerDate} onChange={setTimePickerDate}
+        setInput={setInput} form={undefined} field={undefined}/>
+      )
         case "From Time to To Time":
           return(
                   <div className="flex items-center space-x-2">
-                    <div className="grid w-full max-w-sm items-center gap-1.5">
-                      <Label htmlFor="fromTime">From Time</Label>
-                      <Input
-                        type="time"
-                        id="fromTime"
-                        value={fromTime}
-                        onChange={(e) => {
-                          const newFromTime = e.target.value;
-                          setFromTime(newFromTime); 
-                          setInput(newFromTime)
-                          
-                        }}
-                      />
-                    </div>
-                    <Clock className="h-4 w-4" />
-                    <div className="grid w-full max-w-sm items-center gap-1.5">
-                      <Label htmlFor="toTime">To Time</Label>
-                      <Input
-                        type="time"
-                        id="toTime"
-                        value={toTime}
-                        onChange={(e) => {
-                          const newToTime = e.target.value;
-                          setToTime(newToTime); 
-                          setInput(`From: ${fromTime} To: ${newToTime}`);
-                          
-                        }}
-                      />
-                    </div>
+                    <TimeRangePicker
+                                    fromTime={fromTime}
+                                    toTime={toTime}
+                                    onFromTimeChange={setFromTime}
+                                    onToTimeChange={setToTime}
+                                    form={undefined}
+                                    field={undefined}
+                                    setInput={setInput}
+                              />
                   </div>
           )
           case "From Date to To Date":
@@ -559,13 +549,20 @@ const RenderInputField = ({
               </div>
             </div>
         );
+      // case "Date Time":
+      //         return(
+      //           <div className="w-full">
+      //            <SimpleDateTimeDisplay onDateTimeSelect={(selectedDateTime) => setInput(selectedDateTime)} form={undefined} field={undefined}  />
+      //            </div>
+      //         )
       case "Date Time":
               return(
-                <div className="w-full">
-                 <SimpleDateTimeDisplay onDateTimeSelect={(selectedDateTime) => setInput(selectedDateTime)} form={undefined} field={undefined}  />
+                  <div>
+                 <DateTimePicker value={enhancedDate} onChange={setEnhancedDate}
+                 setInput={setInput} form={undefined} field={undefined} />
                  </div>
+                  
               )
-      
     // case "Date Time":
     //   return (
     //     <DatetimePicker

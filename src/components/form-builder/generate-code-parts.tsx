@@ -62,11 +62,12 @@ export const generateZodSchema = (
       case 'Date':
         fieldSchema = z.coerce.date()
         break
-      case 'Time':
-        fieldSchema = z
-          .string()
-          .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Invalid time format. Use HH:mm.");
-        break;
+        case "Time":
+          fieldSchema = z.string().refine(
+            (time) => /^(0?[1-9]|1[0-2]):([0-5]\d) (AM|PM)$/.test(time),
+            { message: "Invalid time format. Expected format is HH:mm AM/PM." }
+          );
+          break;
         
         case "From Date to To Date":
           fieldSchema = z.object({
@@ -77,6 +78,31 @@ export const generateZodSchema = (
             { message: "'To Date' must be later than 'From Date'", path: ["toDate"] }
           );
           break;
+          // case "From Time to To Time":
+          //   fieldSchema = z.object({
+          //     fromTime: z.string().refine(
+          //       (time) => /^(0?[1-9]|1[0-2]):([0-5]\d) (AM|PM)$/.test(time),
+          //       { message: "Invalid 'From Time' format. Expected format is HH:mm AM/PM." }
+          //     ),
+          //     toTime: z.string().refine(
+          //       (time) => /^(0?[1-9]|1[0-2]):([0-5]\d) (AM|PM)$/.test(time),
+          //       { message: "Invalid 'To Time' format. Expected format is HH:mm AM/PM." }
+          //     ),
+          //   }).refine(
+          //     (data) => {
+          //       const parseTime = (time: string) => {
+          //         const [hour, minute, period] = time.match(/(\d+):(\d+) (AM|PM)/)!.slice(1);
+          //         const hours24 = period === "PM" && hour !== "12" ? parseInt(hour) + 12 : parseInt(hour) % 12;
+          //         return hours24 * 60 + parseInt(minute); // Total minutes
+          //       };
+          //       const fromTimeMinutes = parseTime(data.fromTime);
+          //       const toTimeMinutes = parseTime(data.toTime);
+          //       return toTimeMinutes > fromTimeMinutes;
+          //     },
+          //     { message: "'To Time' must be later than 'From Time'.", path: ["toTime"] }
+          //   );
+          //   break;
+          
         
         
 
