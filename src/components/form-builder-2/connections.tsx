@@ -68,6 +68,7 @@ export function ConnectionTable() {
       )
     );
     setFilteredData(results);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
 
   const fetchConnections = async () => {
@@ -103,7 +104,6 @@ export function ConnectionTable() {
   };
 
   const handleEdit = (item: any) => {
-    console.log("item----", item);
     setIsDialogOpen(true);
     setIsEditing(true);
     setNewConnection(item);
@@ -130,9 +130,7 @@ export function ConnectionTable() {
         body: JSON.stringify(newConnection),
       };
       e.preventDefault();
-      console.log("details----", newConnection);
       const response = await fetch(url, requestOptions);
-      console.log("response----", response);
       if (!response.ok) {
         toast({
           description: "Failed to add connection",
@@ -172,31 +170,37 @@ export function ConnectionTable() {
     }
   };
 
-  const handleTestConnection = async(newConnection: Partial<Connection>) => {
-    console.log("connection-----",newConnection)
-    if(!newConnection.key && !newConnection.secret && !newConnection.api_url){
-      toast({ description: "API Key and Secret are required", variant: "destructive" });
+  const handleTestConnection = async (newConnection: Partial<Connection>) => {
+    if (!newConnection.key && !newConnection.secret && !newConnection.api_url) {
+      toast({
+        description: "API Key and Secret are required",
+        variant: "destructive",
+      });
       return;
     }
-    const headers = new Headers()
+    const headers = new Headers();
     headers.append(newConnection.key as string, newConnection.secret as string);
 
     const requestOptions = {
       method: "GET",
       headers: headers,
-    }
-    const response = await fetch(newConnection?.api_url as string,requestOptions);
-    console.log("response---", response)
-    if(!response.ok){
-      setNewConnection({...newConnection, test_status: "failed"})
-      toast({ description: "Failed to test connection", variant: "destructive" });
+    };
+    const response = await fetch(
+      newConnection?.api_url as string,
+      requestOptions
+    );
+    if (!response.ok) {
+      setNewConnection({ ...newConnection, test_status: "failed" });
+      toast({
+        description: "Failed to test connection",
+        variant: "destructive",
+      });
       return;
     }
     const responseData = await response.json();
-    console.log("responseData---", responseData)
-    if(response.ok){
-      setNewConnection({...newConnection, test_status: "passed"})
-    toast({description: "Connection successful", variant: "default"})
+    if (response.ok) {
+      setNewConnection({ ...newConnection, test_status: "passed" });
+      toast({ description: "Connection successful", variant: "default" });
     }
   };
 

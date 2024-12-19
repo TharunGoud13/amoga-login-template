@@ -14,8 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   generateDefaultValues,
   generateZodSchema,
-} from "@/components/form-builder/generate-code-parts";
-// import { renderFormField } from "@/components/form-builder/render-form-field";
+} from "@/components/form-builder-2/generate-code-parts";
 import { renderFormField } from "@/components/form-builder-2/render-form-field";
 import { z } from "zod";
 import { useSession } from "next-auth/react";
@@ -24,7 +23,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ChatPreview from "@/components/form-builder-2/ChatPreview";
 
 const renderFormFields = (fields: any, form: any) => {
-  const apiFieldData = ""
+  const apiFieldData = "";
   return fields.map((fieldOrGroup: any, index: any) => {
     if (Array.isArray(fieldOrGroup)) {
       const getColSpan = (totalFields: number) => {
@@ -51,7 +50,11 @@ const renderFormFields = (fields: any, form: any) => {
                 >
                   <FormControl>
                     {React.cloneElement(
-                      renderFormField(field, form,apiFieldData) as React.ReactElement,
+                      renderFormField(
+                        field,
+                        form,
+                        apiFieldData
+                      ) as React.ReactElement,
                       {
                         ...formField,
                       }
@@ -73,7 +76,11 @@ const renderFormFields = (fields: any, form: any) => {
             <FormItem className="col-span-12">
               <FormControl>
                 {React.cloneElement(
-                  renderFormField(fieldOrGroup, form,apiFieldData) as React.ReactElement,
+                  renderFormField(
+                    fieldOrGroup,
+                    form,
+                    apiFieldData
+                  ) as React.ReactElement,
                   {
                     ...formField,
                   }
@@ -95,18 +102,20 @@ const Page = (props: any) => {
   const [loading, setLoading] = useState(false);
 
   const hasExcludedVariants = formJsonData.some(
-    (item) => (item.variant === "Media Card & Social Icons" || item.variant === "Bar Chart with Social")
+    (item) =>
+      item.variant === "Media Card & Social Icons" ||
+      item.variant === "Bar Chart with Social"
   );
-  
+
   // Conditionally generate the schema and default values
   const formSchema = hasExcludedVariants
     ? z.object({}) // Use an empty schema if excluded variants are present
     : generateZodSchema(formJsonData);
-  
+
   const defaultVals = hasExcludedVariants
     ? {} // Use empty default values if excluded variants are present
     : generateDefaultValues(formJsonData);
-  
+
   // Use the schema only if it's not empty
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: hasExcludedVariants ? undefined : zodResolver(formSchema),
@@ -124,11 +133,10 @@ const Page = (props: any) => {
       user_id: session?.user?.id,
       user_email: session?.user?.email,
       user_name: session?.user?.name,
-      session_id: session?.user?.id
-
-    })
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[])
+      session_id: session?.user?.id,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const getDataFromUrl = async (url: string) => {
     try {
@@ -164,9 +172,8 @@ const Page = (props: any) => {
 
   useEffect(() => {
     getDataFromUrl(pathName);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathName]);
-
-
 
   function formatDateToCustomFormat(date: Date) {
     const pad = (num: any, size = 2) => String(num).padStart(size, "0"); // Helper to pad numbers
@@ -180,7 +187,6 @@ const Page = (props: any) => {
       `${pad(date.getMilliseconds(), 3)}`
     );
   }
-
 
   async function onSubmit(data: any) {
     const headers = new Headers();
@@ -210,6 +216,7 @@ const Page = (props: any) => {
         });
       } else {
         console.warn("No file URL found in localStorage");
+        toast({ description: "File not found", variant: "destructive" });
       }
     }
 
@@ -225,89 +232,120 @@ const Page = (props: any) => {
 
     const videoUploadVariant = formJsonData.find(
       (item) => item.variant === "Video Upload"
-    )
+    );
 
-    if (videoUploadVariant){
+    if (videoUploadVariant) {
       const uploadedVideoUrl = localStorage.getItem("uploadedVideoUrl");
-      if(uploadedVideoUrl){
+      if (uploadedVideoUrl) {
         data.video_url = uploadedVideoUrl;
       }
     }
 
     const imageUploadVariant = formJsonData.find(
       (item) => item.variant === "Image Upload"
-    )
+    );
 
-    if(imageUploadVariant){
+    if (imageUploadVariant) {
       const uploadedImageUrl = localStorage.getItem("uploadedImageUrl");
-      if(uploadedImageUrl){
+      if (uploadedImageUrl) {
         data.image_url = uploadedImageUrl;
       }
     }
 
     const pdfUploadVariant = formJsonData.find(
       (item) => item.variant === "PDF Upload"
-    )
+    );
 
-    if(pdfUploadVariant){
+    if (pdfUploadVariant) {
       const uploadedImageUrl = localStorage.getItem("uploadedPdfUrl");
-      if(uploadedImageUrl){
+      if (uploadedImageUrl) {
         data.pdf_url = uploadedImageUrl;
       }
     }
 
     const sendImageVariant = formJsonData.find(
       (item) => item.variant === "Send Image"
-    )
+    );
 
-    if(sendImageVariant) {
-      const image_url = formJsonData.map((item) => item.variant === "Send Image");
-      if(image_url){
-        data.send_file_url = formJsonData.map((item) => item.variant === "Send Image" && item.placeholder_file_url)
+    if (sendImageVariant) {
+      const image_url = formJsonData.map(
+        (item) => item.variant === "Send Image"
+      );
+      if (image_url) {
+        data.send_file_url = formJsonData.map(
+          (item) => item.variant === "Send Image" && item.placeholder_file_url
+        );
       }
     }
 
     const sendVideoVariant = formJsonData.find(
       (item) => item.variant === "Send Video"
-    )
+    );
 
-    if(sendVideoVariant) {
-      const video_url = formJsonData.map((item) => item.variant === "Send Video");
-      if(video_url){
-        data.send_file_video_url = formJsonData.map((item) => item.variant === "Send Video" && item.placeholder_video_url)
+    if (sendVideoVariant) {
+      const video_url = formJsonData.map(
+        (item) => item.variant === "Send Video"
+      );
+      if (video_url) {
+        data.send_file_video_url = formJsonData.map(
+          (item) => item.variant === "Send Video" && item.placeholder_video_url
+        );
       }
     }
 
     const sendFileVariant = formJsonData.find(
       (item) => item.variant === "Send File"
-    )
+    );
 
-    if(sendFileVariant) {
-      const video_url = formJsonData.map((item) => item.variant === "Send File");
-      if(video_url){
-        data.send_file_upload_url = formJsonData.map((item) => item.variant === "Send File" && item.placeholder_file_upload_url)
+    if (sendFileVariant) {
+      const video_url = formJsonData.map(
+        (item) => item.variant === "Send File"
+      );
+      if (video_url) {
+        data.send_file_upload_url = formJsonData.map(
+          (item) =>
+            item.variant === "Send File" && item.placeholder_file_upload_url
+        );
       }
     }
 
     const sendPdfVariant = formJsonData.find(
       (item) => item.variant === "Send Pdf"
-    )
+    );
 
-    if(sendPdfVariant) {
+    if (sendPdfVariant) {
       const video_url = formJsonData.map((item) => item.variant === "Send Pdf");
-      if(video_url){
-        data.send_file_pdf_url = formJsonData.map((item) => item.variant === "Send Pdf" && item.placeholder_pdf_file_url)
+      if (video_url) {
+        data.send_file_pdf_url = formJsonData.map(
+          (item) => item.variant === "Send Pdf" && item.placeholder_pdf_file_url
+        );
       }
     }
 
-    const sendMediaCardVariant = formJsonData.find((item) => item.variant === "Send Media Card");
+    const sendMediaCardVariant = formJsonData.find(
+      (item) => item.variant === "Send Media Card"
+    );
 
     if (sendMediaCardVariant) {
-      const media_url = formJsonData.map((item) => item.variant === "Send Media Card")
-      if(media_url){
-        data.media_url = formJsonData.map((item) => item.variant === "Send Media Card" && item.media_card_data?.media_url)
-        data.card_type = formJsonData.map((item) => item.variant === "Send Media Card" && item.media_card_data?.card_type)
-        data.html_content = formJsonData.map((item) => item.variant === "Send Media Card" && item.media_card_data?.custom_html)
+      const media_url = formJsonData.map(
+        (item) => item.variant === "Send Media Card"
+      );
+      if (media_url) {
+        data.media_url = formJsonData.map(
+          (item) =>
+            item.variant === "Send Media Card" &&
+            item.media_card_data?.media_url
+        );
+        data.card_type = formJsonData.map(
+          (item) =>
+            item.variant === "Send Media Card" &&
+            item.media_card_data?.card_type
+        );
+        data.html_content = formJsonData.map(
+          (item) =>
+            item.variant === "Send Media Card" &&
+            item.media_card_data?.custom_html
+        );
       }
     }
 
@@ -343,9 +381,8 @@ const Page = (props: any) => {
           user_id: session?.user?.id,
           user_email: session?.user?.email,
           user_name: session?.user?.name,
-          session_id: session?.user?.id
-    
-        })
+          session_id: session?.user?.id,
+        });
         form.reset();
         setLoading(false);
       } else {
@@ -359,9 +396,8 @@ const Page = (props: any) => {
           user_id: session?.user?.id,
           user_email: session?.user?.email,
           user_name: session?.user?.name,
-          session_id: session?.user?.id
-    
-        })
+          session_id: session?.user?.id,
+        });
         toast({
           description: "Failed to submit the form. Please try again.",
           variant: "destructive",
@@ -378,15 +414,14 @@ const Page = (props: any) => {
         description: "Form Submission Failed",
         http_method: "POST",
         http_url: ADD_FORM_DATA,
-        response_status_code:400,
+        response_status_code: 400,
         response_status: "FAILED",
         share_url: pathName,
         user_id: session?.user?.id,
         user_email: session?.user?.email,
         user_name: session?.user?.name,
-        session_id: session?.user?.id
-  
-      })
+        session_id: session?.user?.id,
+      });
       form.reset();
       setLoading(false);
     }
@@ -397,7 +432,6 @@ const Page = (props: any) => {
       <Tabs defaultValue="form" className="w-full">
         <div className="flex justify-center mb-6">
           <TabsList className="inline-flex h-10 items-center justify-center rounded-full bg-muted p-1 text-muted-foreground">
-            
             <TabsTrigger
               value="form"
               className="inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
@@ -410,31 +444,30 @@ const Page = (props: any) => {
             >
               Chat
             </TabsTrigger>
-            
           </TabsList>
         </div>
-    <TabsContent value="form">
-        <If
-          condition={formJsonData.length > 0}
-          render={() => (
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-4  md:w-[50%] md:border p-5 rounded  py-5 max-w-lg mx-auto"
-              >
-                {renderFormFields(formJsonData, form)}
-                <Button className="w-full" type="submit">
-                  {loading ? "Submitting..." : "Submit"}
-                </Button>
-              </form>
-            </Form>
-          )}
-          otherwise={() => (
-            <div className="h-[50vh] flex justify-center items-center">
-              <p>No form element selected yet.</p>
-            </div>
-          )}
-        />
+        <TabsContent value="form">
+          <If
+            condition={formJsonData.length > 0}
+            render={() => (
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-4  md:w-[50%] md:border p-5 rounded  py-5 max-w-lg mx-auto"
+                >
+                  {renderFormFields(formJsonData, form)}
+                  <Button className="w-full" type="submit">
+                    {loading ? "Submitting..." : "Submit"}
+                  </Button>
+                </form>
+              </Form>
+            )}
+            otherwise={() => (
+              <div className="h-[50vh] flex justify-center items-center">
+                <p>No form element selected yet.</p>
+              </div>
+            )}
+          />
         </TabsContent>
         <TabsContent value="chat">
           <div className=" flex justify-center items-center">

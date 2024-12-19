@@ -50,33 +50,20 @@ import { format } from "date-fns";
 // import { PasswordInput } from '@/components/ui/password-input'
 import { PasswordInput } from "../ui/password-input";
 import { PhoneInput } from "../ui/phone-input";
-import {
-  FileUploader,
-  FileUploaderContent,
-  FileUploaderItem,
-  FileInput,
-} from "@/components/ui/file-upload";
 import { Slider } from "@/components/ui/slider";
 import {
   CalendarIcon,
   Check,
   ChevronsUpDown,
-  Clock,
   Dock,
   ExternalLink,
   File,
-  FileText,
-  ImageIcon,
   Link,
-  Paperclip,
   Star,
   Table,
-  Upload,
   UploadIcon,
-  X,
   XIcon,
 } from "lucide-react";
-// import { TagsInput } from '@/components/ui/tags-input'
 import { TagsInput } from "../ui/tags-input";
 import {
   MultiSelector,
@@ -86,7 +73,6 @@ import {
   MultiSelectorList,
   MultiSelectorTrigger,
 } from "../ui/multi-select";
-import { DatetimePicker } from "@/components/ui/datetime-picker";
 import { SmartDatetimeInput } from "@/components/ui/smart-datetime-input";
 import LocationSelector from "@/components/ui/location-input";
 import SignatureInput from "@/components/ui/signature-input";
@@ -108,51 +94,9 @@ import { Card, CardContent } from "../ui/card";
 import Image from "next/image";
 import { FaFilePdf } from "react-icons/fa";
 import SendMediaCard from "./field-components/SendMediaCard";
-import { SimpleDateTimeDisplay } from "../ui/DateTimeDisplay";
 import { TimePicker } from "../ui/TimePicker";
 import { DateTimePicker } from "../ui/DateTimePicker";
 import { TimeRangePicker } from "../ui/TimeRangePicker";
-
-const languages = [
-  { label: "English", value: "en" },
-  { label: "French", value: "fr" },
-  { label: "German", value: "de" },
-  { label: "Spanish", value: "es" },
-  { label: "Portuguese", value: "pt" },
-  { label: "Russian", value: "ru" },
-  { label: "Japanese", value: "ja" },
-  { label: "Korean", value: "ko" },
-  { label: "Chinese", value: "zh" },
-] as const;
-
-const FileSvgDraw = () => {
-  return (
-    <>
-      <svg
-        className="w-8 h-8 mb-3 text-gray-500 dark:text-gray-400"
-        aria-hidden="true"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 20 16"
-      >
-        <path
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
-        />
-      </svg>
-      <p className="mb-1 text-sm text-gray-500 dark:text-gray-400">
-        <span className="font-semibold">Click to upload</span>
-        &nbsp; or drag and drop
-      </p>
-      <p className="text-xs text-gray-500 dark:text-gray-400">
-        SVG, PNG, JPG or GIF
-      </p>
-    </>
-  );
-};
 
 const ALLOWED_FILES_TYPES = [
   "application/pdf",
@@ -180,12 +124,12 @@ export const renderFormField = (
   const [images, setImages] = useState<File[]>([]);
   const [videos, setVideos] = useState<string[]>([]);
   const [date, setDate] = useState<Date>();
-  const [time, setTime] = useState<string>();
-  const [fromTime, setFromTime] = useState<Date>(new Date())
-  const [toTime, setToTime] = useState<Date>(new Date(new Date().setHours(new Date().getHours() + 1)))
+  const [fromTime, setFromTime] = useState<Date>(new Date());
+  const [toTime, setToTime] = useState<Date>(
+    new Date(new Date().setHours(new Date().getHours() + 1))
+  );
   const [fromDate, setFromDate] = useState<Date>();
   const [toDate, setToDate] = useState<Date>();
-  const [dateTime, setDateTime] = useState<string>();
   const [smartDatetime, setSmartDatetime] = useState<Date | null>();
   const [countryName, setCountryName] = useState<string>("");
   const [stateName, setStateName] = useState<string>("");
@@ -213,7 +157,7 @@ export const renderFormField = (
   const [timePickerDate, setTimePickerDate] = useState<Date>(new Date());
   const [enhancedDate, setEnhancedDate] = useState<Date>(new Date());
   const [rating, setRating] = useState(0);
-  const [score, setScore] = useState<number | null>(null)
+  const [score, setScore] = useState<number | null>(null);
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
   const MAX_VIDEO_SIZE = 2 * 1024 * 1024;
 
@@ -223,29 +167,21 @@ export const renderFormField = (
     setValue(url);
   };
 
-  // useEffect(() => {
-  //   form.setValue(field.name, dateTime, {
-  //     shouldValidate: true,
-  //     shouldDirty: true,
-  //   }); 
-
-  // },[dateTime])
-
   const handleScoreClick = (selectedScore: number) => {
-    setScore(selectedScore)
+    setScore(selectedScore);
     form.setValue(field.name, selectedScore.toString(), {
       shouldValidate: true,
       shouldDirty: true,
     });
-  }
+  };
 
-  const handleStarClick = (selectedRating:number) => {
-    setRating(selectedRating)
+  const handleStarClick = (selectedRating: number) => {
+    setRating(selectedRating);
     form.setValue(field.name, selectedRating.toString(), {
       shouldValidate: true,
       shouldDirty: true,
     });
-  }
+  };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -487,7 +423,6 @@ export const renderFormField = (
   const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newImages = Array.from(e.target.files);
-      console.log("newImages----", newImages);
       const validImages = newImages.filter(
         (file) =>
           ALLOWED_FILE_TYPES.includes(file.type) && file.size <= MAX_FILE_SIZE
@@ -803,30 +738,12 @@ export const renderFormField = (
                         <Label htmlFor={index}>{item}</Label>
                       </div>
                     ))}
-                {/* <div className="flex items-center space-x-2">
-                <RadioGroupItem value="default" id="r1" />
-                <Label htmlFor="r1">{field.name}</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="comfortable" id="r2" />
-                <Label htmlFor="r2">{field.name}</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="compact" id="r3" />
-                <Label htmlFor="r3">{field.name}</Label>
-              </div> */}
               </RadioGroup>
             </FormControl>
-            <div className="space-y-1 leading-none">
-              {/* <FormLabel>{field.label}</FormLabel> {field.required && "*"} */}
-              {/* <FormDescription>{field.description}</FormDescription> */}
-            </div>
             <FormMessage />
           </FormItem>
         </>
       );
-    case "Search Lookup":
-      return <div></div>;
     case "Badge":
       return (
         <div>
@@ -978,7 +895,7 @@ export const renderFormField = (
         </FormItem>
       );
     case "Time":
-      return(
+      return (
         <FormItem className="flex flex-col">
           <div className="flex justify-between items-center">
             <div>
@@ -987,257 +904,164 @@ export const renderFormField = (
             </div>
             <FormMessage />
           </div>
-              <FormControl>
-                {/* <Input type="time" id="time" value={time} 
-                onChange={(e) => {
-                  const newTime = e.target.value;
-                  setTime(newTime); 
-                  form.setValue(field.name, newTime, {
-                    shouldValidate: true,
-                    shouldDirty: true,
-                  }); 
-                }}
-                /> */}
-                <TimePicker value={timePickerDate} onChange={setTimePickerDate} setInput={() => {}}
-                  form={form} field={field}/>
-              </FormControl>
-            
-          <FormDescription>{field.description}</FormDescription>
-        </FormItem>
-      )
-    // case "From Time to To Time":
-    //   return(
-    //     <FormItem className="flex flex-col">
-    //       <div className="flex justify-between items-center">
-    //         <div>
-    //           <FormLabel>{field.label}</FormLabel>{" "}
-    //           <span className="text-red-500">{field.required && "*"}</span>
-    //         </div>
-    //         <FormMessage />
-    //       </div>
-    //           <FormControl>
-    //           <div className="flex items-center space-x-2">
-    //             <div className="grid w-full max-w-sm items-center gap-1.5">
-    //               <Label htmlFor="fromTime">From Time</Label>
-    //               <Input
-    //                 type="time"
-    //                 id="fromTime"
-    //                 value={fromTime}
-    //                 onChange={(e) => {
-    //                   const newFromTime = e.target.value;
-    //                   setFromTime(newFromTime); 
-    //                   form.setValue(`${field.name}.fromTime`, newFromTime, {
-    //                     shouldValidate: true,
-    //                     shouldDirty: true,
-    //                   });
-    //                 }}
-    //               />
-    //             </div>
-    //             <Clock className="h-4 w-4" />
-    //             <div className="grid w-full max-w-sm items-center gap-1.5">
-    //               <Label htmlFor="toTime">To Time</Label>
-    //               <Input
-    //                 type="time"
-    //                 id="toTime"
-    //                 value={toTime}
-    //                 onChange={(e) => {
-    //                   const newToTime = e.target.value;
-    //                   setToTime(newToTime); 
-    //                   form.setValue(`${field.name}.toTime`,  newToTime, {
-    //                     shouldValidate: true,
-    //                     shouldDirty: true,
-    //                   });
-    //                 }}
-    //               />
-    //             </div>
-    //           </div>
-    //           </FormControl>
-            
-    //       <FormDescription>{field.description}</FormDescription>
-    //     </FormItem>
-    //   )
-    case "From Time to To Time":
-      return(
-        <FormItem className="flex flex-col">
-          <div className="flex justify-between items-center">
-            <div>
-              <FormLabel>{field.label}</FormLabel>{" "}
-              <span className="text-red-500">{field.required && "*"}</span>
-            </div>
-            <FormMessage />
-          </div>
-              <FormControl>
-              <TimeRangePicker
-                fromTime={fromTime}
-                toTime={toTime}
-                onFromTimeChange={setFromTime}
-                onToTimeChange={setToTime}
-                form={form}
-                field={field}
-                setInput={() => {}}
-          />
-              </FormControl>
-            
-          <FormDescription>{field.description}</FormDescription>
-        </FormItem>
-      )
-      case "From Date to To Date":
-        return (
-          <FormItem className="flex flex-col">
-            <div className="flex justify-between items-center">
-              <div>
-                <FormLabel>{field.label}</FormLabel>{" "}
-                <span className="text-red-500">{field.required && "*"}</span>
-              </div>
-              <FormMessage />
-            </div>
-            <FormControl>
-              <div className="flex gap-2 md:gap-0 flex-col md:flex-row items-center space-x-2">
-                {/* From Date */}
-                <div className="grid w-full max-w-sm items-center gap-1.5">
-                  <Label htmlFor="fromDate">From Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !fromDate && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {fromDate ? format(fromDate, "PPP") : <span>Pick a date</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={fromDate}
-                        onSelect={(newDate) => {
-                          setFromDate(newDate); // Update local state
-                          form.setValue(`${field.name}.fromDate`, newDate, {
-                            shouldValidate: true,
-                            shouldDirty: true,
-                          }); // Set form value
-                        }}
-                        initialFocus
-                        className={
-                          form.formState.errors?.[`${field.name}.fromDate`]
-                            ? "border-red-500"
-                            : ""
-                        }
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                {/* Separator */}
-                {/* <CalendarIcon className="h-4 w-4" /> */}
-                {/* To Date */}
-                <div className="grid w-full max-w-sm items-center gap-1.5">
-                  <Label htmlFor="toDate">To Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !toDate && "text-muted-foreground"
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {toDate ? format(toDate, "PPP") : <span>Pick a date</span>}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={toDate}
-                        onSelect={(newDate) => {
-                          setToDate(newDate); // Update local state
-                          form.setValue(`${field.name}.toDate`, newDate, {
-                            shouldValidate: true,
-                            shouldDirty: true,
-                          }); // Set form value
-                        }}
-                        initialFocus
-                        className={
-                          form.formState.errors?.[`${field.name}.toDate`]
-                            ? "border-red-500"
-                            : ""
-                        }
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-            </FormControl>
-            <FormDescription>{field.description}</FormDescription>
-          </FormItem>
-        );
-      // case "Date Time":
-      //   return(
-      //     <FormItem className="flex flex-col">
-      //       <div className="flex justify-between items-center">
-      //        <div>
-      //          <FormLabel>{field.label}</FormLabel>{" "}
-      //          <span className="text-red-500">{field.required && "*"}</span>
-      //        </div>
-      //        <FormMessage />
-      //      </div>
-      //      <SimpleDateTimeDisplay onDateTimeSelect={(selectedDateTime) => {setDateTime(selectedDateTime)}}
-      //      form={form} field={field}
-      //      />
-      //       </FormItem>
-      //   )
+          <FormControl>
+            <TimePicker
+              value={timePickerDate}
+              onChange={setTimePickerDate}
+              setInput={() => {}}
+              form={form}
+              field={field}
+            />
+          </FormControl>
 
-      case "Date Time":
-        return(
-          <FormItem className="flex flex-col">
-            <div className="flex justify-between items-center">
-             <div>
-               <FormLabel>{field.label}</FormLabel>{" "}
-               <span className="text-red-500">{field.required && "*"}</span>
-             </div>
-             <FormMessage />
-           </div>
-           <DateTimePicker value={enhancedDate} onChange={setEnhancedDate}
-           setInput={() => {}} form={form} field={field} />
-            </FormItem>
-        )
-    
-      
-    // case "Date Time":
-    //   return (
-    //     <FormItem className="flex flex-col">
-    //       <div className="flex justify-between items-center">
-    //         <div>
-    //           <FormLabel>{field.label}</FormLabel>{" "}
-    //           <span className="text-red-500">{field.required && "*"}</span>
-    //         </div>
-    //         <FormMessage />
-    //       </div>
-    //       <DatetimePicker
-    //         {...field}
-    //         value={datetime}
-    //         // onChange={setDatetime}
-    //         onChange={(newDate) => {
-    //           setDatetime(newDate);
-    //           form.setValue(field.name, newDate, {
-    //             shouldValidate: true,
-    //             shouldDirty: true,
-    //           });
-    //         }}
-    //         className={
-    //           form.formState.errors?.[field.name] ? "border-red-500" : ""
-    //         }
-    //         format={[
-    //           ["months", "days", "years"],
-    //           ["hours", "minutes", "am/pm"],
-    //         ]}
-    //       />
-    //       <FormDescription>{field.description}</FormDescription>
-    //     </FormItem>
-    //   );
+          <FormDescription>{field.description}</FormDescription>
+        </FormItem>
+      );
+
+    case "From Time to To Time":
+      return (
+        <FormItem className="flex flex-col">
+          <div className="flex justify-between items-center">
+            <div>
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
+          </div>
+          <FormControl>
+            <TimeRangePicker
+              fromTime={fromTime}
+              toTime={toTime}
+              onFromTimeChange={setFromTime}
+              onToTimeChange={setToTime}
+              form={form}
+              field={field}
+              setInput={() => {}}
+            />
+          </FormControl>
+
+          <FormDescription>{field.description}</FormDescription>
+        </FormItem>
+      );
+    case "From Date to To Date":
+      return (
+        <FormItem className="flex flex-col">
+          <div className="flex justify-between items-center">
+            <div>
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
+          </div>
+          <FormControl>
+            <div className="flex gap-2 md:gap-0 flex-col md:flex-row items-center space-x-2">
+              {/* From Date */}
+              <div className="grid w-full max-w-sm items-center gap-1.5">
+                <Label htmlFor="fromDate">From Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !fromDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {fromDate ? (
+                        format(fromDate, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={fromDate}
+                      onSelect={(newDate) => {
+                        setFromDate(newDate); // Update local state
+                        form.setValue(`${field.name}.fromDate`, newDate, {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                        }); // Set form value
+                      }}
+                      initialFocus
+                      className={
+                        form.formState.errors?.[`${field.name}.fromDate`]
+                          ? "border-red-500"
+                          : ""
+                      }
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="grid w-full max-w-sm items-center gap-1.5">
+                <Label htmlFor="toDate">To Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !toDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {toDate ? (
+                        format(toDate, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={toDate}
+                      onSelect={(newDate) => {
+                        setToDate(newDate); // Update local state
+                        form.setValue(`${field.name}.toDate`, newDate, {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                        }); // Set form value
+                      }}
+                      initialFocus
+                      className={
+                        form.formState.errors?.[`${field.name}.toDate`]
+                          ? "border-red-500"
+                          : ""
+                      }
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+          </FormControl>
+          <FormDescription>{field.description}</FormDescription>
+        </FormItem>
+      );
+
+    case "Date Time":
+      return (
+        <FormItem className="flex flex-col">
+          <div className="flex justify-between items-center">
+            <div>
+              <FormLabel>{field.label}</FormLabel>{" "}
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
+          </div>
+          <DateTimePicker
+            value={enhancedDate}
+            onChange={setEnhancedDate}
+            setInput={() => {}}
+            form={form}
+            field={field}
+          />
+        </FormItem>
+      );
+
     case "File Upload":
       return (
         <FormItem>
@@ -1399,15 +1223,7 @@ export const renderFormField = (
                       />
                     </label>
                   </div>
-                  {/* {uploadError && (
-                <p className="text-sm text-red-500">{uploadError}</p>
-              )} */}
-                  {/* {currentPath  && (
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                  <span className="text-sm text-primary">Uploading...</span>
-                </div>
-              )} */}
+
                   <div className="mt-2.5 flex items-center gap-2.5">
                     <Input
                       value={pdfUrl}
@@ -1635,7 +1451,7 @@ export const renderFormField = (
         </FormItem>
       );
     case "Send Image":
-      return(
+      return (
         <FormItem>
           <div className="flex justify-between items-center">
             <div>
@@ -1661,19 +1477,6 @@ export const renderFormField = (
                             layout="fill"
                             className=""
                           />
-                          {/* <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              removeImage(0);
-                            }}
-                            className="absolute top-2 right-2 z-10"
-                          >
-                            <XIcon className="h-4 w-4" />
-                          </Button> */}
                         </>
                       ) : (
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -1706,32 +1509,37 @@ export const renderFormField = (
           </FormControl>
           <FormDescription>{field.description}</FormDescription>
         </FormItem>
-      )
-      case "Send Video":
-        return(
-          <FormItem>
-            <div className="flex justify-between items-center">
-              <div>
-                <FormLabel>{field.label}</FormLabel>
-                <span className="text-red-500">{field.required && "*"}</span>
-              </div>
-              <FormMessage />
+      );
+    case "Send Video":
+      return (
+        <FormItem>
+          <div className="flex justify-between items-center">
+            <div>
+              <FormLabel>{field.label}</FormLabel>
+              <span className="text-red-500">{field.required && "*"}</span>
             </div>
-            <FormControl>
-              <Card>
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-center w-full">
-                      <label
-                        htmlFor={`${field.name}-upload`}
-                        className="relative flex flex-col items-center justify-center w-full h-64 border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden"
-                      >
-                        {field?.placeholder_video_url ? (
-                          <>
-                            {field?.placeholder_video_url.startsWith("http") ? (
-                            /(youtube\.com|youtu\.be)/.test(field?.placeholder_video_url) ? (
+            <FormMessage />
+          </div>
+          <FormControl>
+            <Card>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center w-full">
+                    <label
+                      htmlFor={`${field.name}-upload`}
+                      className="relative flex flex-col items-center justify-center w-full h-64 border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden"
+                    >
+                      {field?.placeholder_video_url ? (
+                        <>
+                          {field?.placeholder_video_url.startsWith("http") ? (
+                            /(youtube\.com|youtu\.be)/.test(
+                              field?.placeholder_video_url
+                            ) ? (
                               <iframe
-                                src={field?.placeholder_video_url.replace("watch?v=", "embed/")}
+                                src={field?.placeholder_video_url.replace(
+                                  "watch?v=",
+                                  "embed/"
+                                )}
                                 title="video-preview"
                                 className="h-64 w-full"
                                 frameBorder="0"
@@ -1752,17 +1560,83 @@ export const renderFormField = (
                               className="h-fit w-full"
                             />
                           )}
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                          <p className="mb-2 text-sm text-primary">
+                            <span className="font-semibold">
+                              Click to upload video
+                            </span>{" "}
+                          </p>
+                        </div>
+                      )}
+                      <Input
+                        id={`${field.name}-upload`}
+                        type="file"
+                        readOnly
+                        ref={fileInputRef}
+                        disabled
+                        accept=".mp4, .mov, .avi, .mkv, .webm"
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </FormControl>
+          <FormDescription>{field.description}</FormDescription>
+        </FormItem>
+      );
+
+    case "Send File":
+      return (
+        <FormItem>
+          <div className="flex justify-between items-center">
+            <div>
+              <FormLabel>{field.label}</FormLabel>
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
+          </div>
+          <FormControl>
+            <>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center w-full">
+                      <label
+                        htmlFor={`${field.name}-upload`}
+                        className="relative flex flex-col items-center justify-center w-full h-64 border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden"
+                      >
+                        {field?.placeholder_file_upload_url ? (
+                          <>
+                            <div className="text-4xl font-bold text-primary mb-2">
+                              {getFileIcon(
+                                field?.placeholder_file_upload_url
+                                  ?.split("/")
+                                  .at(-1)
+                              )}
+                            </div>
+                            <div className="text-sm flex flex-wrap text-primary line-clamp-2 truncate max-w-[80%]">
+                              {field?.placeholder_file_upload_url
+                                .split("/")
+                                .at(-1)}
+                            </div>
                           </>
                         ) : (
-                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <div className="flex flex-col p-2.5 items-center justify-center pt-5 pb-6">
                             <UploadIcon className="w-8 h-8 mb-4 text-primary" />
                             <p className="mb-2 text-sm text-primary">
                               <span className="font-semibold">
-                                Click to upload video
+                                Click to upload
                               </span>{" "}
-                              
+                              or drag and drop
                             </p>
-                            
+                            <p className="text-xs text-primary">
+                              DOC, DOCX, XLS, XLSX, CSV (MAX. 5MB)
+                            </p>
                           </div>
                         )}
                         <Input
@@ -1771,169 +1645,116 @@ export const renderFormField = (
                           readOnly
                           ref={fileInputRef}
                           disabled
-                          accept=".mp4, .mov, .avi, .mkv, .webm"
+                          accept=".doc,.docx,.xls,.xlsx,.csv"
                           className="hidden"
                         />
                       </label>
                     </div>
                   </div>
+                  <div className="flex w-full justify-end">
+                    <Button
+                      className="m-2 flex flex-end items-end self-end"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        const link: any = document.createElement("a");
+                        link.href = field.placeholder_file_upload_url;
+                        link.download =
+                          field?.placeholder_file_upload_url
+                            ?.split("/")
+                            .at(-1) || "file";
+                        link.click();
+                      }}
+                    >
+                      Download
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
-            </FormControl>
-            <FormDescription>{field.description}</FormDescription>
-          </FormItem>
-        )
-
-        case "Send File":
-          return(
-            <FormItem>
-              <div className="flex justify-between items-center">
-                <div>
-                  <FormLabel>{field.label}</FormLabel>
-                  <span className="text-red-500">{field.required && "*"}</span>
-                </div>
-                <FormMessage />
-              </div>
-              <FormControl>
-                <>
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-center w-full">
-                        <label
-                          htmlFor={`${field.name}-upload`}
-                          className="relative flex flex-col items-center justify-center w-full h-64 border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden"
-                        >
-                          {field?.placeholder_file_upload_url ? (
-                            <>
-                              <div className="text-4xl font-bold text-primary mb-2">
-                            {getFileIcon(field?.placeholder_file_upload_url?.split("/").at(-1))}
-                          </div>
-                          <div className="text-sm flex flex-wrap text-primary line-clamp-2 truncate max-w-[80%]">
-                            {field?.placeholder_file_upload_url.split("/").at(-1)}
-                          </div>
-                            </>
-                          ) : (
-                            <div className="flex flex-col p-2.5 items-center justify-center pt-5 pb-6">
-                              <UploadIcon className="w-8 h-8 mb-4 text-primary" />
-                              <p className="mb-2 text-sm text-primary">
-                                <span className="font-semibold">
-                                  Click to upload
-                                </span>{" "}
-                                or drag and drop
-                              </p>
-                              <p className="text-xs text-primary">
-                                DOC, DOCX, XLS, XLSX, CSV (MAX. 5MB)
-                              </p>
-                            </div>
-                          )}
-                          <Input
-                            id={`${field.name}-upload`}
-                            type="file"
-                            readOnly
-                            ref={fileInputRef}
-                            disabled
-                            accept=".doc,.docx,.xls,.xlsx,.csv"
-                            className="hidden"
-                          />
-                        </label>
-                      </div>
-                    </div>
-                    <div className="flex w-full justify-end">
-                    <Button className="m-2 flex flex-end items-end self-end"
-                onClick={(e) => {
-                  e.preventDefault()
-                  const link:any = document.createElement("a");
-                  link.href = field.placeholder_file_upload_url;
-                  link.download =
-                    field?.placeholder_file_upload_url?.split("/").at(-1) || "file";
-                  link.click();
-
-                }}
-                >Download</Button>
-                    </div>
-                  </CardContent>
-                
-                </Card>
-                </>
-              </FormControl>
-              <FormDescription>{field.description}</FormDescription>
-            </FormItem>
-          )
-          case "Send Pdf":
-            return(
-              <FormItem>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <FormLabel>{field.label}</FormLabel>
-                    <span className="text-red-500">{field.required && "*"}</span>
-                  </div>
-                  <FormMessage />
-                </div>
-                <FormControl>
-                  <>
-                  <Card>
-                    <CardContent className="p-6">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-center w-full">
-                          <label
-                            htmlFor={`${field.name}-upload`}
-                            className="relative flex flex-col items-center justify-center w-full h-64 border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden"
-                          >
-                            {field?.placeholder_pdf_file_url ? (
-                              <>
-                                <div className="text-4xl font-bold text-primary mb-2">
-                                <FaFilePdf  className="text-red-500"/>
+            </>
+          </FormControl>
+          <FormDescription>{field.description}</FormDescription>
+        </FormItem>
+      );
+    case "Send Pdf":
+      return (
+        <FormItem>
+          <div className="flex justify-between items-center">
+            <div>
+              <FormLabel>{field.label}</FormLabel>
+              <span className="text-red-500">{field.required && "*"}</span>
+            </div>
+            <FormMessage />
+          </div>
+          <FormControl>
+            <>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-center w-full">
+                      <label
+                        htmlFor={`${field.name}-upload`}
+                        className="relative flex flex-col items-center justify-center w-full h-64 border border-primary border-dashed rounded-lg cursor-pointer bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden"
+                      >
+                        {field?.placeholder_pdf_file_url ? (
+                          <>
+                            <div className="text-4xl font-bold text-primary mb-2">
+                              <FaFilePdf className="text-red-500" />
                             </div>
                             <div className="text-sm flex flex-wrap text-primary line-clamp-2 truncate max-w-[80%]">
-                              {field?.placeholder_pdf_file_url.split("/").at(-1)}
+                              {field?.placeholder_pdf_file_url
+                                .split("/")
+                                .at(-1)}
                             </div>
-                              </>
-                            ) : (
-                              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                                <UploadIcon className="w-8 h-8 mb-4 text-primary" />
-                                <p className="mb-2 text-sm text-primary">
-                                  <span className="font-semibold">
-                                    Click to upload
-                                  </span>{" "}
-                                  or drag and drop
-                                </p>
-                                <p className="text-xs text-primary">
-                                  PDF (MAX. 5MB)
-                                </p>
-                              </div>
-                            )}
-                            <Input
-                              id={`${field.name}-upload`}
-                              type="file"
-                              readOnly
-                              ref={fileInputRef}
-                              disabled
-                              accept=".pdf"
-                              className="hidden"
-                            />
-                          </label>
-                        </div>
-                      </div>
-                      <div className="flex w-full justify-end">
-                      <Button className="m-2 flex flex-end items-end self-end"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    if (field?.placeholder_pdf_file_url) {
-                      window.open(field?.placeholder_pdf_file_url, "_blank"); // Open the file in a new tab
-                    }
-  
-                  }}
-                  >Download</Button>
-                      </div>
-                    </CardContent>
-                  
-                  </Card>
-                  </>
-                </FormControl>
-                <FormDescription>{field.description}</FormDescription>
-              </FormItem>
-            )
+                          </>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <UploadIcon className="w-8 h-8 mb-4 text-primary" />
+                            <p className="mb-2 text-sm text-primary">
+                              <span className="font-semibold">
+                                Click to upload
+                              </span>{" "}
+                              or drag and drop
+                            </p>
+                            <p className="text-xs text-primary">
+                              PDF (MAX. 5MB)
+                            </p>
+                          </div>
+                        )}
+                        <Input
+                          id={`${field.name}-upload`}
+                          type="file"
+                          readOnly
+                          ref={fileInputRef}
+                          disabled
+                          accept=".pdf"
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                  <div className="flex w-full justify-end">
+                    <Button
+                      className="m-2 flex flex-end items-end self-end"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        if (field?.placeholder_pdf_file_url) {
+                          window.open(
+                            field?.placeholder_pdf_file_url,
+                            "_blank"
+                          ); // Open the file in a new tab
+                        }
+                      }}
+                    >
+                      Download
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </>
+          </FormControl>
+          <FormDescription>{field.description}</FormDescription>
+        </FormItem>
+      );
     case "Text Box":
       return (
         <FormItem>
@@ -2210,11 +2031,11 @@ export const renderFormField = (
         </div>
       );
     case "Send Media Card":
-      return(
+      return (
         <div>
           <SendMediaCard field={field} />
         </div>
-      )
+      );
     case "Media Card & Social Icons":
       return (
         <MediaSocialPage
@@ -2517,60 +2338,62 @@ export const renderFormField = (
           <FormDescription>{field.description}</FormDescription>
         </FormItem>
       );
-      case "Send Review":
-        return (
-          <FormItem>
-            <div className="flex justify-between items-center">
-              <div>
-                <FormLabel>{field.label}</FormLabel>
-              </div>
-              <FormMessage />
+    case "Send Review":
+      return (
+        <FormItem>
+          <div className="flex justify-between items-center">
+            <div>
+              <FormLabel>{field.label}</FormLabel>
             </div>
-            <FormControl>
+            <FormMessage />
+          </div>
+          <FormControl>
             <div className="flex space-x-1">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <Star
-              key={star}
-              className={`cursor-pointer ${
-                star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
-              }`}
-              onClick={() => handleStarClick(star)}
-            />
-          ))}
-        </div>
-            </FormControl>
-            <FormDescription>{field.description}</FormDescription>
-          </FormItem>
-        );
-        case "Send Rating":
-          return (
-            <FormItem>
-              <div className="flex justify-between items-center">
-                <div>
-                  <FormLabel>{field.label}</FormLabel>
-                </div>
-                <FormMessage />
-              </div>
-              <FormControl>
-              <div className="flex flex-wrap justify-center gap-2">
-          {[...Array(11)].map((_, index) => (
-            <Button
-              key={index}
-              variant={score === index ? "default" : "outline"}
-              className="w-10 h-10"
-              onClick={(e) => {
-                e.preventDefault()
-                handleScoreClick(index)
-              }}
-            >
-              {index}
-            </Button>
-          ))}
-        </div>
-              </FormControl>
-              <FormDescription>{field.description}</FormDescription>
-            </FormItem>
-          );
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  className={`cursor-pointer ${
+                    star <= rating
+                      ? "text-yellow-400 fill-yellow-400"
+                      : "text-gray-300"
+                  }`}
+                  onClick={() => handleStarClick(star)}
+                />
+              ))}
+            </div>
+          </FormControl>
+          <FormDescription>{field.description}</FormDescription>
+        </FormItem>
+      );
+    case "Send Rating":
+      return (
+        <FormItem>
+          <div className="flex justify-between items-center">
+            <div>
+              <FormLabel>{field.label}</FormLabel>
+            </div>
+            <FormMessage />
+          </div>
+          <FormControl>
+            <div className="flex flex-wrap justify-center gap-2">
+              {[...Array(11)].map((_, index) => (
+                <Button
+                  key={index}
+                  variant={score === index ? "default" : "outline"}
+                  className="w-10 h-10"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleScoreClick(index);
+                  }}
+                >
+                  {index}
+                </Button>
+              ))}
+            </div>
+          </FormControl>
+          <FormDescription>{field.description}</FormDescription>
+        </FormItem>
+      );
     default:
       return null;
   }

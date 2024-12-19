@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Label, Pie, PieChart, Cell } from "recharts"
+import * as React from "react";
+import { Label, Pie, PieChart, Cell } from "recharts";
 
 import {
   Card,
@@ -9,40 +9,44 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@/components/ui/card";
 import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart"
+} from "@/components/ui/chart";
 
 // Color palette for months using Tailwind HSL variables
 const CHART_COLORS = [
-  "hsl(var(--chart-1))",   // Blue
-  "hsl(var(--chart-2))",   // Green
-  "hsl(var(--chart-3))",   // Red
-  "hsl(var(--chart-4))",   // Purple
-  "hsl(var(--chart-5))",   // Orange
-  "hsl(var(--chart-1))",   // Teal
-  "hsl(var(--chart-2))",   // Pink
-  "hsl(var(--chart-3))"    // Yellow
-]
+  "hsl(var(--chart-1))", // Blue
+  "hsl(var(--chart-2))", // Green
+  "hsl(var(--chart-3))", // Red
+  "hsl(var(--chart-4))", // Purple
+  "hsl(var(--chart-5))", // Orange
+  "hsl(var(--chart-1))", // Teal
+  "hsl(var(--chart-2))", // Pink
+  "hsl(var(--chart-3))", // Yellow
+];
 
-export default function MediaPieChart({field}: any) {
+export default function MediaPieChart({ field }: any) {
   const { card_json } = field?.media_card_data || {};
-  
+
   // Calculate total revenue
-  const totalRevenue = card_json?.reduce((sum: number, item: any) => sum + item.revenue, 0) || 0
-  
+  const totalRevenue =
+    card_json?.reduce((sum: number, item: any) => sum + item.revenue, 0) || 0;
+
   // Generate chartConfig dynamically
-  const chartConfig = card_json?.reduce((config: ChartConfig, item: any, index: number) => {
-    config[item.month] = {
-      label: item.month,
-      color: CHART_COLORS[index % CHART_COLORS.length]
-    }
-    return config
-  }, {}) as ChartConfig
+  const chartConfig = card_json?.reduce(
+    (config: ChartConfig, item: any, index: number) => {
+      config[item.month] = {
+        label: item.month,
+        color: CHART_COLORS[index % CHART_COLORS.length],
+      };
+      return config;
+    },
+    {}
+  ) as ChartConfig;
 
   return (
     <Card className="flex flex-col">
@@ -68,9 +72,9 @@ export default function MediaPieChart({field}: any) {
               strokeWidth={5}
             >
               {card_json.map((entry: any, index: number) => (
-                <Cell 
-                  key={`cell-${index}`} 
-                  fill={CHART_COLORS[index % CHART_COLORS.length]} 
+                <Cell
+                  key={`cell-${index}`}
+                  fill={CHART_COLORS[index % CHART_COLORS.length]}
                 />
               ))}
               <Label
@@ -98,7 +102,7 @@ export default function MediaPieChart({field}: any) {
                           Revenue
                         </tspan>
                       </text>
-                    )
+                    );
                   }
                 }}
               />
@@ -107,5 +111,5 @@ export default function MediaPieChart({field}: any) {
         </ChartContainer>
       </CardContent>
     </Card>
-  )
+  );
 }

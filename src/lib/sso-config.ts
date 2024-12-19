@@ -52,7 +52,6 @@ export const ssoProviders = [
       sessionId: {label: "Session ID", type: "text"}
     },
     async authorize(credentials: any) {
-      console.log("credentials======",credentials);
       if (!credentials?.mobile || !credentials?.otp) {
         return null;
       }
@@ -66,7 +65,6 @@ export const ssoProviders = [
         });
         
         const otpData = await otpResponse.json();
-        console.log("otpData----",otpData);
 
         // Check if OTP is verified
         if (otpData.verified === true) {

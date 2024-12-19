@@ -25,6 +25,4 @@ export default function getDeviceType() {
     return "Desktop";
   }
   
-  // Usage
-  console.log("Device Type:", getDeviceType());
   

@@ -1,21 +1,19 @@
-import React, { useState, useCallback } from 'react'
-import { Reorder, AnimatePresence } from 'framer-motion'
-import { FormFieldType } from '@/types'
+import React, { useState, useCallback } from "react";
+import { Reorder, AnimatePresence } from "framer-motion";
+import { FormFieldType } from "@/types";
 // import { FieldItem } from '@/screens/field-item'
-import { FieldItem } from './FieldItem'
+import { FieldItem } from "./FieldItem";
 
-import { LuRows } from 'react-icons/lu'
-import { Badge } from '@/components/ui/badge'
-import { Grip } from 'lucide-react'
+import { Grip } from "lucide-react";
 
-export type FormFieldOrGroup = FormFieldType | FormFieldType[]
+export type FormFieldOrGroup = FormFieldType | FormFieldType[];
 
 type FormFieldListProps = {
-  formFields: FormFieldOrGroup[]
-  setFormFields: React.Dispatch<React.SetStateAction<FormFieldOrGroup[]>>
-  updateFormField: (path: number[], updates: Partial<FormFieldType>) => void
-  openEditDialog: (field: FormFieldType) => void
-}
+  formFields: FormFieldOrGroup[];
+  setFormFields: React.Dispatch<React.SetStateAction<FormFieldOrGroup[]>>;
+  updateFormField: (path: number[], updates: Partial<FormFieldType>) => void;
+  openEditDialog: (field: FormFieldType) => void;
+};
 
 export const FormFieldList: React.FC<FormFieldListProps> = ({
   formFields,
@@ -23,27 +21,28 @@ export const FormFieldList: React.FC<FormFieldListProps> = ({
   updateFormField,
   openEditDialog,
 }) => {
-  const [rowTabs, setRowTabs] = useState<{ [key: number]: FormFieldType[] }>({})
+  const [rowTabs, setRowTabs] = useState<{ [key: number]: FormFieldType[] }>(
+    {}
+  );
 
   const handleHorizontalReorder = useCallback(
     (index: number, newOrder: FormFieldType[]) => {
-      setRowTabs((prev) => ({ ...prev, [index]: newOrder }))
+      setRowTabs((prev) => ({ ...prev, [index]: newOrder }));
 
       // Delay setFormFields by 1 second
       setTimeout(() => {
         setFormFields((prevFields) => {
-          const updatedFields = [...prevFields]
-          updatedFields[index] = newOrder
-          return updatedFields
-        })
-      }, 1000)
+          const updatedFields = [...prevFields];
+          updatedFields[index] = newOrder;
+          return updatedFields;
+        });
+      }, 1000);
     },
-    [setFormFields],
-  )
+    [setFormFields]
+  );
 
   return (
     <div className="mt-3 lg:mt-0">
-      
       <Reorder.Group
         axis="y"
         onReorder={setFormFields}
@@ -54,12 +53,12 @@ export const FormFieldList: React.FC<FormFieldListProps> = ({
           <Reorder.Item
             key={
               Array.isArray(item)
-                ? item.map((f) => f.name).join('-')
+                ? item.map((f) => f.name).join("-")
                 : item.name
             }
             value={item}
             className="flex items-center gap-1"
-            whileDrag={{ backgroundColor: '#e5e7eb', borderRadius: '12px' }}
+            whileDrag={{ backgroundColor: "#e5e7eb", borderRadius: "12px" }}
           >
             <Grip className="cursor-grab w-5 h-5" />
             {Array.isArray(item) ? (
@@ -73,7 +72,7 @@ export const FormFieldList: React.FC<FormFieldListProps> = ({
                 className="w-full grid grid-cols-12 gap-1"
               >
                 <AnimatePresence initial={false}>
-                  {(rowTabs[index] || item).map((field, fieldIndex) => (                  
+                  {(rowTabs[index] || item).map((field, fieldIndex) => (
                     <FieldItem
                       key={field.name}
                       index={index}
@@ -101,5 +100,5 @@ export const FormFieldList: React.FC<FormFieldListProps> = ({
         ))}
       </Reorder.Group>
     </div>
-  )
-}
+  );
+};

@@ -37,8 +37,6 @@ export async function POST(req: Request) {
     // Generate reset token
     const resetToken = crypto.randomBytes(32).toString("hex");
     const resetTokenExpiry = new Date(Date.now() + 60000).toISOString();
-    console.log("email----", email);
-    console.log("resetToken----", resetToken);
 
     const patchResponse = await fetch(
       `https://amogademo-postgrest.morr.biz/user_catalog?user_email=eq.${email}`,

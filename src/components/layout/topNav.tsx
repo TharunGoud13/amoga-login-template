@@ -36,12 +36,6 @@ export default function Header() {
             <Link href="/form_maker" className="text-primary">
               Form Maker
             </Link>
-            <Link href="/form_maker_1" className="text-primary">
-              Form Maker 1
-            </Link>
-            <Link href="/form_maker_2" className="text-primary">
-              Form Maker 2
-            </Link>
             <Link href="/chat" className="text-primary">
               Chat Forms
             </Link>

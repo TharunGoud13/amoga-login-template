@@ -1,8 +1,6 @@
-import FormBuilder from "@/components/form-builder/FormBuilder"
+import FormBuilder from "@/components/form-builder-2/FormBuilder"
 
-const EditForm = (props: any) => {
-    const pathName = props.params.id
-    console.log("pathname---",pathName)
+const EditForm = () => {
     return(
         <div>
             <FormBuilder/>

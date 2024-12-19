@@ -3,11 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { FormFieldType } from "@/types";
 import { defaultFieldConfig } from "@/constants";
-import { useMediaQuery } from "../../../hooks/use-media-query";
-import { Separator } from "@/components/ui/separator";
 import If from "../ui/if";
-import SpecialComponentsNotice from "./special-component-notice";
-import { FieldSelector } from "./FieldSelector";
 import { FormFieldList } from "./FormFieldList";
 import { FormPreview } from "./FormPreview";
 import { EditFieldDialog } from "./EditFieldDialog";
@@ -23,20 +19,10 @@ import { toast } from "../ui/use-toast";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import View from "./View/View";
-import { cn } from "@/lib/utils";
 import { Plus, Search, Settings } from "lucide-react";
 import { FormSettingsModal } from "./form-settings-modal";
 import { fieldTypes } from "@/constants";
 
-import FormCode from "./FormCode";
-import {
-  MultiSelector,
-  MultiSelectorContent,
-  MultiSelectorInput,
-  MultiSelectorItem,
-  MultiSelectorList,
-  MultiSelectorTrigger,
-} from "../ui/multi-select";
 import { ChatForm } from "./ChatPreview";
 import { Card } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
@@ -47,7 +33,6 @@ export default function FormBuilder() {
   const t = useTranslations();
   const { data: session } = useSession();
   const path = usePathname();
-  const isDesktop = useMediaQuery("(min-width: 768px)");
   const route = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [formFields, setFormFields] = useState<FormFieldOrGroup[]>([]);
@@ -59,12 +44,8 @@ export default function FormBuilder() {
   const [editModeData, setEditModeData] = useState<any>([]);
   const [editFormInput, setEditFormInput] = useState<any>("");
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [filteredFields, setFilteredFields] = useState(fieldTypes);
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [activeTab, setActiveTab] = React.useState("Maker");
-  const tabs = ["Maker", "Form", "Chat", "JSON"];
-  const [apiFieldData, setApiFieldData] = React.useState<any>([])
+  const [apiFieldData, setApiFieldData] = React.useState<any>([]);
 
   const currentPath = path.includes("edit");
   const currentId = path.split("/").at(-1);
@@ -110,7 +91,7 @@ export default function FormBuilder() {
       placeholder_video_url: "",
       placeholder_file_upload_url: "",
       placeholder_pdf_file_url: "",
-      validation_message: '',
+      validation_message: "",
       variant_code: newFieldName,
       media_card_data: {
         media_url: "",
@@ -124,8 +105,8 @@ export default function FormBuilder() {
           chat: "",
           share: "",
         },
-        component_name: ""
-      }
+        component_name: "",
+      },
     };
     setFormFields([...formFields, newField]);
   };
@@ -146,8 +127,8 @@ export default function FormBuilder() {
       type: "textarea",
       value: "",
       variant: "Text Area",
-      validation_message: '',
-      variant_code: `name_${Math.random().toString().slice(-10)}`
+      validation_message: "",
+      variant_code: `name_${Math.random().toString().slice(-10)}`,
     };
   };
 
@@ -217,30 +198,37 @@ export default function FormBuilder() {
     setIsLoading(true);
 
     // Filter out disabled fields from formFields
-    const activeFormFields = formFields.filter((field: any) => {
-      // If field is an array (grouped fields), filter out disabled fields within the group
-      if (Array.isArray(field)) {
-        return field.some((subField: any) => !subField.disabled);
-      }
-      // For individual fields, check if not disabled
-      return !field.disabled;
-    }).map((field: any) => {
-      // If it's a grouped field, filter out disabled subfields
-      if (Array.isArray(field)) {
-        return field.filter((subField: any) => !subField.disabled);
-      }
-      return field;
-    });
+    const activeFormFields = formFields
+      .filter((field: any) => {
+        // If field is an array (grouped fields), filter out disabled fields within the group
+        if (Array.isArray(field)) {
+          return field.some((subField: any) => !subField.disabled);
+        }
+        // For individual fields, check if not disabled
+        return !field.disabled;
+      })
+      .map((field: any) => {
+        // If it's a grouped field, filter out disabled subfields
+        if (Array.isArray(field)) {
+          return field.filter((subField: any) => !subField.disabled);
+        }
+        return field;
+      });
 
     // Get name fields from active form fields
-    const nameFields = activeFormFields && activeFormFields.flatMap((field: any) => 
-      Array.isArray(field) 
-        ? field.map((subField: any) => subField.name)
-        : field.name
-    );
+    const nameFields =
+      activeFormFields &&
+      activeFormFields.flatMap((field: any) =>
+        Array.isArray(field)
+          ? field.map((subField: any) => subField.name)
+          : field.name
+      );
 
-    if(formInput === "") {
-      toast({ description: "Form name cannot be empty", variant: "destructive" });
+    if (formInput === "") {
+      toast({
+        description: "Form name cannot be empty",
+        variant: "destructive",
+      });
       setIsLoading(false);
       return;
     }
@@ -298,7 +286,6 @@ export default function FormBuilder() {
     }
   };
 
-  
   const findFieldPath = (
     fields: FormFieldOrGroup[],
     name: string
@@ -320,8 +307,6 @@ export default function FormBuilder() {
     };
     return search(fields, []);
   };
-
- 
 
   const updateFormField = (path: number[], updates: Partial<FormFieldType>) => {
     const updatedFields = JSON.parse(JSON.stringify(formFields)); // Deep clone
@@ -390,7 +375,7 @@ export default function FormBuilder() {
                   <Settings className="h-5 w-5" />
                 </Button>
                 <Button onClick={handleSave} className="px-8">
-                  {isLoading? "Saving..." : "Save"}
+                  {isLoading ? "Saving..." : "Save"}
                 </Button>
               </div>
               <div className="mt-2 text-sm text-muted-foreground">
@@ -448,12 +433,12 @@ export default function FormBuilder() {
                         />
                       </div>
                       <ScrollArea className="h-[300px]">
-                        {filteredComponents.map((component,index) => (
+                        {filteredComponents.map((component, index) => (
                           <Button
                             key={component.name}
                             variant="ghost"
                             className="w-full justify-start mb-2"
-                            onClick={() => addFormField(component.name,index)}
+                            onClick={() => addFormField(component.name, index)}
                           >
                             <Plus className="mr-2 h-4 w-4" />
                             {component.name}
@@ -466,20 +451,25 @@ export default function FormBuilder() {
               </TabsContent>
               <TabsContent value="form">
                 <div className=" w-full h-full">
-                  <FormPreview formFields={formFields} apiFieldData={apiFieldData}/>
+                  <FormPreview
+                    formFields={formFields}
+                    apiFieldData={apiFieldData}
+                  />
                 </div>
               </TabsContent>
 
               <TabsContent value="chat">
                 <div className=" w-full h-full">
                   {formFields?.length > 0 ? (
-                    <ChatForm formFields={formFields} apiFieldData={apiFieldData} />
+                    <ChatForm
+                      formFields={formFields}
+                      apiFieldData={apiFieldData}
+                    />
                   ) : (
                     <div className="h-[50vh] flex justify-center items-center">
                       <p>No form element selected yet.</p>
                     </div>
                   )}
-                  
                 </div>
               </TabsContent>
               <TabsContent value="json">
@@ -507,7 +497,7 @@ export default function FormBuilder() {
             onClose={() => setIsDialogOpen(false)}
             field={selectedField}
             onSave={handleSaveField}
-            existingField={formFields.map((field:any) => field?.name)}
+            existingField={formFields.map((field: any) => field?.name)}
             setApiFieldData={setApiFieldData}
           />
         </TabsContent>
@@ -522,7 +512,7 @@ export default function FormBuilder() {
           <ConnectionTable />
         </TabsContent>
         <TabsContent value="edit">
-        <div className="w-full min-h-screen overflow-y-auto  max-w-[800px] mx-auto md:p-4 space-y-6">
+          <div className="w-full min-h-screen overflow-y-auto  max-w-[800px] mx-auto md:p-4 space-y-6">
             <div className="border rounded-lg p-4 mb-8">
               <div className="flex items-center gap-4">
                 <Input
@@ -539,7 +529,7 @@ export default function FormBuilder() {
                   <Settings className="h-5 w-5" />
                 </Button>
                 <Button onClick={handleSave} className="px-8">
-                  {isLoading? "Saving..." : "Save"}
+                  {isLoading ? "Saving..." : "Save"}
                 </Button>
               </div>
               <div className="mt-2 text-sm text-muted-foreground">
@@ -597,12 +587,12 @@ export default function FormBuilder() {
                         />
                       </div>
                       <ScrollArea className="h-[300px]">
-                        {filteredComponents.map((component,index) => (
+                        {filteredComponents.map((component, index) => (
                           <Button
                             key={component.name}
                             variant="ghost"
                             className="w-full justify-start mb-2"
-                            onClick={() => addFormField(component.name,index)}
+                            onClick={() => addFormField(component.name, index)}
                           >
                             <Plus className="mr-2 h-4 w-4" />
                             {component.name}
@@ -615,20 +605,25 @@ export default function FormBuilder() {
               </TabsContent>
               <TabsContent value="form">
                 <div className=" w-full h-full">
-                  <FormPreview formFields={formFields} apiFieldData={apiFieldData} />
+                  <FormPreview
+                    formFields={formFields}
+                    apiFieldData={apiFieldData}
+                  />
                 </div>
               </TabsContent>
 
               <TabsContent value="chat">
                 <div className=" w-full h-full">
                   {formFields?.length > 0 ? (
-                    <ChatForm formFields={formFields} apiFieldData={apiFieldData}/>
+                    <ChatForm
+                      formFields={formFields}
+                      apiFieldData={apiFieldData}
+                    />
                   ) : (
                     <div className="h-[50vh] flex justify-center items-center">
                       <p>No form element selected yet.</p>
                     </div>
                   )}
-                  
                 </div>
               </TabsContent>
               <TabsContent value="json">
@@ -655,7 +650,7 @@ export default function FormBuilder() {
             onClose={() => setIsDialogOpen(false)}
             field={selectedField}
             onSave={handleSaveField}
-            existingField={formFields.map((field:any) => field?.name)}
+            existingField={formFields.map((field: any) => field?.name)}
             setApiFieldData={setApiFieldData}
           />
         </TabsContent>

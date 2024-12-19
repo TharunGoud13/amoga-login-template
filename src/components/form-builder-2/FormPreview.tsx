@@ -1,18 +1,14 @@
 import React, { useRef } from "react";
-import { Highlight, themes } from "prism-react-renderer";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 import { renderFormField } from "./render-form-field";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
 import If from "@/components/ui/if";
 import { FormFieldType } from "@/types";
 
 import {
   generateZodSchema,
-  generateFormCode,
   generateDefaultValues,
 } from "./generate-code-parts";
 import { formatJSXCode } from "@/lib/utils";
@@ -21,21 +17,25 @@ export type FormFieldOrGroup = FormFieldType | FormFieldType[];
 
 export type FormPreviewProps = {
   formFields: FormFieldOrGroup[];
-  apiFieldData?: any
+  apiFieldData?: any;
 };
 
-const renderFormFields = (fields: FormFieldOrGroup[], form: any, apiFieldData?: any) => {
+const renderFormFields = (
+  fields: FormFieldOrGroup[],
+  form: any,
+  apiFieldData?: any
+) => {
   // Filter out completely disabled fields
-  const activeFields = fields.filter(fieldOrGroup => 
-    Array.isArray(fieldOrGroup) 
-      ? fieldOrGroup.some(field => !field.disabled)
+  const activeFields = fields.filter((fieldOrGroup) =>
+    Array.isArray(fieldOrGroup)
+      ? fieldOrGroup.some((field) => !field.disabled)
       : !fieldOrGroup.disabled
   );
 
   return activeFields.map((fieldOrGroup, index) => {
     if (Array.isArray(fieldOrGroup)) {
       // Filter out disabled fields within the group
-      const activeGroupFields = fieldOrGroup.filter(field => !field.disabled);
+      const activeGroupFields = fieldOrGroup.filter((field) => !field.disabled);
 
       // Calculate column span based on number of active fields in the group
       const getColSpan = (totalFields: number) => {
@@ -59,20 +59,24 @@ const renderFormFields = (fields: FormFieldOrGroup[], form: any, apiFieldData?: 
               render={({ field: formField }) => {
                 // Clone the field and conditionally apply disabled prop
                 const formFieldElement = React.cloneElement(
-                  renderFormField(field, form, apiFieldData) as React.ReactElement,
+                  renderFormField(
+                    field,
+                    form,
+                    apiFieldData
+                  ) as React.ReactElement,
                   {
                     ...formField,
-                    disabled: field.disabled || formField.disabled
+                    disabled: field.disabled || formField.disabled,
                   }
                 );
 
                 return (
                   <FormItem
-                    className={`col-span-${getColSpan(activeGroupFields.length)}`}
+                    className={`col-span-${getColSpan(
+                      activeGroupFields.length
+                    )}`}
                   >
-                    <FormControl>
-                      {formFieldElement}
-                    </FormControl>
+                    <FormControl>{formFieldElement}</FormControl>
                   </FormItem>
                 );
               }}
@@ -89,18 +93,20 @@ const renderFormFields = (fields: FormFieldOrGroup[], form: any, apiFieldData?: 
           render={({ field: formField }) => {
             // Clone the field and conditionally apply disabled prop
             const formFieldElement = React.cloneElement(
-              renderFormField(fieldOrGroup, form, apiFieldData) as React.ReactElement,
+              renderFormField(
+                fieldOrGroup,
+                form,
+                apiFieldData
+              ) as React.ReactElement,
               {
                 ...formField,
-                disabled: fieldOrGroup.disabled || formField.disabled
+                disabled: fieldOrGroup.disabled || formField.disabled,
               }
             );
 
             return (
               <FormItem className="col-span-12">
-                <FormControl>
-                  {formFieldElement}
-                </FormControl>
+                <FormControl>{formFieldElement}</FormControl>
               </FormItem>
             );
           }}
@@ -112,13 +118,15 @@ const renderFormFields = (fields: FormFieldOrGroup[], form: any, apiFieldData?: 
 
 export const FormPreview: React.FC<FormPreviewProps> = ({
   formFields,
-  apiFieldData
+  apiFieldData,
 }) => {
   // Filter out all disabled fields when generating schema and default values
-  const activeFormFields = formFields.flatMap(field => 
-    Array.isArray(field) 
-      ? field.filter(f => !f.disabled) 
-      : (!field.disabled ? field : [])
+  const activeFormFields = formFields.flatMap((field) =>
+    Array.isArray(field)
+      ? field.filter((f) => !f.disabled)
+      : !field.disabled
+      ? field
+      : []
   );
 
   const formSchema = generateZodSchema(activeFormFields);
@@ -135,9 +143,7 @@ export const FormPreview: React.FC<FormPreviewProps> = ({
         condition={activeFormFields.length > 0}
         render={() => (
           <Form {...form}>
-            <form
-              className="space-y-4 py-5 w-full md:w-[90%] mx-auto"
-            >
+            <form className="space-y-4 py-5 w-full md:w-[90%] mx-auto">
               {renderFormFields(formFields, form, apiFieldData)}
             </form>
           </Form>
