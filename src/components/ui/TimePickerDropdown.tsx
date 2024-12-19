@@ -26,7 +26,7 @@ export function TimePickerDropdown({
   const periods = ['AM', 'PM']
 
   return (
-    <div className="flex rounded-md border bg-white shadow-sm">
+    <div className="flex rounded-md border bg-secondary shadow-sm">
       <ScrollArea className="h-[200px] w-[70px] rounded-l-md border-r">
         <div className="p-1">
           {hours.map((hour) => (

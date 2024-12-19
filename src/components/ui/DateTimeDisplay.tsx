@@ -44,14 +44,14 @@ export function SimpleDateTimeDisplay({onDateTimeSelect,form,field}: SimpleDateT
 
   return (
     <div>
-      <div className="flex gap-1">
+      <div className="flex flex-col md:flex-row gap-1">
         {/* Date Display */}
         <Popover>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
               className={cn(
-                "flex-1 justify-start text-left font-normal bg-white hover:bg-gray-50",
+                "flex-1 justify-start text-left font-normal bg-secondary",
                 "px-3 py-5 text-base"
               )}
             >
@@ -75,8 +75,8 @@ export function SimpleDateTimeDisplay({onDateTimeSelect,form,field}: SimpleDateT
             <Button
               variant="outline"
               className={cn(
-                "justify-start text-left font-normal bg-white hover:bg-gray-50",
-                "px-3 py-5 text-base min-w-[160px]"
+                "justify-start text-left font-normal bg-secondary",
+                "px-3 py-5 text-base "
               )}
             >
               {`${hour}:${minute} ${period}`}

@@ -924,7 +924,9 @@ const displayPdf = (imageUrl: string) => {
                 formFields[currentStep]?.variant === "Send Image" || 
                 formFields[currentStep]?.variant === "Send Video" || 
                 formFields[currentStep]?.variant === "Send File" || 
+                // formFields[currentStep]?.variant === "Date Time" || 
                 formFields[currentStep]?.variant === "Send Pdf" || 
+                formFields[currentStep]?.variant === "From Date to To Date" || 
                 formFields[currentStep]?.variant === "Send Media Card" || 
                 formFields[currentStep]?.variant === "Video Upload") &&
               <Button
@@ -943,6 +945,8 @@ const displayPdf = (imageUrl: string) => {
               formFields[currentStep]?.variant === "Send Video" || 
               formFields[currentStep]?.variant === "Send File" || 
               formFields[currentStep]?.variant === "Send Pdf" || 
+              formFields[currentStep]?.variant === "From Date to To Date" || 
+              // formFields[currentStep]?.variant === "Date Time" || 
               formFields[currentStep]?.variant === "Send Media Card" || 
               formFields[currentStep]?.variant === "Video Upload") &&
             <Button
