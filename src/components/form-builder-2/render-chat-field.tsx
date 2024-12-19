@@ -29,7 +29,7 @@ import {
 } from "../ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { cn } from "@/lib/utils";
-import { CalendarIcon, Check, ChevronsUpDown, Clock, DownloadCloud, ExternalLink, File, FileText, ImageIcon, Link, Table, UploadIcon, XIcon } from "lucide-react";
+import { CalendarIcon, Check, ChevronsUpDown, Clock, DownloadCloud, ExternalLink, File, FileText, ImageIcon, Link, Star, Table, UploadIcon, XIcon } from "lucide-react";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
 import { MultiSelector, MultiSelectorContent, MultiSelectorInput, MultiSelectorItem, MultiSelectorList, MultiSelectorTrigger } from "../ui/multi-select";
 import { MediaCard } from "../ui/media-card";
@@ -134,10 +134,23 @@ const RenderInputField = ({
   const [fromDate, setFromDate] = useState<Date>();
   const [toDate, setToDate] = useState<Date>();
   const [enhancedDate, setEnhancedDate] = useState<Date>(new Date());
+  const [rating, setRating] = useState(0);
+  const [score, setScore] = useState<number | null>(null)
 
   const MAX_VIDEO_SIZE = 2 * 1024 * 1024
   const MAX_IMAGE_SIZE = 5 * 1024 * 1024
   const MAX_FILE_SIZE = 5 * 1024 * 1024
+
+
+  const handleStarClick = (selectedRating: number) => {
+    setRating(selectedRating)
+    setInput(`You rated: ${selectedRating} stars`)
+  }
+
+  const handleScoreClick = (selectedScore: number) => {
+    setScore(selectedScore)
+    setInput(`Your recommendation score: ${selectedScore}`)
+  }
 
 
   const handleIframeUrlChange = (url: string) => {
@@ -1527,6 +1540,41 @@ const RenderInputField = ({
           </HoverCardContent>
         </HoverCard>
       );
+      case "Send Review":
+        return (
+          
+            <div className="flex space-x-1">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Star
+              key={star}
+              className={`cursor-pointer ${
+                star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
+              }`}
+              onClick={() => handleStarClick(star)}
+            />
+          ))}
+        </div>
+        );
+        case "Send Rating":
+          return (
+            
+              <div className="flex flex-wrap justify-center gap-2">
+          {[...Array(11)].map((_, index) => (
+            <Button
+              key={index}
+              variant={score === index ? "default" : "outline"}
+              className="w-10 h-10"
+              onClick={(e) => {
+                e.preventDefault()
+                handleScoreClick(index)
+              }}
+            >
+              {index}
+            </Button>
+          ))}
+        </div>
+              
+          );
 
     default:
       return null;

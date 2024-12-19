@@ -34,6 +34,8 @@ export const fieldTypes: FieldType[] = [
   {name: "Send Video", isNew: false },
   {name: "Send File", isNew: false },
   {name: "Send Pdf", isNew: false },
+  {name: "Send Rating", isNew: false },
+  {name: "Send Review", isNew: false },
   {name: "Send Media Card", isNew: false },
   { name: 'Location Select', isNew: true },
   { name: 'Tool Tip Card', isNew: true },

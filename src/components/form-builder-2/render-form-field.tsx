@@ -69,6 +69,7 @@ import {
   ImageIcon,
   Link,
   Paperclip,
+  Star,
   Table,
   Upload,
   UploadIcon,
@@ -211,6 +212,8 @@ export const renderFormField = (
   const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/gif"];
   const [timePickerDate, setTimePickerDate] = useState<Date>(new Date());
   const [enhancedDate, setEnhancedDate] = useState<Date>(new Date());
+  const [rating, setRating] = useState(0);
+  const [score, setScore] = useState<number | null>(null)
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
   const MAX_VIDEO_SIZE = 2 * 1024 * 1024;
 
@@ -227,6 +230,22 @@ export const renderFormField = (
   //   }); 
 
   // },[dateTime])
+
+  const handleScoreClick = (selectedScore: number) => {
+    setScore(selectedScore)
+    form.setValue(field.name, selectedScore.toString(), {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  }
+
+  const handleStarClick = (selectedRating:number) => {
+    setRating(selectedRating)
+    form.setValue(field.name, selectedRating.toString(), {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -2498,6 +2517,60 @@ export const renderFormField = (
           <FormDescription>{field.description}</FormDescription>
         </FormItem>
       );
+      case "Send Review":
+        return (
+          <FormItem>
+            <div className="flex justify-between items-center">
+              <div>
+                <FormLabel>{field.label}</FormLabel>
+              </div>
+              <FormMessage />
+            </div>
+            <FormControl>
+            <div className="flex space-x-1">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Star
+              key={star}
+              className={`cursor-pointer ${
+                star <= rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'
+              }`}
+              onClick={() => handleStarClick(star)}
+            />
+          ))}
+        </div>
+            </FormControl>
+            <FormDescription>{field.description}</FormDescription>
+          </FormItem>
+        );
+        case "Send Rating":
+          return (
+            <FormItem>
+              <div className="flex justify-between items-center">
+                <div>
+                  <FormLabel>{field.label}</FormLabel>
+                </div>
+                <FormMessage />
+              </div>
+              <FormControl>
+              <div className="flex flex-wrap justify-center gap-2">
+          {[...Array(11)].map((_, index) => (
+            <Button
+              key={index}
+              variant={score === index ? "default" : "outline"}
+              className="w-10 h-10"
+              onClick={(e) => {
+                e.preventDefault()
+                handleScoreClick(index)
+              }}
+            >
+              {index}
+            </Button>
+          ))}
+        </div>
+              </FormControl>
+              <FormDescription>{field.description}</FormDescription>
+            </FormItem>
+          );
     default:
       return null;
   }
