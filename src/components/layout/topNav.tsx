@@ -39,13 +39,16 @@ export default function Header() {
             <Link href="/chat" className="text-primary">
               Chat Forms
             </Link>
-          </div> 
-        </div>
-        <div className={cn('block lg:!hidden')}>
-            <MobileSidebar />
+            <Link href="/chat_with_db" className="text-primary">
+              Chat with DB
+            </Link>
           </div>
+        </div>
+        <div className={cn("block lg:!hidden")}>
+          <MobileSidebar />
+        </div>
         <div className="flex items-center gap-2.5">
-          <Themes/>
+          <Themes />
           <ThemeToggle />
           <LocaleSwitcher />
           <LogoutButton />
