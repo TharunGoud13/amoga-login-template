@@ -52,6 +52,7 @@ import { format } from "date-fns";
 import { TimePicker } from "../ui/TimePicker";
 import { DateTimePicker } from "../ui/DateTimePicker";
 import { TimeRangePicker } from "../ui/TimeRangePicker";
+import AnalyticCard from "./field-components/AnalyticCard";
 
 const ALLOWED_FILES_TYPES = [
   "application/pdf",
@@ -1518,6 +1519,8 @@ const RenderInputField = ({
           ))}
         </div>
       );
+    case "Analytic Card":
+      return <AnalyticCard field={currentField} />;
 
     default:
       return null;

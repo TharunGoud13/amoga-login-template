@@ -349,6 +349,22 @@ const Page = (props: any) => {
       }
     }
 
+    const analyticCardVariant = formJsonData.find(
+      (item) => item.variant === "Analytic Card"
+    );
+
+    if (analyticCardVariant) {
+      const media_url = formJsonData.map(
+        (item) => item.variant === "Analytic Card"
+      );
+      if (media_url) {
+        data.analytic_card = formJsonData.map(
+          (item) =>
+            item.variant === "Analytic Card" && item.media_card_data?.card_json
+        );
+      }
+    }
+
     const payload = {
       form_id: formData[0].form_id,
       form_name: formData[0].form_name,

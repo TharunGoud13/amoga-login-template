@@ -97,6 +97,7 @@ import SendMediaCard from "./field-components/SendMediaCard";
 import { TimePicker } from "../ui/TimePicker";
 import { DateTimePicker } from "../ui/DateTimePicker";
 import { TimeRangePicker } from "../ui/TimeRangePicker";
+import AnalyticCard from "./field-components/AnalyticCard";
 
 const ALLOWED_FILES_TYPES = [
   "application/pdf",
@@ -2394,6 +2395,21 @@ export const renderFormField = (
           <FormDescription>{field.description}</FormDescription>
         </FormItem>
       );
+    case "Analytic Card":
+      return (
+        <FormItem>
+          <div className="flex justify-between items-center">
+            <div>
+              <FormLabel>{field.label}</FormLabel>
+            </div>
+            <FormMessage />
+          </div>
+          <FormControl>
+            <AnalyticCard field={field} />
+          </FormControl>
+        </FormItem>
+      );
+    case "Form Section":
     default:
       return null;
   }

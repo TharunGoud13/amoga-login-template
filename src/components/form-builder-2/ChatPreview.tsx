@@ -11,6 +11,7 @@ import RenderInputField from "./render-chat-field";
 import Image from "next/image";
 import { FaFilePdf, FaRegFilePdf } from "react-icons/fa";
 import SendMediaCard from "./field-components/SendMediaCard";
+import AnalyticCard from "./field-components/AnalyticCard";
 
 type Message = {
   id: string;
@@ -512,6 +513,40 @@ export function ChatForm({ formFields, apiFieldData }: any) {
       }
     }
 
+    if (currentField?.variant === "Analytic Card") {
+      addMessage(
+        "user",
+        <div className="flex w-full items-center">
+          <AnalyticCard field={currentField} />
+        </div>
+      );
+
+      // Update form data
+      setFormData((prev) => ({
+        ...prev,
+        [currentField.name]: currentField,
+      }));
+      const nextStep = findNextActiveField(currentStep);
+      setCurrentStep(nextStep);
+
+      if (nextStep !== -1) {
+        const nextField = formFields[nextStep];
+        addMessage(
+          "assistant",
+          <div>
+            <span className="label">{nextField.label}</span>
+            {nextField.required && <span className="text-red-500">*</span>}
+            <br />
+            <span className="text-sm text-gray-400">
+              {nextField.description}
+            </span>
+          </div>
+        );
+      } else {
+        addMessage("assistant", "Thank you for completing the form.");
+      }
+    }
+
     if (selectedFile.length > 0) {
       const fileToDisplay = selectedFile[0]; // Display the first video in the state
 
@@ -651,6 +686,7 @@ export function ChatForm({ formFields, apiFieldData }: any) {
         "Send File",
         "Send Pdf",
         "Send Media Card",
+        "Analytic Card",
       ].includes(currentField.variant) && validateInput(currentField, input);
 
     if (error) {
@@ -716,6 +752,7 @@ export function ChatForm({ formFields, apiFieldData }: any) {
       "From Date to To Date",
       "Send Media Card",
       "Video Upload",
+      "Analytic Card",
     ];
     return uploadVariants.includes(variant || "");
   };

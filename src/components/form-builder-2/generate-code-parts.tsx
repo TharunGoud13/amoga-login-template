@@ -16,6 +16,7 @@ export const generateZodSchema = (
     if (field.variant === "Send File") return;
     if (field.variant === "Send Pdf") return;
     if (field.variant === "Send Media Card") return;
+    if (field.variant === "Analytic Card") return;
 
     let fieldSchema: z.ZodTypeAny;
 

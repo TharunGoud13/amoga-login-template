@@ -708,7 +708,10 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
               (item: any) => item[apiField]
             )[0],
           });
-        } else if (editedField?.variant === "Send Media Card") {
+        } else if (
+          editedField?.variant === "Send Media Card" ||
+          editedField?.variant === "Analytic Card"
+        ) {
           setEditedField({
             ...editedField,
             media_card_data: {
@@ -1922,11 +1925,17 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
           </TabsContent>
           <TabsContent value="cards">
             <If
-              condition={field?.variant !== "Send Media Card"}
+              condition={
+                field?.variant !== "Send Media Card" &&
+                field?.variant !== "Analytic Card"
+              }
               render={() => <div>Card content goes here.</div>}
             />
             <If
-              condition={field?.variant === "Send Media Card"}
+              condition={
+                field?.variant === "Send Media Card" ||
+                field?.variant === "Analytic Card"
+              }
               render={() => (
                 <div className="space-y-2.5">
                   <>
