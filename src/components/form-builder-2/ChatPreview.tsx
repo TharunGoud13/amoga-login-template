@@ -12,6 +12,18 @@ import Image from "next/image";
 import { FaFilePdf, FaRegFilePdf } from "react-icons/fa";
 import SendMediaCard from "./field-components/SendMediaCard";
 import AnalyticCard from "./field-components/AnalyticCard";
+import {
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Table as UiTable,
+} from "../ui/table";
+import { usePathname } from "next/navigation";
+import { ADD_FORM_DATA, NEXT_PUBLIC_API_KEY } from "@/constants/envConfig";
+import { useSession } from "next-auth/react";
+import { toast } from "../ui/use-toast";
 
 type Message = {
   id: string;
@@ -21,6 +33,7 @@ type Message = {
 };
 
 export function ChatForm({ formFields, apiFieldData }: any) {
+  const { data: session } = useSession();
   const [messages, setMessages] = React.useState<Message[]>([
     // {
     //   id: uuidv4(),
@@ -45,6 +58,8 @@ export function ChatForm({ formFields, apiFieldData }: any) {
   const [validationError, setValidationError] = React.useState<string | null>(
     null
   );
+  const path = usePathname();
+  const currentPath = path.includes("submit");
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -222,6 +237,103 @@ export function ChatForm({ formFields, apiFieldData }: any) {
     );
   };
 
+  const saveFormData = async ({
+    formData,
+  }: {
+    formData: Record<string, any>;
+  }) => {
+    const headers = new Headers();
+    headers.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
+    headers.append("Content-Type", "application/json");
+    const date = new Date();
+
+    const payload = {
+      created_user_id: session?.user?.id,
+      created_user_name: session?.user?.name,
+      created_date: date,
+      form_data: formData,
+    };
+    const requestOptions = {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify(payload),
+    };
+    try {
+      const response = await fetch(ADD_FORM_DATA, requestOptions);
+      if (response.ok) {
+        toast({
+          description: "Form submitted successfully",
+          variant: "default",
+        });
+      } else {
+        toast({
+          description: "Failed to submit the form. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        description: "Failed to submit the form. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const FormSummaryCard = ({ formData }: { formData: Record<string, any> }) => {
+    const columns = ["Field", "Value"];
+    if (currentPath) {
+      saveFormData({ formData });
+    }
+
+    const renderValue = (value: any) => {
+      if (Array.isArray(value)) {
+        return value.length > 0 ? value.join(", ") : "[]";
+      } else if (typeof value === "object" && value !== null) {
+        // Render objects as a nested table or JSON string
+        return (
+          <details className="bg-muted p-2 rounded">
+            <summary className="cursor-pointer">View Details</summary>
+            <pre className="text-sm mt-2 whitespace-pre-wrap break-words">
+              {JSON.stringify(value, null, 2)}
+            </pre>
+          </details>
+        );
+      }
+      return value !== null && value !== undefined ? value : "N/A";
+    };
+
+    return (
+      <Card className="mt-4">
+        <UiTable className="min-w-full divide-y divide-border">
+          <TableHeader className="bg-secondary sticky top-0 shadow-sm">
+            <TableRow>
+              {columns.map((column, index) => (
+                <TableHead
+                  key={index}
+                  className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider"
+                >
+                  {column}
+                </TableHead>
+              ))}
+            </TableRow>
+          </TableHeader>
+          <TableBody className="bg-card divide-y divide-border">
+            {Object.entries(formData).map(([field, value], index) => (
+              <TableRow key={index} className="hover:bg-muted">
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                  {field}
+                </TableCell>
+                <TableCell className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+                  {renderValue(value)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </UiTable>
+      </Card>
+    );
+  };
+
   const displayPdf = (imageUrl: string) => {
     return (
       <div className="flex flex-col flex-wrap items-center p-4 gap-2.5 rounded-lg">
@@ -301,10 +413,17 @@ export function ChatForm({ formFields, apiFieldData }: any) {
       );
 
       // Update form data
-      setFormData((prev) => ({
-        ...prev,
+      // setFormData((prev) => ({
+      //   ...prev,
+      //   [currentField.name]: imageToDisplay,
+      // }));
+      const updatedFormData = {
+        ...formData,
         [currentField.name]: imageToDisplay,
-      }));
+      };
+
+      // Update form data
+      setFormData(updatedFormData);
 
       // Reset states
       setSelectedImage((prev) => prev.slice(1));
@@ -330,6 +449,7 @@ export function ChatForm({ formFields, apiFieldData }: any) {
         );
       } else {
         addMessage("assistant", "Thank you for completing the form.");
+        addMessage("assistant", <FormSummaryCard formData={updatedFormData} />);
       }
     }
 
@@ -344,10 +464,18 @@ export function ChatForm({ formFields, apiFieldData }: any) {
       );
 
       // Update form data
-      setFormData((prev) => ({
-        ...prev,
+      // setFormData((prev) => ({
+      //   ...prev,
+      //   [currentField.name]: imageToDisplay,
+      // }));
+
+      const updatedFormData = {
+        ...formData,
         [currentField.name]: imageToDisplay,
-      }));
+      };
+
+      // Update form data
+      setFormData(updatedFormData);
       const nextStep = findNextActiveField(currentStep);
       setCurrentStep(nextStep);
 
@@ -366,6 +494,7 @@ export function ChatForm({ formFields, apiFieldData }: any) {
         );
       } else {
         addMessage("assistant", "Thank you for completing the form.");
+        addMessage("assistant", <FormSummaryCard formData={updatedFormData} />);
       }
     }
 
@@ -380,10 +509,17 @@ export function ChatForm({ formFields, apiFieldData }: any) {
       );
 
       // Update form data
-      setFormData((prev) => ({
-        ...prev,
+      // setFormData((prev) => ({
+      //   ...prev,
+      //   [currentField.name]: videoToDisplay,
+      // }));
+      const updatedFormData = {
+        ...formData,
         [currentField.name]: videoToDisplay,
-      }));
+      };
+
+      // Update form data
+      setFormData(updatedFormData);
 
       // Handle next step
       const nextStep = findNextActiveField(currentStep);
@@ -404,6 +540,7 @@ export function ChatForm({ formFields, apiFieldData }: any) {
         );
       } else {
         addMessage("assistant", "Thank you for completing the form.");
+        addMessage("assistant", <FormSummaryCard formData={updatedFormData} />);
       }
     }
 
@@ -418,10 +555,18 @@ export function ChatForm({ formFields, apiFieldData }: any) {
       );
 
       // Update form data
-      setFormData((prev) => ({
-        ...prev,
+      // setFormData((prev) => ({
+      //   ...prev,
+      //   [currentField.name]: fileToDisplay,
+      // }));
+
+      const updatedFormData = {
+        ...formData,
         [currentField.name]: fileToDisplay,
-      }));
+      };
+
+      // Update form data
+      setFormData(updatedFormData);
       const nextStep = findNextActiveField(currentStep);
       setCurrentStep(nextStep);
 
@@ -440,6 +585,7 @@ export function ChatForm({ formFields, apiFieldData }: any) {
         );
       } else {
         addMessage("assistant", "Thank you for completing the form.");
+        addMessage("assistant", <FormSummaryCard formData={updatedFormData} />);
       }
     }
 
@@ -454,10 +600,18 @@ export function ChatForm({ formFields, apiFieldData }: any) {
       );
 
       // Update form data
-      setFormData((prev) => ({
-        ...prev,
+      // setFormData((prev) => ({
+      //   ...prev,
+      //   [currentField.name]: fileToDisplay,
+      // }));
+
+      const updatedFormData = {
+        ...formData,
         [currentField.name]: fileToDisplay,
-      }));
+      };
+
+      // Update form data
+      setFormData(updatedFormData);
       const nextStep = findNextActiveField(currentStep);
       setCurrentStep(nextStep);
 
@@ -476,6 +630,7 @@ export function ChatForm({ formFields, apiFieldData }: any) {
         );
       } else {
         addMessage("assistant", "Thank you for completing the form.");
+        addMessage("assistant", <FormSummaryCard formData={updatedFormData} />);
       }
     }
 
@@ -488,10 +643,17 @@ export function ChatForm({ formFields, apiFieldData }: any) {
       );
 
       // Update form data
-      setFormData((prev) => ({
-        ...prev,
+      // setFormData((prev) => ({
+      //   ...prev,
+      //   [currentField.name]: currentField,
+      // }));
+      const updatedFormData = {
+        ...formData,
         [currentField.name]: currentField,
-      }));
+      };
+
+      // Update form data
+      setFormData(updatedFormData);
       const nextStep = findNextActiveField(currentStep);
       setCurrentStep(nextStep);
 
@@ -510,6 +672,7 @@ export function ChatForm({ formFields, apiFieldData }: any) {
         );
       } else {
         addMessage("assistant", "Thank you for completing the form.");
+        addMessage("assistant", <FormSummaryCard formData={updatedFormData} />);
       }
     }
 
@@ -522,10 +685,17 @@ export function ChatForm({ formFields, apiFieldData }: any) {
       );
 
       // Update form data
-      setFormData((prev) => ({
-        ...prev,
+      // setFormData((prev) => ({
+      //   ...prev,
+      //   [currentField.name]: currentField,
+      // }));
+      const updatedFormData = {
+        ...formData,
         [currentField.name]: currentField,
-      }));
+      };
+
+      // Update form data
+      setFormData(updatedFormData);
       const nextStep = findNextActiveField(currentStep);
       setCurrentStep(nextStep);
 
@@ -544,6 +714,7 @@ export function ChatForm({ formFields, apiFieldData }: any) {
         );
       } else {
         addMessage("assistant", "Thank you for completing the form.");
+        addMessage("assistant", <FormSummaryCard formData={updatedFormData} />);
       }
     }
 
@@ -558,10 +729,18 @@ export function ChatForm({ formFields, apiFieldData }: any) {
       );
 
       // Update form data
-      setFormData((prev) => ({
-        ...prev,
+      // setFormData((prev) => ({
+      //   ...prev,
+      //   [currentField.name]: fileToDisplay,
+      // }));
+
+      const updatedFormData = {
+        ...formData,
         [currentField.name]: fileToDisplay,
-      }));
+      };
+
+      // Update form data
+      setFormData(updatedFormData);
 
       // Reset states
       setSelectedFile((prev) => prev.slice(1));
@@ -587,6 +766,7 @@ export function ChatForm({ formFields, apiFieldData }: any) {
         );
       } else {
         addMessage("assistant", "Thank you for completing the form.");
+        addMessage("assistant", <FormSummaryCard formData={updatedFormData} />);
       }
     }
 
@@ -601,10 +781,17 @@ export function ChatForm({ formFields, apiFieldData }: any) {
       );
 
       // Update form data
-      setFormData((prev) => ({
-        ...prev,
+      // setFormData((prev) => ({
+      //   ...prev,
+      //   [currentField.name]: fileToDisplay,
+      // }));
+      const updatedFormData = {
+        ...formData,
         [currentField.name]: fileToDisplay,
-      }));
+      };
+
+      // Update form data
+      setFormData(updatedFormData);
 
       // Reset states
       setSelectedPdf((prev) => prev.slice(1));
@@ -630,6 +817,7 @@ export function ChatForm({ formFields, apiFieldData }: any) {
         );
       } else {
         addMessage("assistant", "Thank you for completing the form.");
+        addMessage("assistant", <FormSummaryCard formData={updatedFormData} />);
       }
     }
 
@@ -644,11 +832,18 @@ export function ChatForm({ formFields, apiFieldData }: any) {
       );
 
       // Update form data
-      setFormData((prev) => ({
-        ...prev,
-        [currentField.name]: videoToDisplay,
-      }));
+      // setFormData((prev) => ({
+      //   ...prev,
+      //   [currentField.name]: videoToDisplay,
+      // }));
 
+      const updatedFormData = {
+        ...formData,
+        [currentField.name]: videoToDisplay,
+      };
+
+      // Update form data
+      setFormData(updatedFormData);
       // Reset states
       setVideos((prev) => prev.slice(1)); // Remove the displayed video from state
       setInput("");
@@ -672,6 +867,7 @@ export function ChatForm({ formFields, apiFieldData }: any) {
         );
       } else {
         addMessage("assistant", "Thank you for completing the form.");
+        addMessage("assistant", <FormSummaryCard formData={updatedFormData} />);
       }
     }
 
@@ -702,12 +898,13 @@ export function ChatForm({ formFields, apiFieldData }: any) {
       // Add user's message
       addMessage("user", input || "Submitted");
 
-      // Update form data
-      setFormData((prev) => ({
-        ...prev,
+      const updatedFormData = {
+        ...formData,
         [currentField.name]: input,
-      }));
+      };
 
+      // Update form data
+      setFormData(updatedFormData); // Ensure state reflects all values
       setInput("");
 
       // Find the next active field
@@ -736,6 +933,7 @@ export function ChatForm({ formFields, apiFieldData }: any) {
           "assistant",
           "Thank you for completing the form. Here's a summary of your inputs:"
         );
+        addMessage("assistant", <FormSummaryCard formData={updatedFormData} />);
       }
     }
   };
