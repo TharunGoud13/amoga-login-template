@@ -971,7 +971,7 @@ export function ChatWithDB({ formFields, apiFieldData }: any) {
               </Avatar>
             )}
             {message.role === "user" && (
-              <Avatar className="ml-2 mr-[-20px] md:mr-0">
+              <Avatar className="ml-2 md:mr-0">
                 <User className="h-5 w-5 text-primary" />
               </Avatar>
             )}
