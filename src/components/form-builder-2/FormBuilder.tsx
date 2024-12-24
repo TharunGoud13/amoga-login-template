@@ -26,6 +26,7 @@ import { fieldTypes } from "@/constants";
 import { ChatForm } from "./ChatPreview";
 import { Card } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
+import { ChatWithDB } from "./ChatWithData";
 
 export type FormFieldOrGroup = FormFieldType | FormFieldType[];
 
@@ -405,6 +406,12 @@ export default function FormBuilder() {
                     Chat
                   </TabsTrigger>
                   <TabsTrigger
+                    value="chat_with_data"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
+                  >
+                    Chat with data
+                  </TabsTrigger>
+                  <TabsTrigger
                     value="json"
                     className="inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
                   >
@@ -462,6 +469,20 @@ export default function FormBuilder() {
                 <div className=" w-full h-full">
                   {formFields?.length > 0 ? (
                     <ChatForm
+                      formFields={formFields}
+                      apiFieldData={apiFieldData}
+                    />
+                  ) : (
+                    <div className="h-[50vh] flex justify-center items-center">
+                      <p>No form element selected yet.</p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+              <TabsContent value="chat_with_data">
+                <div className=" w-full h-full">
+                  {formFields?.length > 0 ? (
+                    <ChatWithDB
                       formFields={formFields}
                       apiFieldData={apiFieldData}
                     />
