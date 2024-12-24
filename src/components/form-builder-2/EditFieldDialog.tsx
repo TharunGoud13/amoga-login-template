@@ -41,6 +41,8 @@ import { ADD_CONNECTIONS, NEXT_PUBLIC_API_KEY } from "@/constants/envConfig";
 import Image from "next/image";
 import { FaFilePdf } from "react-icons/fa";
 import { Textarea } from "../ui/textarea";
+import ChatwithData from "./field-components/ChatwithData";
+import ChatwithDataActions from "./field-components/ChatwithDataActions";
 
 type EditFieldDialogProps = {
   isOpen: boolean;
@@ -2259,7 +2261,23 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
           <TabsContent value="connection">
             Connection content goes here.
           </TabsContent>
-          <TabsContent value="actions">Actions content goes here.</TabsContent>
+          <TabsContent value="actions">
+            <If
+              condition={field?.variant !== "Chat with Data"}
+              render={() => <div>Actions content goes here.</div>}
+            />
+            <If
+              condition={field?.variant == "Chat with Data"}
+              render={() => (
+                <div>
+                  <ChatwithDataActions
+                    editedField={editedField}
+                    setEditedField={setEditedField}
+                  />
+                </div>
+              )}
+            />
+          </TabsContent>
         </Tabs>
         <DialogFooter>
           <Button onClick={handleSave} disabled={uploading}>

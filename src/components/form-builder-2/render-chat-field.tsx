@@ -53,6 +53,13 @@ import { TimePicker } from "../ui/TimePicker";
 import { DateTimePicker } from "../ui/DateTimePicker";
 import { TimeRangePicker } from "../ui/TimeRangePicker";
 import AnalyticCard from "./field-components/AnalyticCard";
+import {
+  generateChartConfig,
+  generateQuery,
+  runGenerateSQLQuery,
+} from "../chat-with-db/actions";
+import { toast } from "sonner";
+import { Result } from "@/lib/types";
 
 const ALLOWED_FILES_TYPES = [
   "application/pdf",
@@ -91,6 +98,10 @@ const RenderInputField = ({
   setPdfError,
   pdfName,
   setPdfName,
+  setResults,
+  setColumns,
+  setChartConfig,
+  setLoading,
 }: {
   currentField: any;
   input: string;
@@ -118,6 +129,10 @@ const RenderInputField = ({
   setSelectedPdf: any;
   pdfError: any;
   setPdfError: any;
+  setResults: any;
+  setChartConfig: any;
+  setColumns: any;
+  setLoading: any;
 }) => {
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
   const [value, setValue] = useState(currentField.value);
@@ -158,6 +173,41 @@ const RenderInputField = ({
     setInput(url);
   };
 
+  const handleSubmit = async (suggestion?: any) => {
+    setLoading(true);
+    const question = suggestion;
+    if (!suggestion) return;
+    try {
+      const query = await generateQuery(question);
+      if (query === undefined) {
+        toast.error("An error occurred. Please try again.");
+        return;
+      }
+      const data = await runGenerateSQLQuery(query);
+      console.log("companies: ", data);
+      const columns = data.length > 0 ? Object.keys(data[0]) : [];
+      setResults(data);
+      setColumns(columns);
+      const generation = await generateChartConfig(data, question);
+      setChartConfig(generation.config);
+      setLoading(false);
+    } catch (e) {
+      setLoading(false);
+      toast.error("An error occurred. Please try again.");
+    }
+  };
+
+  const handleRadioChange = (value: string) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      preference: value,
+    }));
+
+    // Trigger handleSubmit with the selected value as suggestion
+    handleSubmit(value); // Passing the value as 'suggestion'
+  };
+
+  console.log("currentField----", currentField);
   useEffect(() => {
     if (currentField.variant === "Badge") {
       setInput(currentField.name);
@@ -1521,6 +1571,28 @@ const RenderInputField = ({
       );
     case "Analytic Card":
       return <AnalyticCard field={currentField} />;
+    case "Chat with Data":
+      return (
+        <RadioGroup
+          value={formData.preference}
+          onValueChange={handleRadioChange}
+          className="flex w-full flex-wrap items-center"
+        >
+          <div className="flex flex-wrap items-center gap-2.5">
+            {currentField.chat_with_data?.buttons?.map(
+              (item: any, index: any) => (
+                <div
+                  key={index}
+                  className="flex border rounded-full p-2.5  items-center gap-2"
+                >
+                  <RadioGroupItem value={item?.button_text} id={index} />
+                  <Label htmlFor={index}>{item?.button_text}</Label>
+                </div>
+              )
+            )}
+          </div>
+        </RadioGroup>
+      );
 
     default:
       return null;

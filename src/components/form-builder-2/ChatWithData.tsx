@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 import * as React from "react";
-import { Bot, Dock, File, Table, User } from "lucide-react";
+import { Bot, Dock, File, Loader, Table, User } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,9 @@ import { usePathname } from "next/navigation";
 import { ADD_FORM_DATA, NEXT_PUBLIC_API_KEY } from "@/constants/envConfig";
 import { useSession } from "next-auth/react";
 import { toast } from "../ui/use-toast";
+import { Result } from "@/lib/types";
+import ChatwithDataCard from "./field-components/ChatwithDataCard";
+import Spinner from "../ui/Spinner";
 
 type Message = {
   id: string;
@@ -58,9 +61,16 @@ export function ChatWithDB({ formFields, apiFieldData }: any) {
   const [validationError, setValidationError] = React.useState<string | null>(
     null
   );
+
+  const [chartConfig, setChartConfig] = React.useState<any | null>(null);
+  const [results, setResults] = React.useState<Result[]>([]);
+  const [loading, setLoading] = React.useState<boolean>(false);
+  const [columns, setColumns] = React.useState<string[]>([]);
   const path = usePathname();
   const currentPath = path.includes("submit");
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+  console.log("results---", results);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({
@@ -718,6 +728,52 @@ export function ChatWithDB({ formFields, apiFieldData }: any) {
       }
     }
 
+    if (currentField?.variant === "Chat with Data") {
+      addMessage(
+        "user",
+        <div className="flex w-full md:w-[80vw] items-center">
+          <ChatwithDataCard
+            results={results}
+            column={columns}
+            chartConfig={chartConfig}
+          />
+        </div>
+      );
+
+      // Update form data
+      // setFormData((prev) => ({
+      //   ...prev,
+      //   [currentField.name]: currentField,
+      // }));
+      const updatedFormData = {
+        ...formData,
+        [currentField.name]: currentField,
+      };
+
+      // Update form data
+      setFormData(updatedFormData);
+      const nextStep = findNextActiveField(currentStep);
+      setCurrentStep(nextStep);
+
+      if (nextStep !== -1) {
+        const nextField = formFields[nextStep];
+        addMessage(
+          "assistant",
+          <div>
+            <span className="label">{nextField.label}</span>
+            {nextField.required && <span className="text-red-500">*</span>}
+            <br />
+            <span className="text-sm text-gray-400">
+              {nextField.description}
+            </span>
+          </div>
+        );
+      } else {
+        addMessage("assistant", "Thank you for completing the form.");
+        addMessage("assistant", <FormSummaryCard formData={updatedFormData} />);
+      }
+    }
+
     if (selectedFile.length > 0) {
       const fileToDisplay = selectedFile[0]; // Display the first video in the state
 
@@ -1023,6 +1079,10 @@ export function ChatWithDB({ formFields, apiFieldData }: any) {
                   pdfName={pdfName}
                   setPdfName={setPdfName}
                   setPdfError={setPdfError}
+                  setResults={setResults}
+                  setChartConfig={setChartConfig}
+                  setColumns={setColumns}
+                  setLoading={setLoading}
                 />
                 {validationError && (
                   <p className="text-red-500 text-sm mt-1">{validationError}</p>
@@ -1031,9 +1091,16 @@ export function ChatWithDB({ formFields, apiFieldData }: any) {
               {!isUploadOrSpecialVariant(formFields[currentStep]?.variant) && (
                 <Button
                   onClick={handleSubmit}
+                  disabled={loading}
                   className="bg-primary hover:bg-primary/90 transition-colors self-end"
                 >
-                  <FaArrowUp className="h-4 w-4" />
+                  {loading ? (
+                    <div>
+                      <Loader className="animate-spin" />
+                    </div>
+                  ) : (
+                    <FaArrowUp className="h-4 w-4" />
+                  )}
                   <span className="sr-only">Send</span>
                 </Button>
               )}
@@ -1043,7 +1110,13 @@ export function ChatWithDB({ formFields, apiFieldData }: any) {
                 onClick={handleSubmit}
                 className="bg-primary mt-2 hover:bg-primary/90 transition-colors self-end"
               >
-                <FaArrowUp className="h-4 w-4" />
+                {loading ? (
+                  <div className="flex justify-center items-center">
+                    <div className="border-top-4 border-gray-800 border-solid w-16 h-16 rounded-full animate-spin"></div>
+                  </div>
+                ) : (
+                  <FaArrowUp className="h-4 w-4" />
+                )}
                 <span className="sr-only">Send</span>
               </Button>
             )}

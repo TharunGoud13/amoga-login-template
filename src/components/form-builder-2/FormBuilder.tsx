@@ -108,6 +108,17 @@ export default function FormBuilder() {
         },
         component_name: "",
       },
+      chat_with_data: {
+        buttons: [
+          {
+            button_text: "",
+            prompt: "",
+            api: "",
+            // response_data: [],
+            enable_prompt: false,
+          },
+        ],
+      },
     };
     setFormFields([...formFields, newField]);
   };

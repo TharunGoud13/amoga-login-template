@@ -24,6 +24,7 @@ import { usePathname } from "next/navigation";
 import { ADD_FORM_DATA, NEXT_PUBLIC_API_KEY } from "@/constants/envConfig";
 import { useSession } from "next-auth/react";
 import { toast } from "../ui/use-toast";
+import { Result } from "@/lib/types";
 
 type Message = {
   id: string;
@@ -58,6 +59,10 @@ export function ChatForm({ formFields, apiFieldData }: any) {
   const [validationError, setValidationError] = React.useState<string | null>(
     null
   );
+  const [chartConfig, setChartConfig] = React.useState<any | null>(null);
+  const [results, setResults] = React.useState<Result[]>([]);
+  const [loading, setLoading] = React.useState<boolean>(false);
+  const [columns, setColumns] = React.useState<string[]>([]);
   const path = usePathname();
   const currentPath = path.includes("submit");
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
@@ -1023,6 +1028,10 @@ export function ChatForm({ formFields, apiFieldData }: any) {
                   pdfName={pdfName}
                   setPdfName={setPdfName}
                   setPdfError={setPdfError}
+                  setResults={setResults}
+                  setChartConfig={setChartConfig}
+                  setColumns={setColumns}
+                  setLoading={setLoading}
                 />
                 {validationError && (
                   <p className="text-red-500 text-sm mt-1">{validationError}</p>

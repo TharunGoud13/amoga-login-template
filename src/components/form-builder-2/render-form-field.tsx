@@ -2409,6 +2409,8 @@ export const renderFormField = (
           </FormControl>
         </FormItem>
       );
+    case "Chat with Data":
+      return <div></div>;
     case "Form Section":
     default:
       return null;

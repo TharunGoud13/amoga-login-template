@@ -38,6 +38,7 @@ export const fieldTypes: FieldType[] = [
   { name: "Send Review", isNew: false },
   { name: "Send Media Card", isNew: false },
   { name: "Analytic Card", isNew: false },
+  { name: "Chat with Data", isNew: false },
   { name: "Location Select", isNew: true },
   { name: "Tool Tip Card", isNew: true },
   { name: "Progress", isNew: true },
