@@ -66,11 +66,10 @@ export function ChatWithDB({ formFields, apiFieldData }: any) {
   const [results, setResults] = React.useState<Result[]>([]);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [columns, setColumns] = React.useState<string[]>([]);
+  const [componentName, setComponentName] = React.useState<string | null>(null);
   const path = usePathname();
   const currentPath = path.includes("submit");
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
-
-  console.log("results---", results);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({
@@ -736,6 +735,7 @@ export function ChatWithDB({ formFields, apiFieldData }: any) {
             results={results}
             column={columns}
             chartConfig={chartConfig}
+            componentName={componentName}
           />
         </div>
       );
@@ -1083,6 +1083,7 @@ export function ChatWithDB({ formFields, apiFieldData }: any) {
                   setChartConfig={setChartConfig}
                   setColumns={setColumns}
                   setLoading={setLoading}
+                  setComponentName={setComponentName}
                 />
                 {validationError && (
                   <p className="text-red-500 text-sm mt-1">{validationError}</p>

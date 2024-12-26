@@ -102,6 +102,7 @@ const RenderInputField = ({
   setColumns,
   setChartConfig,
   setLoading,
+  setComponentName,
 }: {
   currentField: any;
   input: string;
@@ -133,6 +134,7 @@ const RenderInputField = ({
   setChartConfig: any;
   setColumns: any;
   setLoading: any;
+  setComponentName: any;
 }) => {
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
   const [value, setValue] = useState(currentField.value);
@@ -184,7 +186,6 @@ const RenderInputField = ({
         return;
       }
       const data = await runGenerateSQLQuery(query);
-      console.log("companies: ", data);
       const columns = data.length > 0 ? Object.keys(data[0]) : [];
       setResults(data);
       setColumns(columns);
@@ -202,12 +203,16 @@ const RenderInputField = ({
       ...prev,
       preference: value,
     }));
-
+    const selectedItem = currentField.chat_with_data?.buttons?.find(
+      (item: any) => item?.button_text === value
+    );
+    if (selectedItem) {
+      setComponentName(selectedItem); // Store the entire item
+    }
     // Trigger handleSubmit with the selected value as suggestion
-    handleSubmit(value); // Passing the value as 'suggestion'
+    handleSubmit(selectedItem?.prompt); // Passing the value as 'suggestion'
   };
 
-  console.log("currentField----", currentField);
   useEffect(() => {
     if (currentField.variant === "Badge") {
       setInput(currentField.name);
@@ -1575,7 +1580,9 @@ const RenderInputField = ({
       return (
         <RadioGroup
           value={formData.preference}
-          onValueChange={handleRadioChange}
+          onValueChange={(value) => {
+            handleRadioChange(value);
+          }}
           className="flex w-full flex-wrap items-center"
         >
           <div className="flex flex-wrap items-center gap-2.5">

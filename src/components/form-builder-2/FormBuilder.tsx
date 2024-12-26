@@ -113,9 +113,11 @@ export default function FormBuilder() {
           {
             button_text: "",
             prompt: "",
-            api: "",
+            api_response: "",
+            enable_api: false,
             // response_data: [],
             enable_prompt: false,
+            component_name: "",
           },
         ],
       },

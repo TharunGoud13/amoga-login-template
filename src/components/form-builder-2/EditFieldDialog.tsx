@@ -1929,14 +1929,16 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
             <If
               condition={
                 field?.variant !== "Send Media Card" &&
-                field?.variant !== "Analytic Card"
+                field?.variant !== "Analytic Card" &&
+                field?.variant !== "Chat with Data"
               }
               render={() => <div>Card content goes here.</div>}
             />
             <If
               condition={
                 field?.variant === "Send Media Card" ||
-                field?.variant === "Analytic Card"
+                field?.variant === "Analytic Card" ||
+                field?.variant === "Chat with Data"
               }
               render={() => (
                 <div className="space-y-2.5">

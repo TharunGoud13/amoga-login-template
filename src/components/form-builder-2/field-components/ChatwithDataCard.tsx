@@ -18,6 +18,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import PieChart from "./ChartTypes/PieChart";
+import BarChart from "./ChartTypes/BarChart";
+import LineGraph from "./ChartTypes/LineGraph";
+import HorizontalBarChart from "./ChartTypes/BarChartHorizontal";
 
 function Actionables() {
   return (
@@ -50,7 +54,14 @@ function Actionables() {
   );
 }
 
-const ChatwithDataCard = ({ results, columns, chartConfig }: any) => {
+const ChatwithDataCard = ({
+  results,
+  columns,
+  chartConfig,
+  currentField,
+  componentName,
+}: any) => {
+  const chartType = componentName?.component_name;
   // Ensure fallback between results and default values if provided
   const card_json = results || []; // Use results if provided, otherwise fallback to empty array
 
@@ -94,6 +105,19 @@ const ChatwithDataCard = ({ results, columns, chartConfig }: any) => {
       return value.toLocaleDateString();
     }
     return String(value);
+  };
+
+  const renderChart = () => {
+    switch (chartType) {
+      case "Data Card Donut Chart":
+        return <PieChart data={card_json} dataKey={columnTitles} />;
+      case "Data Card Line Chart":
+        return <LineGraph data={card_json} dataKey={columnTitles} />;
+      case "Data Card Bar Chart":
+        return <BarChart data={card_json} dataKey={columnTitles} />;
+      case "Data Card Bar Chart Horizontal":
+        return <HorizontalBarChart data={card_json} dataKey={columnTitles} />;
+    }
   };
 
   return (
@@ -140,31 +164,7 @@ const ChatwithDataCard = ({ results, columns, chartConfig }: any) => {
             </Table>
           </TabsContent>
           <TabsContent value="chart">
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={card_json}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey={columnTitles[0]} />
-                  <YAxis />
-                  <Tooltip
-                    formatter={(value) => [
-                      `$${Number(value).toFixed(2)}`,
-                      "Revenue",
-                    ]}
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--background))",
-                      border: "1px solid hsl(var(--border))",
-                    }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="revenue"
-                    stroke="hsl(var(--primary))"
-                    activeDot={{ r: 8 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            <div className="overflow-auto w-full">{renderChart()}</div>
           </TabsContent>
           <TabsContent value="actionables">
             <Actionables />

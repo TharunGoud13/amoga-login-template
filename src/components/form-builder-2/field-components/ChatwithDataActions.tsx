@@ -8,6 +8,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Pencil, Trash2, GripVertical, X, Check, Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 // Define the shape of the data you are working with
 interface FormEntry {
@@ -17,7 +25,23 @@ interface FormEntry {
   promptText: string;
   isApi: boolean;
   apiEndpoint: string;
+  apiField: string;
+  component_name: string;
+  storyApiEnabled: boolean;
+  storyApi: string;
+  actionApiEnabled: boolean;
+  actionApi: string;
+  automationName: string;
+  html: string;
+  json: string;
 }
+
+const COMPONENT_NAMES = [
+  "Data Card Line Chart",
+  "Data Card Bar Chart",
+  "Data Card Bar Chart Horizontal",
+  "Data Card Donut Chart",
+];
 
 function SortableItem({
   entry,
@@ -161,6 +185,9 @@ function SortableItem({
                   <div className="text-sm text-gray-500">
                     API: {entry.apiEndpoint || "Not set"}
                   </div>
+                  <div className="text-sm text-gray-500">
+                    Component Name: {entry.component_name || "Not set"}
+                  </div>
                 </>
               )}
               <div className="mt-2 flex justify-end space-x-2">
@@ -202,9 +229,25 @@ function NewEntryForm({
     promptText: "",
     isApi: false,
     apiEndpoint: "",
+    storyApiEnabled: false,
+    storyApi: "",
+    actionApiEnabled: false,
+    actionApi: "",
+    automationName: "",
+    html: "",
+    json: "",
+    apiField: "",
+    component_name: "",
   });
 
   const handleSave = () => {
+    console.log("newEntry----", newEntry);
+    if (
+      !newEntry.buttonText ||
+      !newEntry.component_name ||
+      (!newEntry.promptText && !newEntry.apiEndpoint)
+    )
+      return;
     onSave(newEntry);
     setNewEntry({
       id: Date.now(),
@@ -213,11 +256,20 @@ function NewEntryForm({
       promptText: "",
       isApi: false,
       apiEndpoint: "",
+      apiField: "",
+      component_name: "",
+      storyApi: "",
+      storyApiEnabled: false,
+      actionApiEnabled: false,
+      actionApi: "",
+      automationName: "",
+      html: "",
+      json: "",
     });
   };
 
   return (
-    <div className="flex items-center justify-center p-2.5 bg-secondary border-b last:border-b-0">
+    <div className="flex items-center justify-center p-2.5  border-b last:border-b-0">
       <div className="w-5" /> {/* Placeholder for the drag handle */}
       <div className="flex-grow space-y-4">
         <div>
@@ -280,7 +332,116 @@ function NewEntryForm({
             className="mt-1"
             placeholder="Enter API endpoint"
           />
+          <Label htmlFor="new-api-field">API Field</Label>
+          <Input
+            id="new-api-field"
+            disabled={!newEntry.isApi}
+            value={newEntry.apiField}
+            onChange={(e) =>
+              setNewEntry({ ...newEntry, apiField: e.target.value })
+            }
+            className="mt-1"
+            placeholder="Enter API Field"
+          />
         </div>
+        <div>
+          <Label htmlFor="component-name">Component Name</Label>
+          <Select
+            onValueChange={(value) => {
+              setNewEntry({ ...newEntry, component_name: value });
+            }}
+          >
+            <SelectTrigger id="component-name">
+              <SelectValue placeholder="Select Component Name" />
+            </SelectTrigger>
+            <SelectContent>
+              {COMPONENT_NAMES?.map((item: string, index: number) => (
+                <SelectItem key={index} value={item}>
+                  {item}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="story-api"
+            checked={newEntry.storyApiEnabled}
+            onCheckedChange={(checked) =>
+              setNewEntry({ ...newEntry, storyApiEnabled: checked as boolean })
+            }
+          />
+          <Label htmlFor="story-api">Use Story API</Label>
+        </div>
+        <div>
+          <Label htmlFor="story-endpoint">Story API </Label>
+          <Input
+            id="story-endpoint"
+            disabled={!newEntry.storyApiEnabled}
+            value={newEntry.storyApi}
+            onChange={(e) =>
+              setNewEntry({ ...newEntry, storyApi: e.target.value })
+            }
+            className="mt-1"
+            placeholder="Enter Story API endpoint"
+          />
+        </div>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="action-api"
+            checked={newEntry.actionApiEnabled}
+            onCheckedChange={(checked) =>
+              setNewEntry({ ...newEntry, actionApiEnabled: checked as boolean })
+            }
+          />
+          <Label htmlFor="action-api">Use Action API</Label>
+        </div>
+        <div>
+          <Label htmlFor="action-endpoint">Action API </Label>
+          <Input
+            id="action-endpoint"
+            disabled={!newEntry.actionApiEnabled}
+            value={newEntry.actionApi}
+            onChange={(e) =>
+              setNewEntry({ ...newEntry, actionApi: e.target.value })
+            }
+            className="mt-1"
+            placeholder="Enter Action API endpoint"
+          />
+        </div>
+        <div>
+          <Label htmlFor="automation-name">Automation Name</Label>
+          <Input
+            id="automation-name"
+            value={newEntry.automationName}
+            onChange={(e) =>
+              setNewEntry({ ...newEntry, automationName: e.target.value })
+            }
+            className="mt-1"
+            placeholder="Enter Automation Name"
+          />
+        </div>
+        <div>
+          <Label htmlFor="html">HTML</Label>
+          <Textarea
+            id="html"
+            value={newEntry.html}
+            onChange={(e) => setNewEntry({ ...newEntry, html: e.target.value })}
+            className="mt-1"
+            placeholder="Enter HTML"
+          />
+        </div>
+        <div>
+          <Label htmlFor="json">JSON</Label>
+          <Textarea
+            id="json"
+            value={newEntry.json}
+            onChange={(e) => setNewEntry({ ...newEntry, json: e.target.value })}
+            className="mt-1"
+            placeholder="Enter JSON"
+          />
+        </div>
+
         <div className="flex justify-end space-x-2">
           <Button variant="ghost" size="icon" onClick={onCancel}>
             <X className="h-4 w-4" />
@@ -312,9 +473,10 @@ export default function ChatwithDataActions({
           {
             button_text: newEntry.buttonText,
             prompt: newEntry.promptText,
-            api: newEntry.isApi ? newEntry.apiEndpoint : "",
-            response_data: [],
+            api_response: newEntry.isApi ? newEntry.apiEndpoint : "",
             enable_prompt: newEntry.isPrompt,
+            enable_api: newEntry.isApi,
+            component_name: newEntry?.component_name,
           },
         ],
       },
@@ -347,8 +509,12 @@ export default function ChatwithDataActions({
                 ...button,
                 button_text: updatedEntry.buttonText,
                 prompt: updatedEntry.promptText,
-                api: updatedEntry.isApi ? updatedEntry.apiEndpoint : "",
+                api_response: updatedEntry.isApi
+                  ? updatedEntry.apiEndpoint
+                  : "",
                 enable_prompt: updatedEntry.isPrompt,
+                enable_api: updatedEntry.isApi,
+                component_name: updatedEntry?.component_name,
               }
             : button
         ),

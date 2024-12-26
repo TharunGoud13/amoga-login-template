@@ -62,9 +62,11 @@ export type FormFieldType = {
       {
         button_text: string;
         prompt: string;
-        api: string;
+        api_response: string;
         // response_data: string[];
+        enable_api: boolean;
         enable_prompt: boolean;
+        component_name?: string;
       }
     ];
   };
