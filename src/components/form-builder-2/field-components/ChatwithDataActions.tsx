@@ -16,6 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { ADD_CONNECTIONS, NEXT_PUBLIC_API_KEY } from "@/constants/envConfig";
+import { toast } from "@/components/ui/use-toast";
 
 // Define the shape of the data you are working with
 interface FormEntry {
@@ -29,6 +31,7 @@ interface FormEntry {
   component_name: string;
   storyApiEnabled: boolean;
   storyApi: string;
+  apiResponse: [];
   actionApiEnabled: boolean;
   actionApi: string;
   automationName: string;
@@ -48,11 +51,15 @@ function SortableItem({
   onEdit,
   onDelete,
   onSave,
+  setEditedField,
+  editedField,
 }: {
   entry: FormEntry;
   onEdit: () => void;
   onDelete: () => void;
   onSave: (updatedEntry: FormEntry) => void;
+  setEditedField: (field: any) => void;
+  editedField: any;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedEntry, setEditedEntry] = useState(entry);
@@ -65,6 +72,34 @@ function SortableItem({
   const handleSave = () => {
     setIsEditing(false);
     onSave(editedEntry);
+    setEditedField({
+      ...editedField,
+      chat_with_data: {
+        ...editedField.chat_with_data,
+        buttons: editedField.chat_with_data.buttons.map((button: any) =>
+          button.button_text === entry.buttonText
+            ? {
+                ...button,
+                button_text: editedEntry.buttonText,
+                prompt: editedEntry.promptText,
+                api_response: editedEntry.apiResponse,
+                enable_prompt: editedEntry.isPrompt,
+                enable_api: editedEntry.isApi,
+                component_name: editedEntry?.component_name,
+                apiEndpoint: editedEntry.apiEndpoint,
+                apiField: editedEntry.apiField,
+                storyApiEnabled: editedEntry.storyApiEnabled,
+                storyApi: editedEntry.storyApi,
+                actionApiEnabled: editedEntry.actionApiEnabled,
+                actionApi: editedEntry.actionApi,
+                automationName: editedEntry.automationName,
+                html: editedEntry.html,
+                json: editedEntry.json,
+              }
+            : button
+        ),
+      },
+    });
   };
 
   const handleCancel = () => {
@@ -157,6 +192,142 @@ function SortableItem({
                   placeholder="Enter API endpoint"
                 />
               </div>
+              <div>
+                <Label htmlFor={`api-field-${entry.id}`}>API Field</Label>
+                <Input
+                  id={`api-field-${entry.id}`}
+                  value={editedEntry.apiField}
+                  onChange={(e) =>
+                    setEditedEntry({
+                      ...editedEntry,
+                      apiField: e.target.value,
+                    })
+                  }
+                  className="mt-1"
+                  placeholder="Enter API Field"
+                />
+              </div>
+              <div>
+                <Label htmlFor={`component-name-${entry.id}`}>
+                  Component Name
+                </Label>
+                <Select
+                  onValueChange={(value) => {
+                    setEditedEntry({ ...editedEntry, component_name: value });
+                  }}
+                  value={editedEntry.component_name}
+                >
+                  <SelectTrigger id={`component-name-${entry.id}`}>
+                    <SelectValue placeholder="Select Component Name" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COMPONENT_NAMES?.map((item: string, index: number) => (
+                      <SelectItem key={index} value={item}>
+                        {item}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={`story-api-${entry.id}`}
+                  checked={editedEntry.storyApiEnabled}
+                  onCheckedChange={(checked) =>
+                    setEditedEntry({
+                      ...editedEntry,
+                      storyApiEnabled: checked as boolean,
+                    })
+                  }
+                />
+                <Label htmlFor={`story-api-${entry.id}`}>Use Story API</Label>
+              </div>
+              <div>
+                <Label htmlFor={`story-endpoint-${entry.id}`}>Story API</Label>
+                <Input
+                  id={`story-endpoint-${entry.id}`}
+                  value={editedEntry.storyApi}
+                  onChange={(e) =>
+                    setEditedEntry({
+                      ...editedEntry,
+                      storyApi: e.target.value,
+                    })
+                  }
+                  className="mt-1"
+                  placeholder="Enter Story API endpoint"
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={`action-api-${entry.id}`}
+                  checked={editedEntry.actionApiEnabled}
+                  onCheckedChange={(checked) =>
+                    setEditedEntry({
+                      ...editedEntry,
+                      actionApiEnabled: checked as boolean,
+                    })
+                  }
+                />
+                <Label htmlFor={`action-api-${entry.id}`}>Use Action API</Label>
+              </div>
+              <div>
+                <Label htmlFor={`action-endpoint-${entry.id}`}>
+                  Action API
+                </Label>
+                <Input
+                  id={`action-endpoint-${entry.id}`}
+                  value={editedEntry.actionApi}
+                  onChange={(e) =>
+                    setEditedEntry({
+                      ...editedEntry,
+                      actionApi: e.target.value,
+                    })
+                  }
+                  className="mt-1"
+                  placeholder="Enter Action API endpoint"
+                />
+              </div>
+              <div>
+                <Label htmlFor={`automation-name-${entry.id}`}>
+                  Automation Name
+                </Label>
+                <Input
+                  id={`automation-name-${entry.id}`}
+                  value={editedEntry.automationName}
+                  onChange={(e) =>
+                    setEditedEntry({
+                      ...editedEntry,
+                      automationName: e.target.value,
+                    })
+                  }
+                  className="mt-1"
+                  placeholder="Enter Automation Name"
+                />
+              </div>
+              <div>
+                <Label htmlFor={`html-${entry.id}`}>HTML</Label>
+                <Textarea
+                  id={`html-${entry.id}`}
+                  value={editedEntry.html}
+                  onChange={(e) =>
+                    setEditedEntry({ ...editedEntry, html: e.target.value })
+                  }
+                  className="mt-1"
+                  placeholder="Enter HTML"
+                />
+              </div>
+              <div>
+                <Label htmlFor={`json-${entry.id}`}>JSON</Label>
+                <Textarea
+                  id={`json-${entry.id}`}
+                  value={editedEntry.json}
+                  onChange={(e) =>
+                    setEditedEntry({ ...editedEntry, json: e.target.value })
+                  }
+                  className="mt-1"
+                  placeholder="Enter JSON"
+                />
+              </div>
               <div className="flex justify-end space-x-2">
                 <Button variant="outline" size="sm" onClick={handleCancel}>
                   Cancel
@@ -216,11 +387,13 @@ function NewEntryForm({
   onCancel,
   editedField,
   setEditedField,
+  setLoading,
 }: {
   onSave: (entry: FormEntry) => void;
   onCancel: () => void;
   editedField: any;
   setEditedField: (field: any) => void;
+  setLoading: (loading: boolean) => void;
 }) {
   const [newEntry, setNewEntry] = useState<FormEntry>({
     id: Date.now(),
@@ -229,6 +402,7 @@ function NewEntryForm({
     promptText: "",
     isApi: false,
     apiEndpoint: "",
+    apiResponse: [],
     storyApiEnabled: false,
     storyApi: "",
     actionApiEnabled: false,
@@ -256,6 +430,7 @@ function NewEntryForm({
       promptText: "",
       isApi: false,
       apiEndpoint: "",
+      apiResponse: [],
       apiField: "",
       component_name: "",
       storyApi: "",
@@ -266,6 +441,97 @@ function NewEntryForm({
       html: "",
       json: "",
     });
+  };
+
+  const fetchValidApi = async () => {
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${NEXT_PUBLIC_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    };
+    try {
+      const response = await fetch(ADD_CONNECTIONS, requestOptions);
+      if (!response.ok) {
+        toast({ description: "Failed to fetch data", variant: "destructive" });
+      }
+
+      const result = await response.json();
+      const validApis = result.filter(
+        (item: any) => item?.test_status === "passed"
+      );
+      return validApis;
+    } catch (error) {
+      toast({
+        description: "Error fetching valid APIs",
+        variant: "destructive",
+      });
+      return [];
+    }
+  };
+
+  const handleAddApi = async () => {
+    setLoading(true);
+    const { apiEndpoint, apiField } = newEntry;
+    console.log("api-----", { apiEndpoint, apiField });
+
+    const validApis = await fetchValidApi();
+    const isValid = validApis.filter(
+      (item: any) => item.api_url === apiEndpoint
+    );
+
+    if (isValid.length === 0) {
+      toast({ description: "Invalid API URL", variant: "destructive" });
+    }
+
+    if (!isValid || !apiEndpoint || !apiField) {
+      toast({ description: "Something went wrong", variant: "destructive" });
+    }
+    if (isValid && isValid.length > 0 && apiEndpoint && apiField) {
+      const { key, secret } = isValid && isValid[0];
+
+      try {
+        const requestOptions = {
+          method: "GET",
+          headers: {
+            [key]: secret,
+            "Content-Type": "application/json",
+          },
+        };
+        const response = await fetch(apiEndpoint, requestOptions);
+        if (!response.ok) {
+          toast({
+            description: "Failed to fetch data",
+            variant: "destructive",
+          });
+        }
+        const data = await response.json();
+        console.log("data---", data);
+
+        if (data) {
+          const fieldData = data.map((item: any) => ({
+            [apiField]: item[apiField],
+          }));
+          setNewEntry({ ...newEntry, apiResponse: fieldData });
+          setLoading(false);
+          console.log("fieldData---", fieldData);
+          toast({
+            description: "Options added from API successfully",
+            variant: "default",
+          });
+        } else {
+          toast({
+            description: "No valid  values found",
+            variant: "destructive",
+          });
+          setLoading(false);
+        }
+      } catch (error) {
+        toast({ description: "Failed to fetch data", variant: "destructive" });
+        setLoading(false);
+      }
+    }
   };
 
   return (
@@ -343,6 +609,13 @@ function NewEntryForm({
             className="mt-1"
             placeholder="Enter API Field"
           />
+          <Button
+            disabled={!newEntry.isApi}
+            className="mt-1"
+            onClick={handleAddApi}
+          >
+            Add API
+          </Button>
         </div>
         <div>
           <Label htmlFor="component-name">Component Name</Label>
@@ -458,6 +731,7 @@ function NewEntryForm({
 export default function ChatwithDataActions({
   editedField,
   setEditedField,
+  setLoading,
 }: any) {
   const [entries, setEntries] = useState<FormEntry[]>([]);
   const [showNewEntryForm, setShowNewEntryForm] = useState(false);
@@ -473,7 +747,7 @@ export default function ChatwithDataActions({
           {
             button_text: newEntry.buttonText,
             prompt: newEntry.promptText,
-            api_response: newEntry.isApi ? newEntry.apiEndpoint : "",
+            api_response: newEntry.apiResponse,
             enable_prompt: newEntry.isPrompt,
             enable_api: newEntry.isApi,
             component_name: newEntry?.component_name,
@@ -509,12 +783,19 @@ export default function ChatwithDataActions({
                 ...button,
                 button_text: updatedEntry.buttonText,
                 prompt: updatedEntry.promptText,
-                api_response: updatedEntry.isApi
-                  ? updatedEntry.apiEndpoint
-                  : "",
+                api_response: updatedEntry.apiResponse,
                 enable_prompt: updatedEntry.isPrompt,
                 enable_api: updatedEntry.isApi,
                 component_name: updatedEntry?.component_name,
+                apiEndpoint: updatedEntry.apiEndpoint,
+                apiField: updatedEntry.apiField,
+                storyApiEnabled: updatedEntry.storyApiEnabled,
+                storyApi: updatedEntry.storyApi,
+                actionApiEnabled: updatedEntry.actionApiEnabled,
+                actionApi: updatedEntry.actionApi,
+                automationName: updatedEntry.automationName,
+                html: updatedEntry.html,
+                json: updatedEntry.json,
               }
             : button
         ),
@@ -556,6 +837,8 @@ export default function ChatwithDataActions({
                       onEdit={() => {}}
                       onDelete={() => handleDelete(entry.id)}
                       onSave={handleSaveEdit}
+                      editedField={editedField}
+                      setEditedField={setEditedField}
                     />
                   ))}
                 {provided.placeholder}
@@ -570,6 +853,7 @@ export default function ChatwithDataActions({
             onCancel={() => setShowNewEntryForm(false)}
             editedField={editedField}
             setEditedField={setEditedField}
+            setLoading={setLoading}
           />
         ) : (
           <Button

@@ -103,6 +103,7 @@ const RenderInputField = ({
   setChartConfig,
   setLoading,
   setComponentName,
+  setApiData,
 }: {
   currentField: any;
   input: string;
@@ -135,6 +136,7 @@ const RenderInputField = ({
   setColumns: any;
   setLoading: any;
   setComponentName: any;
+  setApiData: (data: any) => any;
 }) => {
   const [iframeUrl, setIframeUrl] = useState<string | null>(null);
   const [value, setValue] = useState(currentField.value);
@@ -207,10 +209,14 @@ const RenderInputField = ({
       (item: any) => item?.button_text === value
     );
     if (selectedItem) {
-      setComponentName(selectedItem); // Store the entire item
+      setComponentName(selectedItem);
     }
-    // Trigger handleSubmit with the selected value as suggestion
-    handleSubmit(selectedItem?.prompt); // Passing the value as 'suggestion'
+    if (selectedItem?.enable_prompt) {
+      handleSubmit(selectedItem?.prompt);
+    }
+    if (selectedItem?.enable_api) {
+      setApiData(selectedItem);
+    }
   };
 
   useEffect(() => {

@@ -2275,6 +2275,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                   <ChatwithDataActions
                     editedField={editedField}
                     setEditedField={setEditedField}
+                    setLoading={setUploading}
                   />
                 </div>
               )}

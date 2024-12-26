@@ -64,6 +64,7 @@ export function ChatForm({ formFields, apiFieldData }: any) {
   const [loading, setLoading] = React.useState<boolean>(false);
   const [columns, setColumns] = React.useState<string[]>([]);
   const [componentName, setComponentName] = React.useState<string | null>(null);
+  const [apiData, setApiData] = React.useState<string[]>([]);
   const path = usePathname();
   const currentPath = path.includes("submit");
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
@@ -1034,6 +1035,7 @@ export function ChatForm({ formFields, apiFieldData }: any) {
                   setColumns={setColumns}
                   setLoading={setLoading}
                   setComponentName={setComponentName}
+                  setApiData={setApiData}
                 />
                 {validationError && (
                   <p className="text-red-500 text-sm mt-1">{validationError}</p>

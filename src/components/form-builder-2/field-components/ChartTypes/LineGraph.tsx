@@ -115,7 +115,7 @@ const LineGraph: React.FC<LineChartProps> = ({
   };
 
   return (
-    <Card className="w-full max-w-4xl">
+    <Card className="w-fit">
       <CardHeader>
         <CardTitle>Trend Analysis</CardTitle>
         <CardDescription>

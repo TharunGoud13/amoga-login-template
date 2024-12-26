@@ -62,7 +62,7 @@ export type FormFieldType = {
       {
         button_text: string;
         prompt: string;
-        api_response: string;
+        api_response: string[];
         // response_data: string[];
         enable_api: boolean;
         enable_prompt: boolean;

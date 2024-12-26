@@ -60,17 +60,57 @@ const ChatwithDataCard = ({
   chartConfig,
   currentField,
   componentName,
+  apiData,
 }: any) => {
-  const chartType = componentName?.component_name;
-  // Ensure fallback between results and default values if provided
-  const card_json = results || []; // Use results if provided, otherwise fallback to empty array
+  // Process the data based on which props are provided
+  const processData = () => {
+    // Case 1: Using results and columns
+    if (results && Array.isArray(results) && results.length > 0) {
+      return {
+        data: results,
+        columnTitles: columns || Object.keys(results[0]),
+        chartType: componentName?.component_name,
+      };
+    }
 
-  // Check if columns are available, if not, use the first item's keys from card_json
-  const columnTitles =
-    columns || (card_json.length > 0 ? Object.keys(card_json[0]) : []);
+    // Case 2: Using apiData
+    if (apiData?.api_response && Array.isArray(apiData.api_response)) {
+      const responseData = apiData.api_response;
 
-  // Ensure we have data to render
-  if (!card_json || card_json.length === 0) {
+      // Get all unique keys from the response data
+      const allKeys =
+        responseData.length > 0 ? Object.keys(responseData[0]) : [];
+
+      // Filter out null entries and add index
+      const formattedData = responseData
+        .filter(
+          (item: any) =>
+            item && Object.values(item).some((value) => value !== null)
+        )
+        .map((item: any, index: number) => ({
+          id: index + 1,
+          ...item,
+        }));
+
+      return {
+        data: formattedData,
+        columnTitles: allKeys,
+        chartType: apiData.component_name || componentName?.component_name,
+      };
+    }
+
+    // Default fallback
+    return {
+      data: [],
+      columnTitles: [],
+      chartType: "",
+    };
+  };
+
+  const { data, columnTitles, chartType } = processData();
+
+  // Return early if no data
+  if (!data || data.length === 0) {
     return <div>No data available</div>;
   }
 
@@ -84,6 +124,8 @@ const ChatwithDataCard = ({
   };
 
   const formatCellValue = (column: string, value: any) => {
+    if (value === null || value === undefined) return "";
+
     if (column.toLowerCase().includes("valuation")) {
       const parsedValue = parseFloat(value);
       if (isNaN(parsedValue)) {
@@ -110,19 +152,19 @@ const ChatwithDataCard = ({
   const renderChart = () => {
     switch (chartType) {
       case "Data Card Donut Chart":
-        return <PieChart data={card_json} dataKey={columnTitles} />;
+        return <PieChart data={data} dataKey={columnTitles} />;
       case "Data Card Line Chart":
-        return <LineGraph data={card_json} dataKey={columnTitles} />;
+        return <LineGraph data={data} dataKey={columnTitles} />;
       case "Data Card Bar Chart":
-        return <BarChart data={card_json} dataKey={columnTitles} />;
+        return <BarChart data={data} dataKey={columnTitles} />;
       case "Data Card Bar Chart Horizontal":
-        return <HorizontalBarChart data={card_json} dataKey={columnTitles} />;
+        return <HorizontalBarChart data={data} dataKey={columnTitles} />;
     }
   };
 
   return (
     <div>
-      <Card className="p-2.5  overflow-x-auto md:w-[550px]">
+      <Card className="p-2.5 overflow-x-auto md:w-[550px]">
         <Tabs className="w-full" defaultValue="data">
           <TabsList defaultValue={"data"} className="grid grid-cols-3">
             <TabsTrigger value="data">Data</TabsTrigger>
@@ -130,7 +172,7 @@ const ChatwithDataCard = ({
             <TabsTrigger value="actionables">Actionables</TabsTrigger>
           </TabsList>
           <TabsContent value="data">
-            <Table className="min-w-full bg-red-400 overflow-x-auto divide-y divide-border">
+            <Table className="min-w-full overflow-x-auto divide-y divide-border">
               <TableHeader className="bg-secondary sticky top-0 shadow-sm">
                 <TableRow>
                   {columnTitles?.map(
@@ -146,20 +188,18 @@ const ChatwithDataCard = ({
                 </TableRow>
               </TableHeader>
               <TableBody className="bg-card overflow-x-auto divide-y divide-border">
-                {card_json.map(
-                  (company: any, index: Key | null | undefined) => (
-                    <TableRow key={index} className="hover:bg-muted">
-                      {columnTitles?.map((column: any, cellIndex: any) => (
-                        <TableCell
-                          key={cellIndex}
-                          className="px-6 py-4 whitespace-nowrap text-sm text-foreground"
-                        >
-                          {formatCellValue(column, company[column])}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  )
-                )}
+                {data.map((item: any, index: Key | null | undefined) => (
+                  <TableRow key={index} className="hover:bg-muted">
+                    {columnTitles?.map((column: any, cellIndex: any) => (
+                      <TableCell
+                        key={cellIndex}
+                        className="px-6 py-4 whitespace-nowrap text-sm text-foreground"
+                      >
+                        {formatCellValue(column, item[column])}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </TabsContent>

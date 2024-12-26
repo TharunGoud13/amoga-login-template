@@ -66,6 +66,7 @@ export function ChatWithDB({ formFields, apiFieldData }: any) {
   const [results, setResults] = React.useState<Result[]>([]);
   const [loading, setLoading] = React.useState<boolean>(false);
   const [columns, setColumns] = React.useState<string[]>([]);
+  const [apiData, setApiData] = React.useState<string[]>([]);
   const [componentName, setComponentName] = React.useState<string | null>(null);
   const path = usePathname();
   const currentPath = path.includes("submit");
@@ -735,6 +736,7 @@ export function ChatWithDB({ formFields, apiFieldData }: any) {
             results={results}
             column={columns}
             chartConfig={chartConfig}
+            apiData={apiData}
             componentName={componentName}
           />
         </div>
@@ -1084,6 +1086,7 @@ export function ChatWithDB({ formFields, apiFieldData }: any) {
                   setColumns={setColumns}
                   setLoading={setLoading}
                   setComponentName={setComponentName}
+                  setApiData={setApiData}
                 />
                 {validationError && (
                   <p className="text-red-500 text-sm mt-1">{validationError}</p>
