@@ -46,7 +46,6 @@ export default function Page() {
       setActiveQuery(query);
       setLoadingStep(2);
       const data = await runGenerateSQLQuery(query);
-      console.log("companies: ", data);
       const columns = data.length > 0 ? Object.keys(data[0]) : [];
       setResults(data);
       setColumns(columns);
