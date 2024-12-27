@@ -6,6 +6,8 @@ import { columns } from "./data-table/columns";
 import { Button } from "@/components/ui/button";
 import { NEXT_PUBLIC_API_KEY, SAVE_FORM_DATA } from "@/constants/envConfig";
 import { CalendarDatePicker } from "@/components/ui/calendar-date-picker";
+import { useSession } from "next-auth/react";
+import { Session } from "../FormBuilder";
 
 function Loading() {
   return <div>Loading...</div>;
@@ -21,6 +23,10 @@ function FormsDataTable() {
   const [error, setError] = useState<Error | null>(null);
   const [fromDate, setFromDate] = useState<any>(undefined);
   const [toDate, setToDate] = useState<any>(undefined);
+  const { data: sessionData } = useSession();
+  const session: Session | null = sessionData
+    ? (sessionData as unknown as Session)
+    : null;
 
   const handleFromDateSelect = (date: Date | undefined) => {
     if (date) {
@@ -46,7 +52,10 @@ function FormsDataTable() {
           throw new Error("Failed to fetch API data");
         }
         const data = await response.json();
-        setApiData(data);
+        const filteredData = data.filter(
+          (item: any) => item.business_number === session?.user?.business_number
+        );
+        setApiData(filteredData);
       } catch (err) {
         setError(
           err instanceof Error ? err : new Error("An unknown error occurred")
@@ -107,22 +116,21 @@ function FormsDataTable() {
             >
               This Year
             </Button>
-              
           </div>
           <div className="flex pl-3 items-center gap-2">
-                <span className="text-sm">From</span>
-                <CalendarDatePicker
-                date={fromDate}
-                onDateSelect={handleFromDateSelect}
-                placeholder="From Date"
-              />
-                <span className="text-sm">To</span>
-                <CalendarDatePicker
-                date={toDate}
-                onDateSelect={handleToDateSelect}
-                placeholder="To Date"
-              />
-              </div>
+            <span className="text-sm">From</span>
+            <CalendarDatePicker
+              date={fromDate}
+              onDateSelect={handleFromDateSelect}
+              placeholder="From Date"
+            />
+            <span className="text-sm">To</span>
+            <CalendarDatePicker
+              date={toDate}
+              onDateSelect={handleToDateSelect}
+              placeholder="To Date"
+            />
+          </div>
         </div>
 
         <DataTable columns={columns} data={apiData} />

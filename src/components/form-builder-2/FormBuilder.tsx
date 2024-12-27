@@ -28,11 +28,27 @@ import { Card } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
 import { ChatWithDB } from "./ChatWithData";
 
+export interface Session {
+  user: {
+    name: string;
+    email: string;
+    id: string | number;
+    business_number: string | number;
+    business_name: string;
+    first_name: string;
+    last_name: string;
+    business_postcode: string;
+  };
+}
+
 export type FormFieldOrGroup = FormFieldType | FormFieldType[];
 
 export default function FormBuilder() {
   const t = useTranslations();
-  const { data: session } = useSession();
+  const { data: sessionData } = useSession();
+  const session: Session | null = sessionData
+    ? (sessionData as unknown as Session)
+    : null;
   const path = usePathname();
   const route = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -251,6 +267,8 @@ export default function FormBuilder() {
       status: "active",
       created_user_id: session?.user?.id,
       created_user_name: session?.user?.name,
+      business_number: session?.user?.business_number,
+      business_name: session?.user?.business_name,
       created_date: formatDateToCustomFormat(date),
       form_name: formInput,
       form_json: activeFormFields,

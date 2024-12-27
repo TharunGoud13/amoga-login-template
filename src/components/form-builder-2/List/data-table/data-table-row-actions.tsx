@@ -13,9 +13,16 @@ import React from "react";
 interface DataTableRowProps {
   formId: string;
   shareUrl: string;
+  user_name: string;
+  business_number: string | number;
 }
 
-const DataTableRowActions = ({ formId, shareUrl }: DataTableRowProps) => {
+const DataTableRowActions = ({
+  formId,
+  shareUrl,
+  user_name,
+  business_number,
+}: DataTableRowProps) => {
   return (
     <div>
       <DropdownMenu>
@@ -31,7 +38,10 @@ const DataTableRowActions = ({ formId, shareUrl }: DataTableRowProps) => {
           <Link href={`/form_maker/edit/${formId}`}>
             <DropdownMenuItem>Edit form</DropdownMenuItem>
           </Link>
-          <a href={`/submit/${shareUrl}`} target="_blank">
+          <a
+            href={`/submit/${shareUrl}/business_number=${business_number}/user_name=${user_name}`}
+            target="_blank"
+          >
             <DropdownMenuItem>View form</DropdownMenuItem>
           </a>
           <Link href={`/form_maker/view/${formId}`}>

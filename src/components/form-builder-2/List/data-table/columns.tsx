@@ -41,6 +41,8 @@ export const columns: ColumnDef<any>[] = [
   { accessorKey: "form_name", header: "Form Name" },
   { accessorKey: "share_url", header: "Share URL" },
   { accessorKey: "version_no", header: "Version" },
+  { accessorKey: "business_number", header: "Business Number" },
+  { accessorKey: "created_user_name", header: "User Name" },
   {
     accessorKey: "form_json",
     header: "Form Fields",
@@ -62,7 +64,16 @@ export const columns: ColumnDef<any>[] = [
     cell: ({ row }) => {
       const formId = row.getValue("form_id") as string;
       const shareUrl = row.getValue("share_url") as string;
-      return <DataTableRowActions formId={formId} shareUrl={shareUrl} />;
+      const business_number = row.getValue("business_number") as string;
+      const user_name = row.getValue("created_user_name") as string;
+      return (
+        <DataTableRowActions
+          formId={formId}
+          shareUrl={shareUrl}
+          business_number={business_number}
+          user_name={user_name}
+        />
+      );
     },
   },
 ];

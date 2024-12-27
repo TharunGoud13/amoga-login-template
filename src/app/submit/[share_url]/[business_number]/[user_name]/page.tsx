@@ -21,6 +21,7 @@ import { useSession } from "next-auth/react";
 import { trackPageView } from "@/utils/tracking";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ChatPreview from "@/components/form-builder-2/ChatPreview";
+import { Session } from "@/components/form-builder-2/FormBuilder";
 
 const renderFormFields = (fields: any, form: any) => {
   const apiFieldData = "";
@@ -97,7 +98,10 @@ const renderFormFields = (fields: any, form: any) => {
 const Page = (props: any) => {
   const [formData, setData] = useState<any>([]);
   const [formJsonData, setFormJsonData] = useState<any[]>([]);
-  const { data: session } = useSession();
+  const { data: sessionData } = useSession();
+  const session: Session | null = sessionData
+    ? (sessionData as unknown as Session)
+    : null;
   const pathName = props.params.share_url;
   const [loading, setLoading] = useState(false);
 
@@ -193,7 +197,7 @@ const Page = (props: any) => {
     headers.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
     headers.append("Content-Type", "application/json");
     const date = new Date();
-    const formUrl = `${process.env.NEXT_PUBLIC_API_URL}/submit/${pathName}`;
+    const formUrl = `${process.env.NEXT_PUBLIC_API_URL}/submit/${pathName}/business_number=${session?.user?.business_number}/user_name=${session?.user?.name}`;
     setLoading(true);
 
     const isFileUploadVariant = formJsonData.some(

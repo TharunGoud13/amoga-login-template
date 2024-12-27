@@ -30,6 +30,22 @@ const formSchema = z
       .min(10)
       .max(10)
       .nonempty({ message: "Mobile number is required" }),
+    business_name: z
+      .string()
+      .nonempty({ message: "Business name is required" }),
+    business_number: z
+      .string()
+      .min(10)
+      .max(10)
+      .nonempty({ message: "Business number is required" }),
+    business_zipcode: z
+      .string()
+      .nonempty({ message: "Business zipcode is required" }),
+    business_mobile: z
+      .string()
+      .nonempty({ message: "Business mobile is required" })
+      .min(10)
+      .max(10),
     password: z.string().min(8, {
       message: "Password must be at least 8 characters .",
     }),
@@ -73,6 +89,10 @@ const JoinPage: FC<any> = ({ setSelectedTab }) => {
     last_name: "",
     email: "",
     user_mobile: "",
+    business_name: "",
+    business_number: "",
+    business_zipcode: "",
+    business_mobile: "",
     password: "",
     retypePassword: "",
   };
@@ -92,12 +112,17 @@ const JoinPage: FC<any> = ({ setSelectedTab }) => {
   });
 
   const onSubmit = async (data: UserFormValue) => {
+    setLoading(true);
     const payload = {
       first_name: data.first_name,
       last_name: data.last_name,
       user_name: data.first_name + " " + data.last_name,
       user_email: data.email,
       user_mobile: data.user_mobile,
+      business_name: data.business_name,
+      business_number: data.business_number,
+      business_postcode: data.business_zipcode,
+      business_phone_no: data.business_mobile,
       password: data.password,
       retype_password: data.retype_password,
     };
@@ -117,8 +142,8 @@ const JoinPage: FC<any> = ({ setSelectedTab }) => {
       console.log("responseData-----", responseData);
       console.log("response----", response1);
       if (response1.status === 201) {
+        setLoading(false);
         toast({ description: "User Created Successfully", variant: "default" });
-        
 
         const getUserResponse = await fetch(
           `${GET_CONTACTS_API}?user_email=eq.${data.email}`,
@@ -158,14 +183,20 @@ const JoinPage: FC<any> = ({ setSelectedTab }) => {
             setVerificationError(true);
           }
         }
-      }
-      else if (response1.status === 409) {
+      } else if (response1.status === 409) {
         toast({ description: "Email already in use.", variant: "destructive" });
+        return false;
+        setLoading(false);
+      } else {
+        toast({ description: "Something went wrong", variant: "destructive" });
+        setLoading(false);
+
         return false;
       }
       return data;
     } catch (error: any) {
-      
+      setLoading(false);
+
       throw new Error("Error", error);
     }
   };
@@ -231,7 +262,10 @@ const JoinPage: FC<any> = ({ setSelectedTab }) => {
         }
         return true;
       } else if (response.status === 409) {
-        toast({ description: "Mobile number already registered.", variant: "destructive" });
+        toast({
+          description: "Mobile number already registered.",
+          variant: "destructive",
+        });
         return false;
       }
       return false;
@@ -292,9 +326,8 @@ const JoinPage: FC<any> = ({ setSelectedTab }) => {
         description: "An error occurred while resending verification email",
         variant: "destructive",
       });
-    } 
+    }
   };
-
 
   const onSubmitOtp = async (data: OtpFormValue) => {
     if (!otpSessionId) return;
@@ -310,7 +343,7 @@ const JoinPage: FC<any> = ({ setSelectedTab }) => {
         body: JSON.stringify({ sessionId: otpSessionId, otp: data.otp }),
       });
       const result = await response.json();
-      console.log("response----",response)
+      console.log("response----", response);
 
       if (result.verified) {
         const userData = {
@@ -455,6 +488,96 @@ const JoinPage: FC<any> = ({ setSelectedTab }) => {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="business_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Business Name <span className="text-red-500 mr-1">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        className="focus:!ring-offset-0 focus:!ring-0"
+                        type="text"
+                        placeholder="Business Name"
+                        disabled={loading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="business_number"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Business Number{" "}
+                      <span className="text-red-500 mr-1">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        className="focus:!ring-offset-0 focus:!ring-0"
+                        type="text"
+                        // inputMode="numeric"
+                        placeholder="Business Number"
+                        disabled={loading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="business_zipcode"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Business ZipCode{" "}
+                      <span className="text-red-500 mr-1">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        className="focus:!ring-offset-0 focus:!ring-0"
+                        type="number"
+                        inputMode="numeric"
+                        placeholder="Business Zip Code"
+                        disabled={loading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="business_mobile"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Business Mobile{" "}
+                      <span className="text-red-500 mr-1">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        className="focus:!ring-offset-0 focus:!ring-0"
+                        type="number"
+                        inputMode="numeric"
+                        placeholder="Business Mobile"
+                        disabled={loading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
@@ -531,13 +654,16 @@ const JoinPage: FC<any> = ({ setSelectedTab }) => {
                 className="ml-auto w-full"
                 type="submit"
               >
-                Join
+                {loading ? "Join.." : "Join"}
               </Button>
-              { (
-                <p className="text-sm underline text-gray-500 text-right cursor-pointer" onClick={handleResendVerificationEmail}>
+              {
+                <p
+                  className="text-sm underline text-gray-500 text-right cursor-pointer"
+                  onClick={handleResendVerificationEmail}
+                >
                   Resend Verification Email
                 </p>
-              )}
+              }
             </form>
           </Form>
         </>
