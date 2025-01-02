@@ -1593,15 +1593,16 @@ const RenderInputField = ({
         >
           <div className="flex flex-wrap items-center gap-2.5">
             {currentField.chat_with_data?.buttons?.map(
-              (item: any, index: any) => (
-                <div
-                  key={index}
-                  className="flex border rounded-full p-2.5  items-center gap-2"
-                >
-                  <RadioGroupItem value={item?.button_text} id={index} />
-                  <Label htmlFor={index}>{item?.button_text}</Label>
-                </div>
-              )
+              (item: any, index: any) =>
+                item?.button_text ? (
+                  <div
+                    key={index}
+                    className="flex border rounded-full p-2.5  items-center gap-2"
+                  >
+                    <RadioGroupItem value={item?.button_text} id={index} />
+                    <Label htmlFor={index}>{item?.button_text}</Label>
+                  </div>
+                ) : null
             )}
           </div>
         </RadioGroup>

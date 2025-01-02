@@ -39,6 +39,13 @@ interface FormEntry {
   json: string;
 }
 
+interface ValidationErrors {
+  buttonText?: string;
+  component_name?: string;
+  prompt?: string;
+  apiEndpoint?: string;
+}
+
 const COMPONENT_NAMES = [
   "Data Card Line Chart",
   "Data Card Bar Chart",
@@ -388,12 +395,14 @@ function NewEntryForm({
   editedField,
   setEditedField,
   setLoading,
+  existingButtons,
 }: {
   onSave: (entry: FormEntry) => void;
   onCancel: () => void;
   editedField: any;
   setEditedField: (field: any) => void;
   setLoading: (loading: boolean) => void;
+  existingButtons: FormEntry[];
 }) {
   const [newEntry, setNewEntry] = useState<FormEntry>({
     id: Date.now(),
@@ -413,34 +422,119 @@ function NewEntryForm({
     apiField: "",
     component_name: "",
   });
+  const [errors, setErrors] = useState<ValidationErrors>({});
+
+  const validateField = (name: string, value: any) => {
+    let fieldErrors: ValidationErrors = {};
+
+    switch (name) {
+      case "buttonText":
+        if (!value) {
+          fieldErrors.buttonText = "Button text is required";
+          toast({
+            description: "Please enter button text",
+            variant: "destructive",
+          });
+        } else if (
+          existingButtons.some((button) => button.buttonText === value)
+        ) {
+          fieldErrors.buttonText = "Button text must be unique";
+          toast({
+            description: "Button text must be unique",
+            variant: "destructive",
+          });
+        }
+        break;
+    }
+
+    return fieldErrors;
+  };
+
+  const handleInputChange = (name: string, value: any) => {
+    const newEntryData = { ...newEntry, [name]: value };
+    setNewEntry(newEntryData);
+
+    // Validate the changed field
+    const fieldErrors = validateField(name, value);
+    setErrors((prev) => ({ ...prev, ...fieldErrors }));
+  };
+
+  const validateForm = () => {
+    let formErrors: ValidationErrors = {};
+
+    // Validate button text
+    if (!newEntry.buttonText) {
+      formErrors.buttonText = "Button text is required";
+      toast({
+        description: "Please enter button text",
+        variant: "destructive",
+      });
+    } else if (
+      existingButtons.some(
+        (button) => button.buttonText === newEntry.buttonText
+      )
+    ) {
+      formErrors.buttonText = "Button text must be unique";
+      toast({
+        description: "Button text must be unique",
+        variant: "destructive",
+      });
+    }
+
+    // Validate component name
+    if (!newEntry.component_name) {
+      formErrors.component_name = "Component name is required";
+      toast({
+        description: "Please enter component name",
+        variant: "destructive",
+      });
+    }
+
+    // Validate prompt or API
+    if (newEntry.isPrompt && !newEntry.promptText) {
+      formErrors.prompt = "Prompt text is required";
+      toast({
+        description: "Please enter prompt text",
+        variant: "destructive",
+      });
+    }
+
+    if (newEntry.apiField && !newEntry.apiEndpoint) {
+      formErrors.apiEndpoint = "API endpoint is required";
+      toast({
+        description: "Please enter API endpoint",
+        variant: "destructive",
+      });
+    }
+
+    setErrors(formErrors);
+    return Object.keys(formErrors).length === 0;
+  };
 
   const handleSave = () => {
-    console.log("newEntry----", newEntry);
-    if (
-      !newEntry.buttonText ||
-      !newEntry.component_name ||
-      (!newEntry.promptText && !newEntry.apiEndpoint)
-    )
-      return;
-    onSave(newEntry);
-    setNewEntry({
-      id: Date.now(),
-      buttonText: "",
-      isPrompt: false,
-      promptText: "",
-      isApi: false,
-      apiEndpoint: "",
-      apiResponse: [],
-      apiField: "",
-      component_name: "",
-      storyApi: "",
-      storyApiEnabled: false,
-      actionApiEnabled: false,
-      actionApi: "",
-      automationName: "",
-      html: "",
-      json: "",
-    });
+    console.log("validateForm----", validateForm());
+    if (validateForm()) {
+      onSave(newEntry);
+      setNewEntry({
+        id: Date.now(),
+        buttonText: "",
+        isPrompt: false,
+        promptText: "",
+        isApi: false,
+        apiEndpoint: "",
+        apiResponse: [],
+        apiField: "",
+        component_name: "",
+        storyApi: "",
+        storyApiEnabled: false,
+        actionApiEnabled: false,
+        actionApi: "",
+        automationName: "",
+        html: "",
+        json: "",
+      });
+      setErrors({});
+    }
   };
 
   const fetchValidApi = async () => {
@@ -543,15 +637,13 @@ function NewEntryForm({
           <Input
             id="new-button-text"
             value={newEntry.buttonText}
-            onChange={(e) => {
-              setNewEntry({ ...newEntry, buttonText: e.target.value });
-              setEditedField({
-                ...editedField,
-              });
-            }}
+            onChange={(e) => handleInputChange("buttonText", e.target.value)}
             className="mt-1"
             placeholder="Enter button text"
           />
+          {errors.buttonText && (
+            <div className="text-red-500 text-sm mt-1">{errors.buttonText}</div>
+          )}
         </div>
         <div className="flex items-center space-x-2">
           <Checkbox
@@ -569,12 +661,11 @@ function NewEntryForm({
             id="new-prompt-text"
             disabled={!newEntry.isPrompt}
             value={newEntry.promptText}
-            onChange={(e) =>
-              setNewEntry({ ...newEntry, promptText: e.target.value })
-            }
+            onChange={(e) => handleInputChange("promptText", e.target.value)}
             className="mt-1"
             placeholder="Enter prompt text"
           />
+          {<div className="text-red-500 text-sm mt-1">{errors.prompt}</div>}
         </div>
         <div className="flex items-center space-x-2">
           <Checkbox
@@ -592,12 +683,15 @@ function NewEntryForm({
             id="new-api-endpoint"
             disabled={!newEntry.isApi}
             value={newEntry.apiEndpoint}
-            onChange={(e) =>
-              setNewEntry({ ...newEntry, apiEndpoint: e.target.value })
-            }
+            onChange={(e) => handleInputChange("apiEndpoint", e.target.value)}
             className="mt-1"
             placeholder="Enter API endpoint"
           />
+          {
+            <div className="text-red-500 text-sm mt-1">
+              {errors.apiEndpoint}
+            </div>
+          }
           <Label htmlFor="new-api-field">API Field</Label>
           <Input
             id="new-api-field"
@@ -620,9 +714,9 @@ function NewEntryForm({
         <div>
           <Label htmlFor="component-name">Component Name</Label>
           <Select
-            onValueChange={(value) => {
-              setNewEntry({ ...newEntry, component_name: value });
-            }}
+            onValueChange={(value) =>
+              handleInputChange("component_name", value)
+            }
           >
             <SelectTrigger id="component-name">
               <SelectValue placeholder="Select Component Name" />
@@ -635,6 +729,11 @@ function NewEntryForm({
               ))}
             </SelectContent>
           </Select>
+          {errors.component_name && (
+            <div className="text-red-500 text-sm mt-1">
+              {errors.component_name}
+            </div>
+          )}
         </div>
         <div className="flex items-center space-x-2">
           <Checkbox
@@ -933,6 +1032,7 @@ export default function ChatwithDataActions({
             editedField={editedField}
             setEditedField={setEditedField}
             setLoading={setLoading}
+            existingButtons={entries}
           />
         ) : (
           <Button
