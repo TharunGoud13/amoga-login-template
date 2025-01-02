@@ -1923,6 +1923,11 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                   </div>
                 )}
               />
+              <div className="w-full flex items-end justify-end">
+                <Button onClick={handleSave} disabled={uploading}>
+                  Save changes
+                </Button>
+              </div>
             </div>
           </TabsContent>
           <TabsContent value="cards">
@@ -2256,6 +2261,11 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                       id="api_field_error_msg"
                     ></span>
                   </div>
+                  <div className="w-full flex items-end justify-end">
+                    <Button onClick={handleSave} disabled={uploading}>
+                      Save changes
+                    </Button>
+                  </div>
                 </div>
               )}
             />
@@ -2276,17 +2286,23 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                     editedField={editedField}
                     setEditedField={setEditedField}
                     setLoading={setUploading}
+                    // handleSaveField={handleSave}
                   />
+                  <div className="w-full flex items-end justify-end">
+                    <Button onClick={handleSave} disabled={uploading}>
+                      Save
+                    </Button>
+                  </div>
                 </div>
               )}
             />
           </TabsContent>
         </Tabs>
-        <DialogFooter>
+        {/* <DialogFooter>
           <Button onClick={handleSave} disabled={uploading}>
             Save changes
           </Button>
-        </DialogFooter>
+        </DialogFooter> */}
       </DialogContent>
     </Dialog>
   );

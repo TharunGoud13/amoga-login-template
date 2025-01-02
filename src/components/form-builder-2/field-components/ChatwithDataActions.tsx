@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -733,36 +733,115 @@ export default function ChatwithDataActions({
   setEditedField,
   setLoading,
 }: any) {
-  const [entries, setEntries] = useState<FormEntry[]>([]);
+  const [entries, setEntries] = useState<FormEntry[]>(() => {
+    return (editedField?.chat_with_data?.buttons || []).map(
+      (button: any, index: number) => ({
+        id: index,
+        buttonText: button.button_text || "",
+        isPrompt: button.enable_prompt || false,
+        promptText: button.prompt || "",
+        isApi: button.enable_api || false,
+        apiEndpoint: button.apiEndpoint || "",
+        apiField: button.apiField || "",
+        component_name: button.component_name || "",
+        apiResponse: button.api_response || [],
+        storyApiEnabled: button.storyApiEnabled || false,
+        storyApi: button.storyApi || "",
+        actionApiEnabled: button.actionApiEnabled || false,
+        actionApi: button.actionApi || "",
+        automationName: button.automationName || "",
+        html: button.html || "",
+        json: button.json || "",
+      })
+    );
+  });
   const [showNewEntryForm, setShowNewEntryForm] = useState(false);
 
+  useEffect(() => {
+    if (editedField?.chat_with_data?.buttons) {
+      const updatedEntries = editedField.chat_with_data.buttons.map(
+        (button: any, index: number) => ({
+          id: index,
+          buttonText: button.button_text || "",
+          isPrompt: button.enable_prompt || false,
+          promptText: button.prompt || "",
+          isApi: button.enable_api || false,
+          apiEndpoint: button.apiEndpoint || "",
+          apiField: button.apiField || "",
+          component_name: button.component_name || "",
+          apiResponse: button.api_response || [],
+          storyApiEnabled: button.storyApiEnabled || false,
+          storyApi: button.storyApi || "",
+          actionApiEnabled: button.actionApiEnabled || false,
+          actionApi: button.actionApi || "",
+          automationName: button.automationName || "",
+          html: button.html || "",
+          json: button.json || "",
+        })
+      );
+      setEntries(updatedEntries);
+    }
+  }, [editedField?.chat_with_data?.buttons]);
+
   const handleSave = (newEntry: FormEntry) => {
+    const newEntries = [...entries, newEntry];
+    setEntries(newEntries);
     // Update the 'buttons' array with the new button data
     setEditedField({
       ...editedField,
       chat_with_data: {
         ...editedField.chat_with_data,
-        buttons: [
-          ...editedField.chat_with_data.buttons,
-          {
-            button_text: newEntry.buttonText,
-            prompt: newEntry.promptText,
-            api_response: newEntry.apiResponse,
-            enable_prompt: newEntry.isPrompt,
-            enable_api: newEntry.isApi,
-            component_name: newEntry?.component_name,
-          },
-        ],
+        buttons: newEntries.map((entry) => ({
+          button_text: entry.buttonText,
+          prompt: entry.promptText,
+          api_response: entry.apiResponse,
+          enable_prompt: entry.isPrompt,
+          enable_api: entry.isApi,
+          component_name: entry.component_name,
+          apiEndpoint: entry.apiEndpoint,
+          apiField: entry.apiField,
+          storyApiEnabled: entry.storyApiEnabled,
+          storyApi: entry.storyApi,
+          actionApiEnabled: entry.actionApiEnabled,
+          actionApi: entry.actionApi,
+          automationName: entry.automationName,
+          html: entry.html,
+          json: entry.json,
+        })),
       },
     });
 
-    // Optionally update entries state if you want to keep them in sync
-    setEntries([...entries, newEntry]);
     setShowNewEntryForm(false);
   };
 
   const handleDelete = (id: number) => {
-    setEntries(entries.filter((entry) => entry.id !== id));
+    const updatedEntries = entries.filter((entry) => entry.id !== id);
+    setEntries(updatedEntries);
+
+    // Update editedField after deletion
+    setEditedField({
+      ...editedField,
+      chat_with_data: {
+        ...editedField.chat_with_data,
+        buttons: updatedEntries.map((entry) => ({
+          button_text: entry.buttonText,
+          prompt: entry.promptText,
+          api_response: entry.apiResponse,
+          enable_prompt: entry.isPrompt,
+          enable_api: entry.isApi,
+          component_name: entry.component_name,
+          apiEndpoint: entry.apiEndpoint,
+          apiField: entry.apiField,
+          storyApiEnabled: entry.storyApiEnabled,
+          storyApi: entry.storyApi,
+          actionApiEnabled: entry.actionApiEnabled,
+          actionApi: entry.actionApi,
+          automationName: entry.automationName,
+          html: entry.html,
+          json: entry.json,
+        })),
+      },
+    });
   };
 
   const handleSaveEdit = (updatedEntry: FormEntry) => {
