@@ -6,8 +6,6 @@ import {
   BarChart,
   Line,
   LineChart,
-  Area,
-  AreaChart,
   Pie,
   PieChart,
   Cell,
@@ -15,23 +13,26 @@ import {
   YAxis,
   CartesianGrid,
   Legend,
+  Label,
 } from "recharts";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-// import { Config, Result } from "@/lib/types";
 import { Config, Result } from "@/lib/types";
-import { Label } from "recharts";
 import { transformDataForMultiLineChart } from "@/lib/rechart-format";
 
-function toTitleCase(str: string): string {
+function toTitleCase(str: string | undefined | null): string {
+  if (!str || typeof str !== "string") {
+    return ""; // Return an empty string if input is invalid
+  }
   return str
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 }
+
 const colors = [
   "hsl(var(--chart-1))",
   "hsl(var(--chart-2))",
@@ -46,66 +47,57 @@ const colors = [
 export function DynamicChart({
   chartData,
   chartConfig,
+  chartApiConfig,
   componentName,
 }: {
   chartData: Result[];
-  chartConfig: Config;
+  chartConfig?: Config;
+  chartApiConfig?: Config;
   componentName?: string;
 }) {
-  console.log("componentName----", componentName);
+  const activeConfig = chartConfig || chartApiConfig;
+
   const renderChart = () => {
-    if (!chartData || !chartConfig) return <div>No chart data</div>;
-    const parsedChartData = chartData.map((item) => {
-      const parsedItem: { [key: string]: any } = {};
-      for (const [key, value] of Object.entries(item)) {
-        parsedItem[key] = isNaN(Number(value)) ? value : Number(value);
-      }
-      return parsedItem;
-    });
+    if (!chartData || !activeConfig) return <div>No chart data available</div>;
 
-    chartData = parsedChartData;
-
-    const processChartData = (data: Result[], chartType: string) => {
-      if (chartType === "bar" || chartType === "pie") {
-        if (data.length <= 8) {
-          return data;
+    const parsedChartData = chartData
+      .filter(
+        (item) => item && Object.values(item).some((value) => value !== null)
+      )
+      .map((item) => {
+        const parsedItem: { [key: string]: any } = {};
+        for (const [key, value] of Object.entries(item)) {
+          parsedItem[key] = isNaN(Number(value)) ? value : Number(value);
         }
+        return parsedItem;
+      });
 
-        const subset = data.slice(0, 20);
-        return subset;
-      }
-      return data;
-    };
-
-    chartData = processChartData(chartData, componentName as string);
-    // console.log({ chartData, chartConfig });
+    if (parsedChartData.length === 0)
+      return <div>No valid data to display</div>;
 
     switch (true) {
       case componentName === "Data Card Bar Chart" ||
-        // chartConfig.type === "bar" ||
-        // chartConfig.type === "Data Card Bar Chart" ||
-        // chartConfig.type === "Data Card Bar Chart Horizontal" ||
         componentName === "Data Card Bar Chart Horizontal":
         return (
-          <BarChart data={chartData}>
+          <BarChart data={parsedChartData}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey={chartConfig.xKey}>
+            <XAxis dataKey={activeConfig.xKey}>
               <Label
-                value={toTitleCase(chartConfig.xKey)}
+                value={toTitleCase(activeConfig.xKey)}
                 offset={0}
                 position="insideBottom"
               />
             </XAxis>
             <YAxis>
               <Label
-                value={toTitleCase(chartConfig.yKeys[0])}
+                value={toTitleCase(activeConfig.yKeys[0])}
                 angle={-90}
                 position="insideLeft"
               />
             </YAxis>
             <ChartTooltip content={<ChartTooltipContent />} />
-            {chartConfig.legend && <Legend />}
-            {chartConfig.yKeys.map((key, index) => (
+            {activeConfig.legend && <Legend />}
+            {activeConfig.yKeys.map((key, index) => (
               <Bar
                 key={key}
                 dataKey={key}
@@ -114,28 +106,28 @@ export function DynamicChart({
             ))}
           </BarChart>
         );
-      // case chartConfig.type === "line" ||
-      // chartConfig.type === "Data Card Line Chart" ||
+
       case componentName === "Data Card Line Chart":
         const { data, xAxisField, lineFields } = transformDataForMultiLineChart(
-          chartData,
-          chartConfig
+          parsedChartData,
+          activeConfig
         );
         const useTransformedData =
-          chartConfig.multipleLines &&
-          chartConfig.measurementColumn &&
-          chartConfig.yKeys.includes(chartConfig.measurementColumn);
-        // console.log(useTransformedData, "useTransformedData");
-        // const useTransformedData = false;
+          activeConfig.multipleLines &&
+          activeConfig.measurementColumn &&
+          activeConfig.yKeys.includes(activeConfig.measurementColumn);
+
         return (
-          <LineChart data={useTransformedData ? data : chartData}>
+          <LineChart data={useTransformedData ? data : parsedChartData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
-              dataKey={useTransformedData ? chartConfig.xKey : chartConfig.xKey}
+              dataKey={
+                useTransformedData ? activeConfig.xKey : activeConfig.xKey
+              }
             >
               <Label
                 value={toTitleCase(
-                  useTransformedData ? xAxisField : chartConfig.xKey
+                  useTransformedData ? xAxisField : activeConfig.xKey
                 )}
                 offset={0}
                 position="insideBottom"
@@ -143,13 +135,13 @@ export function DynamicChart({
             </XAxis>
             <YAxis>
               <Label
-                value={toTitleCase(chartConfig.yKeys[0])}
+                value={toTitleCase(activeConfig.yKeys[0])}
                 angle={-90}
                 position="insideLeft"
               />
             </YAxis>
             <ChartTooltip content={<ChartTooltipContent />} />
-            {chartConfig.legend && <Legend />}
+            {activeConfig.legend && <Legend />}
             {useTransformedData
               ? lineFields.map((key, index) => (
                   <Line
@@ -159,7 +151,7 @@ export function DynamicChart({
                     stroke={colors[index % colors.length]}
                   />
                 ))
-              : chartConfig.yKeys.map((key, index) => (
+              : activeConfig.yKeys.map((key, index) => (
                   <Line
                     key={key}
                     type="monotone"
@@ -169,41 +161,20 @@ export function DynamicChart({
                 ))}
           </LineChart>
         );
-        // case chartConfig.type === "area":
-        return (
-          <AreaChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey={chartConfig.xKey} />
-            <YAxis />
-            <ChartTooltip content={<ChartTooltipContent />} />
-            {chartConfig.legend && <Legend />}
-            {chartConfig.yKeys.map((key, index) => (
-              <Area
-                key={key}
-                type="monotone"
-                dataKey={key}
-                fill={colors[index % colors.length]}
-                stroke={colors[index % colors.length]}
-              />
-            ))}
-          </AreaChart>
-        );
+
       case componentName === "Data Card Donut Chart":
-        // chartConfig.type === "Data Card Donut Chart" ||
-        // chartConfig.type === "pie":
         return (
           <PieChart>
             <Pie
-              data={chartData}
-              dataKey={chartConfig.yKeys[0]}
-              nameKey={chartConfig.xKey}
+              data={parsedChartData}
+              dataKey={activeConfig.yKeys[0]}
+              nameKey={activeConfig.xKey}
               cx="50%"
               cy="50%"
               innerRadius={60}
-              // outerRadius={120}
               strokeWidth={5}
             >
-              {chartData.map((_, index) => (
+              {parsedChartData.map((_, index) => (
                 <Cell
                   key={`cell-${index}`}
                   fill={colors[index % colors.length]}
@@ -211,20 +182,23 @@ export function DynamicChart({
               ))}
             </Pie>
             <ChartTooltip content={<ChartTooltipContent />} />
-            {chartConfig.legend && <Legend />}
+            {activeConfig.legend && <Legend />}
           </PieChart>
         );
+
       default:
-      // return <div>Unsupported chart type: {chartConfig.type}</div>;
+        return <div>Unsupported chart type: {componentName}</div>;
     }
   };
 
   return (
     <div className="w-full flex flex-col justify-center items-center">
-      <h2 className="text-lg font-bold mb-2">{chartConfig.title}</h2>
-      {chartConfig && chartData.length > 0 && (
+      <h2 className="text-lg font-bold mb-2">
+        {activeConfig?.title || "Chart"}
+      </h2>
+      {activeConfig && chartData.length > 0 && (
         <ChartContainer
-          config={chartConfig.yKeys.reduce((acc, key, index) => {
+          config={activeConfig.yKeys.reduce((acc, key, index) => {
             acc[key] = {
               label: key,
               color: colors[index % colors.length],
@@ -237,8 +211,12 @@ export function DynamicChart({
         </ChartContainer>
       )}
       <div className="w-full">
-        <p className="mt-4 text-sm">{chartConfig.description}</p>
-        <p className="mt-4 text-sm">{chartConfig.takeaway}</p>
+        <p className="mt-4 text-sm">
+          {activeConfig?.description || "No description available."}
+        </p>
+        <p className="mt-4 text-sm">
+          {activeConfig?.takeaway || "No takeaways available."}
+        </p>
       </div>
     </div>
   );

@@ -29,12 +29,14 @@ interface FormEntry {
   apiEndpoint: string;
   apiField: string;
   dataApi: boolean;
+  chat_apiEndpoint: string;
   chat_field_1: string;
   chat_field_2: string;
   component_name: string;
   storyApiEnabled: boolean;
   storyApi: string;
   apiResponse: [];
+  dataApiResponse: [];
   actionApiEnabled: boolean;
   actionApi: string;
   automationName: string;
@@ -74,6 +76,100 @@ function SortableItem({
   const [isEditing, setIsEditing] = useState(false);
   const [editedEntry, setEditedEntry] = useState(entry);
 
+  const fetchValidApi = async () => {
+    const requestOptions = {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${NEXT_PUBLIC_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    };
+    try {
+      const response = await fetch(ADD_CONNECTIONS, requestOptions);
+      if (!response.ok) {
+        toast({ description: "Failed to fetch data", variant: "destructive" });
+      }
+
+      const result = await response.json();
+      const validApis = result.filter(
+        (item: any) => item?.test_status === "passed"
+      );
+      return validApis;
+    } catch (error) {
+      toast({
+        description: "Error fetching valid APIs",
+        variant: "destructive",
+      });
+      return [];
+    }
+  };
+
+  const handleAddDataApi = async () => {
+    const { chat_apiEndpoint, chat_field_1, chat_field_2 } = editedEntry;
+
+    const validApis = await fetchValidApi();
+    const isValid = validApis.filter(
+      (item: any) => item.api_url === chat_apiEndpoint
+    );
+
+    if (isValid.length === 0) {
+      toast({ description: "Invalid API URL", variant: "destructive" });
+    }
+
+    if (!isValid || !chat_apiEndpoint || !chat_field_1 || !chat_field_2) {
+      toast({ description: "Something went wrong", variant: "destructive" });
+    }
+    if (
+      isValid &&
+      isValid.length > 0 &&
+      chat_apiEndpoint &&
+      chat_field_1 &&
+      chat_field_2
+    ) {
+      const { key, secret } = isValid && isValid[0];
+
+      try {
+        const requestOptions = {
+          method: "GET",
+          headers: {
+            [key]: secret,
+            "Content-Type": "application/json",
+          },
+        };
+        const response = await fetch(chat_apiEndpoint, requestOptions);
+        if (!response.ok) {
+          toast({
+            description: "Failed to fetch data",
+            variant: "destructive",
+          });
+        }
+        const data = await response.json();
+
+        if (data) {
+          const fieldData = data.map((item: any) => ({
+            [chat_field_1]: item[chat_field_1],
+            [chat_field_2]: item[chat_field_2],
+          }));
+          setEditedEntry({ ...editedEntry, dataApiResponse: fieldData });
+          // setLoading(false);
+          toast({
+            description: "Options added from API successfully",
+            variant: "default",
+          });
+        } else {
+          toast({
+            description: "No valid  values found",
+            variant: "destructive",
+          });
+          // setLoading(false);
+        }
+      } catch (error) {
+        toast({ description: "Failed to fetch data", variant: "destructive" });
+        // setLoading(false);
+      }
+    }
+  };
+
   const handleEdit = () => {
     setIsEditing(true);
     onEdit();
@@ -93,11 +189,13 @@ function SortableItem({
                 button_text: editedEntry.buttonText,
                 prompt: editedEntry.promptText,
                 api_response: editedEntry.apiResponse,
+                dataApi_response: editedEntry.dataApiResponse,
                 enable_prompt: editedEntry.isPrompt,
                 enable_api: editedEntry.isApi,
                 component_name: editedEntry?.component_name,
                 apiEndpoint: editedEntry.apiEndpoint,
                 enable_dataApi: editedEntry.dataApi,
+                chat_apiEndpoint: editedEntry.chat_apiEndpoint,
                 chat_field_1: editedEntry.chat_field_1,
                 chat_field_2: editedEntry.chat_field_2,
                 apiField: editedEntry.apiField,
@@ -119,6 +217,8 @@ function SortableItem({
     setIsEditing(false);
     setEditedEntry(entry);
   };
+
+  console.log("editedEntry----", editedEntry);
 
   return (
     <Draggable draggableId={String(entry.id)} index={entry.id}>
@@ -234,7 +334,27 @@ function SortableItem({
                 <Label htmlFor={`data-api-${entry.id}`}>Data API</Label>
               </div>
               <div>
-                <Label htmlFor={`chat-field-1-${entry.id}`}>Chat Field 1</Label>
+                <Label htmlFor={`chat-apiEndpoint-${entry.id}`}>
+                  Chart Api Endpoint
+                </Label>
+                <Input
+                  id={`chat-apiEndpoint-${entry.id}`}
+                  value={editedEntry.chat_apiEndpoint}
+                  onChange={(e) =>
+                    setEditedEntry({
+                      ...editedEntry,
+                      chat_apiEndpoint: e.target.value,
+                    })
+                  }
+                  className="mt-1"
+                  placeholder="Enter Chart API"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor={`chat-field-1-${entry.id}`}>
+                  Chart Field 1
+                </Label>
                 <Input
                   id={`chat-field-1-${entry.id}`}
                   value={editedEntry.chat_field_1}
@@ -245,7 +365,7 @@ function SortableItem({
                     })
                   }
                   className="mt-1"
-                  placeholder="Enter Chat Field 1"
+                  placeholder="Enter Chat Field 1 (x-axis) (TEXT)"
                 />
               </div>
               <div>
@@ -260,9 +380,16 @@ function SortableItem({
                     })
                   }
                   className="mt-1"
-                  placeholder="Enter Chat Field 2"
+                  placeholder="Enter Chat Field 2 (y-axis) (NUMBER)"
                 />
               </div>
+              <Button
+                // disabled={!editedEntry.isDataApi}
+                className="mt-1"
+                onClick={handleAddDataApi}
+              >
+                Add API
+              </Button>
               <div>
                 <Label htmlFor={`component-name-${entry.id}`}>
                   Component Name
@@ -461,7 +588,9 @@ function NewEntryForm({
     isApi: false,
     apiEndpoint: "",
     apiResponse: [],
+    dataApiResponse: [],
     dataApi: false,
+    chat_apiEndpoint: "",
     chat_field_1: "",
     chat_field_2: "",
     storyApiEnabled: false,
@@ -574,7 +703,9 @@ function NewEntryForm({
         isApi: false,
         apiEndpoint: "",
         apiResponse: [],
+        dataApiResponse: [],
         dataApi: false,
+        chat_apiEndpoint: "",
         chat_field_1: "",
         chat_field_2: "",
         apiField: "",
@@ -681,21 +812,27 @@ function NewEntryForm({
 
   const handleAddDataApi = async () => {
     setLoading(true);
-    const { chat_field_1, chat_field_2 } = newEntry;
+    const { chat_apiEndpoint, chat_field_1, chat_field_2 } = newEntry;
 
     const validApis = await fetchValidApi();
     const isValid = validApis.filter(
-      (item: any) => item.api_url === chat_field_1
+      (item: any) => item.api_url === chat_apiEndpoint
     );
 
     if (isValid.length === 0) {
       toast({ description: "Invalid API URL", variant: "destructive" });
     }
 
-    if (!isValid || !chat_field_1 || !chat_field_2) {
+    if (!isValid || !chat_apiEndpoint || !chat_field_1 || !chat_field_2) {
       toast({ description: "Something went wrong", variant: "destructive" });
     }
-    if (isValid && isValid.length > 0 && chat_field_1 && chat_field_2) {
+    if (
+      isValid &&
+      isValid.length > 0 &&
+      chat_apiEndpoint &&
+      chat_field_1 &&
+      chat_field_2
+    ) {
       const { key, secret } = isValid && isValid[0];
 
       try {
@@ -706,7 +843,7 @@ function NewEntryForm({
             "Content-Type": "application/json",
           },
         };
-        const response = await fetch(chat_field_1, requestOptions);
+        const response = await fetch(chat_apiEndpoint, requestOptions);
         if (!response.ok) {
           toast({
             description: "Failed to fetch data",
@@ -717,9 +854,10 @@ function NewEntryForm({
 
         if (data) {
           const fieldData = data.map((item: any) => ({
+            [chat_field_1]: item[chat_field_1],
             [chat_field_2]: item[chat_field_2],
           }));
-          setNewEntry({ ...newEntry, apiResponse: fieldData });
+          setNewEntry({ ...newEntry, dataApiResponse: fieldData });
           setLoading(false);
           toast({
             description: "Options added from API successfully",
@@ -833,21 +971,32 @@ function NewEntryForm({
           <Label htmlFor="new-is-api">Data API</Label>
         </div>
         <div>
-          <Label htmlFor="chat-field-1">Chat Field 1</Label>
+          <Label htmlFor="chat-field-1">Chart Api Endpoint</Label>
+          <Input
+            id="chat-field-1"
+            disabled={!newEntry.dataApi}
+            value={newEntry.chat_apiEndpoint}
+            onChange={(e) =>
+              handleInputChange("chat_apiEndpoint", e.target.value)
+            }
+            className="mt-1"
+            placeholder="Enter Chat Field 1"
+          />
+          <Label htmlFor="chat-field-1">Chart Field 1</Label>
           <Input
             id="chat-field-1"
             disabled={!newEntry.dataApi}
             value={newEntry.chat_field_1}
             onChange={(e) => handleInputChange("chat_field_1", e.target.value)}
             className="mt-1"
-            placeholder="Enter Chat Field 1"
+            placeholder="Enter Chat Field 1 (x-axis) (TEXT)"
           />
           {
             <div className="text-red-500 text-sm mt-1">
               {errors.apiEndpoint}
             </div>
           }
-          <Label htmlFor="chat-field-2">Chat Field 2</Label>
+          <Label htmlFor="chat-field-2">Chart Field 2</Label>
           <Input
             id="chat-field-2"
             disabled={!newEntry.dataApi}
@@ -856,7 +1005,7 @@ function NewEntryForm({
               setNewEntry({ ...newEntry, chat_field_2: e.target.value })
             }
             className="mt-1"
-            placeholder="Enter Chat Field 2"
+            placeholder="Enter Chat Field 2 (y-axis) (NUMBER)"
           />
           <Button
             disabled={!newEntry.dataApi}
@@ -995,13 +1144,16 @@ export default function ChatwithDataActions({
         isPrompt: button.enable_prompt || false,
         promptText: button.prompt || "",
         isApi: button.enable_api || false,
+        dataApi: button.enable_dataApi || false,
         apiEndpoint: button.apiEndpoint || "",
         apiField: button.apiField || "",
         enable_dataApi: button.dataApi || false,
+        chat_apiEndpoint: button.chat_apiEndpoint || "",
         chat_field_1: button.chat_field_1 || "",
         chat_field_2: button.chat_field_2 || "",
         component_name: button.component_name || "",
         apiResponse: button.api_response || [],
+        dataApiResponse: button.dataApiResponse || [],
         storyApiEnabled: button.storyApiEnabled || false,
         storyApi: button.storyApi || "",
         actionApiEnabled: button.actionApiEnabled || false,
@@ -1026,10 +1178,12 @@ export default function ChatwithDataActions({
           apiEndpoint: button.apiEndpoint || "",
           apiField: button.apiField || "",
           dataApi: button.dataApi || false,
+          chat_apiEndpoint: button.chat_apiEndpoint || "",
           chat_field_1: button.chat_field_1 || "",
           chat_field_2: button.chat_field_2 || "",
           component_name: button.component_name || "",
           apiResponse: button.api_response || [],
+          dataApiResponse: button.dataApi_response || [],
           storyApiEnabled: button.storyApiEnabled || false,
           storyApi: button.storyApi || "",
           actionApiEnabled: button.actionApiEnabled || false,
@@ -1055,9 +1209,11 @@ export default function ChatwithDataActions({
           button_text: entry.buttonText,
           prompt: entry.promptText,
           api_response: entry.apiResponse,
+          dataApi_response: entry.dataApiResponse,
           enable_prompt: entry.isPrompt,
           enable_api: entry.isApi,
           enable_dataApi: entry.dataApi,
+          chat_apiEndpoint: entry.chat_apiEndpoint,
           chat_field_1: entry.chat_field_1,
           chat_field_2: entry.chat_field_2,
           component_name: entry.component_name,
@@ -1090,11 +1246,13 @@ export default function ChatwithDataActions({
           button_text: entry.buttonText,
           prompt: entry.promptText,
           api_response: entry.apiResponse,
+          dataApi_response: entry.dataApiResponse,
           enable_prompt: entry.isPrompt,
           enable_api: entry.isApi,
           component_name: entry.component_name,
           apiEndpoint: entry.apiEndpoint,
           enable_dataApi: entry.dataApi,
+          chat_apiEndpoint: entry.chat_apiEndpoint,
           chat_field_1: entry.chat_field_1,
           chat_field_2: entry.chat_field_2,
           apiField: entry.apiField,
@@ -1129,11 +1287,13 @@ export default function ChatwithDataActions({
                 button_text: updatedEntry.buttonText,
                 prompt: updatedEntry.promptText,
                 api_response: updatedEntry.apiResponse,
+                dataApi_response: updatedEntry.dataApiResponse,
                 enable_prompt: updatedEntry.isPrompt,
                 enable_api: updatedEntry.isApi,
                 component_name: updatedEntry?.component_name,
                 apiEndpoint: updatedEntry.apiEndpoint,
                 enable_dataApi: updatedEntry.dataApi,
+                chat_apiEndpoint: updatedEntry.chat_apiEndpoint,
                 chat_field_1: updatedEntry.chat_field_1,
                 chat_field_2: updatedEntry.chat_field_2,
                 apiField: updatedEntry.apiField,

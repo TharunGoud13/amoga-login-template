@@ -64,43 +64,116 @@ const ChatwithDataCard = ({
   apiData,
 }: any) => {
   // Process the data based on which props are provided
+
+  const generateChartApiConfig = (data: any[]) => {
+    if (!data || data.length === 0) return null;
+
+    // Clean and transform the data
+    const cleanedData = data.map((item) => {
+      const cleanedItem: { [key: string]: any } = {};
+
+      Object.entries(item).forEach(([key, value]) => {
+        if (typeof value === "string") {
+          // Try to convert string values that look like numbers (including currency)
+          const numericString = value.replace(/[^0-9.-]+/g, "");
+          const numericValue = parseFloat(numericString);
+
+          if (!isNaN(numericValue)) {
+            cleanedItem[key] = numericValue;
+          } else {
+            cleanedItem[key] = value;
+          }
+        } else {
+          cleanedItem[key] = value;
+        }
+      });
+
+      return cleanedItem;
+    });
+
+    // Find xKey (first non-numeric field) and yKeys (numeric fields)
+    const keys = Object.keys(cleanedData[0]);
+    const xKey = keys.find((key) => typeof cleanedData[0][key] === "string");
+    const yKeys = keys.filter((key) => typeof cleanedData[0][key] === "number");
+
+    // Generate colors for each yKey
+    const colors = yKeys.reduce((acc, key, index) => {
+      acc[key] = `hsl(var(--chart-${(index % 5) + 1}))`;
+      return acc;
+    }, {} as Record<string, string>);
+
+    return {
+      description: "Generated chart configuration from API data.",
+      takeaway: "This chart is dynamically configured.",
+      title: "Dynamic Chart",
+      xKey,
+      yKeys,
+      legend: false,
+      colors,
+    };
+  };
+
   const processData = () => {
-    // Case 1: Using results and columns
     if (results && Array.isArray(results) && results.length > 0) {
+      // Clean the results data
+      const cleanedResults = results.map((item) => {
+        const cleanedItem: { [key: string]: any } = {};
+        Object.entries(item).forEach(([key, value]) => {
+          if (typeof value === "string") {
+            // Convert currency strings to numbers
+            const numericString = value.replace(/[^0-9.-]+/g, "");
+            const numericValue = parseFloat(numericString);
+            cleanedItem[key] = !isNaN(numericValue) ? numericValue : value;
+          } else {
+            cleanedItem[key] = value;
+          }
+        });
+        return cleanedItem;
+      });
+
       return {
-        data: results,
-        columnTitles: columns || Object.keys(results[0]),
+        data: cleanedResults,
+        columnTitles: columns || Object.keys(cleanedResults[0]),
         chartType: componentName?.component_name,
       };
     }
 
-    // Case 2: Using apiData
-    if (apiData?.api_response && Array.isArray(apiData.api_response)) {
-      const responseData = apiData.api_response;
-
-      // Get all unique keys from the response data
+    if (apiData?.dataApi_response && Array.isArray(apiData.dataApi_response)) {
+      const responseData = apiData.dataApi_response;
       const allKeys =
         responseData.length > 0 ? Object.keys(responseData[0]) : [];
 
-      // Filter out null entries and add index
+      // Clean the API response data
       const formattedData = responseData
         .filter(
           (item: any) =>
             item && Object.values(item).some((value) => value !== null)
         )
-        .map((item: any, index: number) => ({
-          id: index + 1,
-          ...item,
-        }));
+        .map((item: any) => {
+          const cleanedItem: { [key: string]: any } = {};
+          Object.entries(item).forEach(([key, value]) => {
+            if (typeof value === "string") {
+              // Convert currency strings to numbers
+              const numericString = value.replace(/[^0-9.-]+/g, "");
+              const numericValue = parseFloat(numericString);
+              cleanedItem[key] = !isNaN(numericValue) ? numericValue : value;
+            } else {
+              cleanedItem[key] = value;
+            }
+          });
+          return cleanedItem;
+        });
+
+      const chartApiConfig = generateChartApiConfig(formattedData);
 
       return {
         data: formattedData,
         columnTitles: allKeys,
         chartType: apiData.component_name || componentName?.component_name,
+        chartApiConfig,
       };
     }
 
-    // Default fallback
     return {
       data: [],
       columnTitles: [],
@@ -108,7 +181,7 @@ const ChatwithDataCard = ({
     };
   };
 
-  const { data, columnTitles, chartType } = processData();
+  const { data, columnTitles, chartType, chartApiConfig } = processData();
 
   // Return early if no data
   if (!data || data.length === 0) {
@@ -150,17 +223,37 @@ const ChatwithDataCard = ({
     return String(value);
   };
 
+  // const renderChart = () => {
+  //   switch (chartType) {
+  //     case "Data Card Donut Chart":
+  //       return <PieChart data={data} dataKey={columnTitles} />;
+  //     case "Data Card Line Chart":
+  //       return <LineGraph data={data} dataKey={columnTitles} />;
+  //     case "Data Card Bar Chart":
+  //       return <BarChart data={data} dataKey={columnTitles} />;
+  //     case "Data Card Bar Chart Horizontal":
+  //       return <HorizontalBarChart data={data} dataKey={columnTitles} />;
+  //   }
+  // };
+
   const renderChart = () => {
-    switch (chartType) {
-      case "Data Card Donut Chart":
-        return <PieChart data={data} dataKey={columnTitles} />;
-      case "Data Card Line Chart":
-        return <LineGraph data={data} dataKey={columnTitles} />;
-      case "Data Card Bar Chart":
-        return <BarChart data={data} dataKey={columnTitles} />;
-      case "Data Card Bar Chart Horizontal":
-        return <HorizontalBarChart data={data} dataKey={columnTitles} />;
+    const activeConfig = chartConfig || chartApiConfig;
+
+    if (activeConfig && data.length > 0) {
+      return (
+        <DynamicChart
+          chartData={data}
+          chartConfig={activeConfig}
+          componentName={chartType}
+        />
+      );
     }
+
+    return (
+      <div className="flex justify-center items-center">
+        Chart not available
+      </div>
+    );
   };
 
   return (
@@ -205,19 +298,7 @@ const ChatwithDataCard = ({
             </Table>
           </TabsContent>
           <TabsContent value="chart">
-            <div className="mt-4">
-              {chartConfig && results.length > 0 ? (
-                <DynamicChart
-                  chartData={results}
-                  chartConfig={chartConfig}
-                  componentName={componentName?.component_name}
-                />
-              ) : (
-                <div className="flex justify-center items-center">
-                  Chart not Avaliable
-                </div>
-              )}
-            </div>
+            <div className="mt-4">{renderChart()}</div>
           </TabsContent>
           <TabsContent value="actionables">
             <Actionables />

@@ -72,8 +72,6 @@ export function ChatWithDB({ formFields, apiFieldData }: any) {
   const currentPath = path.includes("submit");
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
-  console.log("chartConfig::::", chartConfig);
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({
       behavior: "smooth",
