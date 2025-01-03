@@ -564,7 +564,6 @@ function NewEntryForm({
   };
 
   const handleSave = () => {
-    console.log("validateForm----", validateForm());
     if (validateForm()) {
       onSave(newEntry);
       setNewEntry({
@@ -623,7 +622,6 @@ function NewEntryForm({
   const handleAddApi = async () => {
     setLoading(true);
     const { apiEndpoint, apiField } = newEntry;
-    console.log("api-----", { apiEndpoint, apiField });
 
     const validApis = await fetchValidApi();
     const isValid = validApis.filter(
@@ -656,7 +654,6 @@ function NewEntryForm({
           });
         }
         const data = await response.json();
-        console.log("data---", data);
 
         if (data) {
           const fieldData = data.map((item: any) => ({
@@ -664,7 +661,6 @@ function NewEntryForm({
           }));
           setNewEntry({ ...newEntry, apiResponse: fieldData });
           setLoading(false);
-          console.log("fieldData---", fieldData);
           toast({
             description: "Options added from API successfully",
             variant: "default",
@@ -718,7 +714,6 @@ function NewEntryForm({
           });
         }
         const data = await response.json();
-        console.log("data---", data);
 
         if (data) {
           const fieldData = data.map((item: any) => ({
@@ -726,7 +721,6 @@ function NewEntryForm({
           }));
           setNewEntry({ ...newEntry, apiResponse: fieldData });
           setLoading(false);
-          console.log("fieldData---", fieldData);
           toast({
             description: "Options added from API successfully",
             variant: "default",

@@ -38,18 +38,21 @@ const colors = [
   "hsl(var(--chart-3))",
   "hsl(var(--chart-4))",
   "hsl(var(--chart-5))",
-  "hsl(var(--chart-6))",
-  "hsl(var(--chart-7))",
-  "hsl(var(--chart-8))",
+  "hsl(var(--chart-1))",
+  "hsl(var(--chart-2))",
+  "hsl(var(--chart-3))",
 ];
 
 export function DynamicChart({
   chartData,
   chartConfig,
+  componentName,
 }: {
   chartData: Result[];
   chartConfig: Config;
+  componentName?: string;
 }) {
+  console.log("componentName----", componentName);
   const renderChart = () => {
     if (!chartData || !chartConfig) return <div>No chart data</div>;
     const parsedChartData = chartData.map((item) => {
@@ -74,11 +77,15 @@ export function DynamicChart({
       return data;
     };
 
-    chartData = processChartData(chartData, chartConfig.type);
+    chartData = processChartData(chartData, componentName as string);
     // console.log({ chartData, chartConfig });
 
-    switch (chartConfig.type) {
-      case "bar":
+    switch (true) {
+      case componentName === "Data Card Bar Chart" ||
+        // chartConfig.type === "bar" ||
+        // chartConfig.type === "Data Card Bar Chart" ||
+        // chartConfig.type === "Data Card Bar Chart Horizontal" ||
+        componentName === "Data Card Bar Chart Horizontal":
         return (
           <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -107,7 +114,9 @@ export function DynamicChart({
             ))}
           </BarChart>
         );
-      case "line":
+      // case chartConfig.type === "line" ||
+      // chartConfig.type === "Data Card Line Chart" ||
+      case componentName === "Data Card Line Chart":
         const { data, xAxisField, lineFields } = transformDataForMultiLineChart(
           chartData,
           chartConfig
@@ -160,7 +169,7 @@ export function DynamicChart({
                 ))}
           </LineChart>
         );
-      case "area":
+        // case chartConfig.type === "area":
         return (
           <AreaChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -179,7 +188,9 @@ export function DynamicChart({
             ))}
           </AreaChart>
         );
-      case "pie":
+      case componentName === "Data Card Donut Chart":
+        // chartConfig.type === "Data Card Donut Chart" ||
+        // chartConfig.type === "pie":
         return (
           <PieChart>
             <Pie
@@ -188,7 +199,9 @@ export function DynamicChart({
               nameKey={chartConfig.xKey}
               cx="50%"
               cy="50%"
-              outerRadius={120}
+              innerRadius={60}
+              // outerRadius={120}
+              strokeWidth={5}
             >
               {chartData.map((_, index) => (
                 <Cell
@@ -202,7 +215,7 @@ export function DynamicChart({
           </PieChart>
         );
       default:
-        return <div>Unsupported chart type: {chartConfig.type}</div>;
+      // return <div>Unsupported chart type: {chartConfig.type}</div>;
     }
   };
 
@@ -220,7 +233,7 @@ export function DynamicChart({
           }, {} as Record<string, { label: string; color: string }>)}
           className="h-[320px] w-full"
         >
-          {renderChart()}
+          {renderChart() || <div>No chart available</div>}
         </ChartContainer>
       )}
       <div className="w-full">

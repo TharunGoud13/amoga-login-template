@@ -22,6 +22,7 @@ import PieChart from "./ChartTypes/PieChart";
 import BarChart from "./ChartTypes/BarChart";
 import LineGraph from "./ChartTypes/LineGraph";
 import HorizontalBarChart from "./ChartTypes/BarChartHorizontal";
+import { DynamicChart } from "@/components/chat-with-db/dynamic-chart";
 
 function Actionables() {
   return (
@@ -204,7 +205,19 @@ const ChatwithDataCard = ({
             </Table>
           </TabsContent>
           <TabsContent value="chart">
-            <div className="overflow-auto w-full">{renderChart()}</div>
+            <div className="mt-4">
+              {chartConfig && results.length > 0 ? (
+                <DynamicChart
+                  chartData={results}
+                  chartConfig={chartConfig}
+                  componentName={componentName?.component_name}
+                />
+              ) : (
+                <div className="flex justify-center items-center">
+                  Chart not Avaliable
+                </div>
+              )}
+            </div>
           </TabsContent>
           <TabsContent value="actionables">
             <Actionables />

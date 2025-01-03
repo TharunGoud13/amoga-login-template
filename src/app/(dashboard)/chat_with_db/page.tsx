@@ -51,6 +51,7 @@ export default function Page() {
       setColumns(columns);
       setLoading(false);
       const generation = await generateChartConfig(data, question);
+      console.log("generation----", generation);
       setChartConfig(generation.config);
     } catch (e) {
       toast.error("An error occurred. Please try again.");

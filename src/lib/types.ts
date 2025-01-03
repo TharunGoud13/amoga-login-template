@@ -30,7 +30,19 @@ export const configSchema = z
         "Describe the chart. What is it showing? What is interesting about the way the data is displayed?"
       ),
     takeaway: z.string().describe("What is the main takeaway from the chart?"),
-    type: z.enum(["bar", "line", "area", "pie"]).describe("Type of chart"),
+    // type: z
+    //   .enum([
+    //     "bar",
+    //     "line",
+    //     "area",
+    //     "pie",
+    //     "Data Card Text",
+    //     "Data Card Line Chart",
+    //     "Data Card Bar Chart",
+    //     "Data Card Bar Chart Horizontal",
+    //     "Data Card Donut Chart",
+    //   ])
+    //   .describe("Type of chart"),
     title: z.string(),
     xKey: z.string().describe("Key for x-axis or category"),
     yKeys: z

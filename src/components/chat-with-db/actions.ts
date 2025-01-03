@@ -157,11 +157,15 @@ export const generateChartConfig = async (
       model: openai("gpt-4o"),
       system,
       prompt: `Given the following data from a SQL query result, generate the chart config that best visualizes the data and answers the user's query.
-      Use appropriate chart types such as bar, line, or pie depending on the data.
+      Use appropriate chart types such as bar, line, bar horizontal, or pie or "Data Card Text",
+    "Data Card Line Chart",
+    "Data Card Bar Chart",
+    "Data Card Bar Chart Horizontal",
+    "Data Card Donut Chart", depending on the data.
 
       Here is an example complete config:
       export const chartConfig = {
-        type: "bar",
+       
         xKey: "country",
         yKeys: ["user_count"],
         colors: {
