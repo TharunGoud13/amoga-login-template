@@ -11,25 +11,51 @@ export const generateQuery = async (input: string) => {
   try {
     const result = await generateObject({
       model: openai("gpt-4o"),
-      system: `You are a SQL (Postgres) and data visualization expert. Your job is to help the user write a SQL query to retrieve the data they need. The table schema is as follows:
+      system: `You are a SQL (Postgres) and data visualization expert. Your job is to help the user write a SQL query to retrieve the data they need. The table schemas are as follows:
 
       user_catalog (
         user_catalog_id SERIAL PRIMARY KEY,
         user_name VARCHAR(255) NOT NULL,
         user_email VARCHAR(255) NOT NULL UNIQUE,
-        user_mobile VARCHAR(255) NOT NULL UNIQUE,
-        user_name VARCHAR(255) NOT NULL,
+        user_mobile VARCHAR(255) NOT NULL UNIQUE
       );
 
-     The queries should be dynamic and retrieve data based on the user's request. For instance:
-      - If the user asks for users, generate a query to retrieve user_name or user_email or both.
-      - If the user requests mobile numbers, generate a query to retrieve user_mobile.
-      - The query must return meaningful data in a form suitable for chart visualization.
+      order_sample (
+        order_id INTEGER,
+        created_date TIMESTAMP,
+        product_id INTEGER,
+        product_name VARCHAR(255),
+        sku VARCHAR(50),
+        product_quantity INTEGER,
+        product_base_price VARCHAR(50),
+        product_total VARCHAR(50),
+        partial_refund_amount TEXT,
+        transaction_id TEXT,
+        customer_id INTEGER,
+        order_paid_date TIMESTAMP,
+        order_notes TEXT,
+        order_status VARCHAR(50),
+        currency VARCHAR(3),
+        tax_total VARCHAR(50),
+        order_total VARCHAR(50),
+        payment_method VARCHAR(100),
+        billing_postcode VARCHAR(20),
+        shipping_country VARCHAR(2),
+        shipping_company VARCHAR(255),
+        email VARCHAR(255),
+        phone VARCHAR(50)
+      );
 
-      Every query must be a SELECT statement and only retrieval queries are allowed.
+      The queries should be dynamic and retrieve data based on the user's request. If the user asks about orders or customer or products, the query should be based on the order_sample table.
 
-      When querying by string fields (like user_name, user_email, user_mobile), use the ILIKE operator and convert both the search term and the field to lowercase using the LOWER() function. For example: LOWER(user_name) ILIKE LOWER('%search_term%').
-    `,
+      The query must return meaningful data in a form suitable for chart visualization. Every query must be a SELECT statement and only retrieval queries are allowed.
+
+      When querying by string fields (like user_name, user_email, user_mobile, or product_name), use the ILIKE operator and convert both the search term and the field to lowercase using the LOWER() function. For example: LOWER(user_name) ILIKE LOWER('%search_term%').
+
+      For date-based queries (e.g., year 2024), use EXTRACT(YEAR FROM date_field)::INTEGER for comparing years:
+      Example: EXTRACT(YEAR FROM created_date)::INTEGER = 2024
+
+      If a numeric field like 'product_total' is stored as VARCHAR, the query should use REGEXP_REPLACE to clean it and cast it to DECIMAL for proper calculations.`,
       prompt: `Generate the query necessary to retrieve the data the user wants: ${input}`,
       schema: z.object({
         query: z.string(),
@@ -44,19 +70,34 @@ export const generateQuery = async (input: string) => {
 
 export const runGenerateSQLQuery = async (query: string) => {
   "use server";
-  if (
-    !query.trim().toLowerCase().startsWith("select") ||
-    query.trim().toLowerCase().includes("drop") ||
-    query.trim().toLowerCase().includes("delete") ||
-    query.trim().toLowerCase().includes("insert") ||
-    query.trim().toLowerCase().includes("update") ||
-    query.trim().toLowerCase().includes("alter") ||
-    query.trim().toLowerCase().includes("truncate") ||
-    query.trim().toLowerCase().includes("create") ||
-    query.trim().toLowerCase().includes("grant") ||
-    query.trim().toLowerCase().includes("revoke")
-  ) {
-    throw new Error("Only SELECT queries are allowed");
+  // Basic SQL injection prevention with better whitespace handling
+  const sanitizedQuery = query.replace(/\s+/g, " ").trim().toLowerCase();
+  console.log("Sanitized query:", sanitizedQuery);
+
+  // Improved validation
+  if (!sanitizedQuery.split(" ")[0].includes("select")) {
+    throw new Error("Query must start with SELECT");
+  }
+
+  // Check for dangerous keywords with word boundaries
+  const dangerousKeywords = [
+    "drop",
+    "delete",
+    "insert",
+    "update",
+    "alter",
+    "truncate",
+    "create",
+    "grant",
+    "revoke",
+  ];
+  const containsDangerousKeywords = dangerousKeywords.some((keyword) => {
+    const regex = new RegExp(`\\b${keyword}\\b`, "i");
+    return regex.test(sanitizedQuery);
+  });
+
+  if (containsDangerousKeywords) {
+    throw new Error("Query contains unauthorized operations");
   }
 
   let data: any;
@@ -65,20 +106,40 @@ export const runGenerateSQLQuery = async (query: string) => {
       connectionString: process.env.POSTGRES_URL,
     });
     await client.connect();
-    data = await client.query(query);
-    console.log("data----", data);
+
+    // Handle date-based queries
+    let processedQuery = query;
+    if (
+      sanitizedQuery.includes("created_date") ||
+      sanitizedQuery.includes("order_paid_date")
+    ) {
+      console.log("Date-based query detected");
+
+      // Try both EXTRACT and TO_CHAR formats
+      try {
+        if (sanitizedQuery.includes("to_char")) {
+          processedQuery = query.replace(
+            /TO_CHAR\(\s*(created_date|order_paid_date)\s*,\s*'YYYY'\s*\)\s*=\s*'(\d{4})'/gi,
+            "EXTRACT(YEAR FROM $1)::INTEGER = $2"
+          );
+        }
+        console.log("Processed query:", processedQuery);
+      } catch (e) {
+        console.error("Error processing date query:", e);
+        // Continue with original query if conversion fails
+        processedQuery = query;
+      }
+    }
+
+    data = await client.query(processedQuery);
+    console.log("Query executed successfully");
     await client.end();
   } catch (e: any) {
-    console.error("Error message:", e.message);
-    console.error("Error stack:", e.stack);
-    if (e.message.includes('relation "user_catalog" does not exist')) {
-      console.log(
-        "Table does not exist, creating and seeding it with dummy data now..."
-      );
-      throw Error("Table does not exist");
-    } else {
-      throw e;
+    console.error("Database error:", e.message);
+    if (e.message.includes('relation "order_sample" does not exist')) {
+      throw new Error("Table does not exist");
     }
+    throw new Error(`Database error: ${e.message}`);
   }
 
   return data.rows as Result[];
@@ -89,7 +150,7 @@ export const generateChartConfig = async (
   userQuery: string
 ) => {
   "use server";
-  const system = `You are a data visualization expert. `;
+  const system = `You are a data visualization expert.`;
 
   try {
     const { object: config } = await generateObject({
@@ -104,7 +165,7 @@ export const generateChartConfig = async (
         xKey: "country",
         yKeys: ["user_count"],
         colors: {
-          user_count: "#4CAF50" // Green for user count
+          user_count: "#4CAF50"
         },
         legend: true
       }

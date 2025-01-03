@@ -214,7 +214,7 @@ const RenderInputField = ({
     if (selectedItem?.enable_prompt) {
       handleSubmit(selectedItem?.prompt);
     }
-    if (selectedItem?.enable_api) {
+    if (selectedItem?.enable_api || selectedItem?.enable_dataApi) {
       setApiData(selectedItem);
     }
   };

@@ -65,6 +65,7 @@ export type FormFieldType = {
         api_response: string[];
         // response_data: string[];
         enable_api: boolean;
+        enable_dataApi: boolean;
         enable_prompt: boolean;
         component_name?: string;
       }
