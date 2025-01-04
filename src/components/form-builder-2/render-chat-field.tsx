@@ -183,12 +183,12 @@ const RenderInputField = ({
     setInput(url);
   };
 
-  const handleSubmit = async (suggestion?: any) => {
+  const handleSubmit = async (suggestion: any, dataFilter: any) => {
     setLoading(true);
     const question = suggestion;
     if (!suggestion) return;
     try {
-      const query = await generateQuery(question, session);
+      const query = await generateQuery(question, session, dataFilter);
       console.log("query----", query);
       if (query === undefined) {
         toast.error("An error occurred. Please try again.");
@@ -219,7 +219,7 @@ const RenderInputField = ({
       setComponentName(selectedItem);
     }
     if (selectedItem?.enable_prompt) {
-      handleSubmit(selectedItem?.prompt);
+      handleSubmit(selectedItem?.prompt, selectedItem?.prompt_dataFilter);
     }
     if (selectedItem?.enable_api || selectedItem?.enable_dataApi) {
       setApiData(selectedItem);

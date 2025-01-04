@@ -135,6 +135,8 @@ export default function FormBuilder() {
             enable_dataApi: false,
             // response_data: [],
             enable_prompt: false,
+            promptDataFilter: "",
+            apiDataFilter: "",
             component_name: "",
           },
         ],

@@ -20,6 +20,7 @@ import { ADD_CONNECTIONS, NEXT_PUBLIC_API_KEY } from "@/constants/envConfig";
 import { toast } from "@/components/ui/use-toast";
 import { useSession } from "next-auth/react";
 import { Session } from "../FormBuilder";
+import { SelectGroup } from "@radix-ui/react-select";
 
 // Define the shape of the data you are working with
 interface FormEntry {
@@ -27,6 +28,8 @@ interface FormEntry {
   buttonText: string;
   isPrompt: boolean;
   promptText: string;
+  promptDataFilter: string;
+  apiDataFilter: string;
   isApi: boolean;
   apiEndpoint: string;
   apiField: string;
@@ -111,7 +114,8 @@ function SortableItem({
   };
 
   const handleAddDataApi = async () => {
-    const { chat_apiEndpoint, chat_field_1, chat_field_2 } = editedEntry;
+    const { chat_apiEndpoint, chat_field_1, chat_field_2, apiDataFilter } =
+      editedEntry;
 
     const validApis = await fetchValidApi();
     const isValid = validApis.filter(
@@ -150,9 +154,23 @@ function SortableItem({
           });
         }
         const data = await response.json();
-        const filterData = data.filter(
-          (item: any) => item.customer === session?.user?.business_name
-        );
+        console.log("data----", data.length);
+
+        // console.log("filterData----", filterData.length);
+        console.log("apiDataFilter----", apiDataFilter);
+
+        let filterData;
+        if (apiDataFilter === "get-all-api-data") {
+          filterData = data;
+        } else if (apiDataFilter === "get-business-api-data") {
+          filterData = data.filter(
+            (item: any) => item.customer === session?.user?.business_name
+          );
+        } else if (apiDataFilter === "get-user-api-data") {
+          filterData = data.filter(
+            (item: any) => item.user_name === session?.user?.email
+          );
+        }
 
         if (filterData) {
           const fieldData = filterData.map((item: any) => ({
@@ -197,6 +215,8 @@ function SortableItem({
                 ...button,
                 button_text: editedEntry.buttonText,
                 prompt: editedEntry.promptText,
+                prompt_dataFilter: editedEntry.promptDataFilter,
+                api_dataFilter: editedEntry.apiDataFilter,
                 api_response: editedEntry.apiResponse,
                 dataApi_response: editedEntry.dataApiResponse,
                 enable_prompt: editedEntry.isPrompt,
@@ -283,6 +303,38 @@ function SortableItem({
                   className="mt-1"
                   placeholder="Enter prompt text"
                 />
+              </div>
+              <div>
+                <Label htmlFor="data-filter">Data Filter</Label>
+                <Select
+                  disabled={!editedEntry.isPrompt}
+                  value={editedEntry.promptDataFilter}
+                  onValueChange={(value) =>
+                    // handleInputChange("promptDataFilter", value)
+                    setEditedEntry({
+                      ...editedEntry,
+                      promptDataFilter: value,
+                    })
+                  }
+                >
+                  <SelectTrigger
+                    id="data-filter"
+                    value={editedEntry.promptDataFilter}
+                  >
+                    <SelectValue placeholder="Select option to filter data" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="get-all">Get All Data</SelectItem>
+                      <SelectItem value="get-business-data">
+                        Get Business Data
+                      </SelectItem>
+                      <SelectItem value="get-user-data">
+                        Get User Data
+                      </SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
@@ -376,7 +428,9 @@ function SortableItem({
                 />
               </div>
               <div>
-                <Label htmlFor={`chat-field-2-${entry.id}`}>Chat Field 2</Label>
+                <Label htmlFor={`chat-field-2-${entry.id}`}>
+                  Chart Field 2
+                </Label>
                 <Input
                   id={`chat-field-2-${entry.id}`}
                   value={editedEntry.chat_field_2}
@@ -390,6 +444,33 @@ function SortableItem({
                   placeholder="Enter Chat Field 2 (y-axis) (NUMBER)"
                 />
               </div>
+              <div>
+                <Label htmlFor="api-data-filter">API Data Filter</Label>
+                <Select
+                  disabled={!editedEntry.dataApi}
+                  onValueChange={(value) =>
+                    setEditedEntry({ ...editedEntry, apiDataFilter: value })
+                  }
+                >
+                  <SelectTrigger id="api-data-filter">
+                    <SelectValue placeholder="Select option to filter data" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="get-all-api-data">
+                        Get All Data
+                      </SelectItem>
+                      <SelectItem value="get-business-api-data">
+                        Get Business Data
+                      </SelectItem>
+                      <SelectItem value="get-user-api-data">
+                        Get User Data
+                      </SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <Button
                 // disabled={!editedEntry.isDataApi}
                 className="mt-1"
@@ -592,6 +673,8 @@ function NewEntryForm({
     buttonText: "",
     isPrompt: false,
     promptText: "",
+    promptDataFilter: "",
+    apiDataFilter: "",
     isApi: false,
     apiEndpoint: "",
     apiResponse: [],
@@ -610,6 +693,7 @@ function NewEntryForm({
     apiField: "",
     component_name: "",
   });
+
   const [errors, setErrors] = useState<ValidationErrors>({});
   const { data: sessionData } = useSession();
   const session: Session | null = sessionData
@@ -711,6 +795,8 @@ function NewEntryForm({
         buttonText: "",
         isPrompt: false,
         promptText: "",
+        promptDataFilter: "",
+        apiDataFilter: "",
         isApi: false,
         apiEndpoint: "",
         apiResponse: [],
@@ -823,7 +909,8 @@ function NewEntryForm({
 
   const handleAddDataApi = async () => {
     setLoading(true);
-    const { chat_apiEndpoint, chat_field_1, chat_field_2 } = newEntry;
+    const { chat_apiEndpoint, chat_field_1, chat_field_2, apiDataFilter } =
+      newEntry;
 
     const validApis = await fetchValidApi();
     const isValid = validApis.filter(
@@ -864,10 +951,21 @@ function NewEntryForm({
         const data = await response.json();
         console.log("data----", data.length);
 
-        const filterData = data.filter(
-          (item: any) => item.customer === session?.user?.business_name
-        );
-        console.log("filterData----", filterData.length);
+        // console.log("filterData----", filterData.length);
+        console.log("apiDataFilter----", apiDataFilter);
+
+        let filterData;
+        if (apiDataFilter === "get-all-api-data") {
+          filterData = data;
+        } else if (apiDataFilter === "get-business-api-data") {
+          filterData = data.filter(
+            (item: any) => item.customer === session?.user?.business_name
+          );
+        } else if (apiDataFilter === "get-user-api-data") {
+          filterData = data.filter(
+            (item: any) => item.user_name === session?.user?.email
+          );
+        }
 
         if (filterData) {
           const fieldData = filterData.map((item: any) => ({
@@ -933,6 +1031,28 @@ function NewEntryForm({
             placeholder="Enter prompt text"
           />
           {<div className="text-red-500 text-sm mt-1">{errors.prompt}</div>}
+        </div>
+        <div>
+          <Label htmlFor="data-filter">Data Filter</Label>
+          <Select
+            disabled={!newEntry.isPrompt}
+            onValueChange={(value) =>
+              handleInputChange("promptDataFilter", value)
+            }
+          >
+            <SelectTrigger id="data-filter">
+              <SelectValue placeholder="Select option to filter data" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="get-all">Get All Data</SelectItem>
+                <SelectItem value="get-business-data">
+                  Get Business Data
+                </SelectItem>
+                <SelectItem value="get-user-data">Get User Data</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </div>
         <div className="flex items-center space-x-2">
           <Checkbox
@@ -1025,6 +1145,30 @@ function NewEntryForm({
             className="mt-1"
             placeholder="Enter Chat Field 2 (y-axis) (NUMBER)"
           />
+          <div>
+            <Label htmlFor="api-data-filter">API Data Filter</Label>
+            <Select
+              disabled={!newEntry.dataApi}
+              onValueChange={(value) =>
+                handleInputChange("apiDataFilter", value)
+              }
+            >
+              <SelectTrigger id="api-data-filter">
+                <SelectValue placeholder="Select option to filter data" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="get-all-api-data">Get All Data</SelectItem>
+                  <SelectItem value="get-business-api-data">
+                    Get Business Data
+                  </SelectItem>
+                  <SelectItem value="get-user-api-data">
+                    Get User Data
+                  </SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
           <Button
             disabled={!newEntry.dataApi}
             className="mt-1"
@@ -1161,6 +1305,8 @@ export default function ChatwithDataActions({
         buttonText: button.button_text || "",
         isPrompt: button.enable_prompt || false,
         promptText: button.prompt || "",
+        prompt_dataFilter: button.promptDataFilter,
+        prompt_apiDataFilter: button.apiDataFilter,
         isApi: button.enable_api || false,
         dataApi: button.enable_dataApi || false,
         apiEndpoint: button.apiEndpoint || "",
@@ -1192,6 +1338,8 @@ export default function ChatwithDataActions({
           buttonText: button.button_text || "",
           isPrompt: button.enable_prompt || false,
           promptText: button.prompt || "",
+          prompt_dataFilter: button.promptDataFilter,
+          api_dataFilter: button.apiDataFilter,
           isApi: button.enable_api || false,
           apiEndpoint: button.apiEndpoint || "",
           apiField: button.apiField || "",
@@ -1229,6 +1377,8 @@ export default function ChatwithDataActions({
           api_response: entry.apiResponse,
           dataApi_response: entry.dataApiResponse,
           enable_prompt: entry.isPrompt,
+          prompt_dataFilter: entry.promptDataFilter,
+          api_dataFilter: entry.apiDataFilter,
           enable_api: entry.isApi,
           enable_dataApi: entry.dataApi,
           chat_apiEndpoint: entry.chat_apiEndpoint,
@@ -1263,6 +1413,8 @@ export default function ChatwithDataActions({
         buttons: updatedEntries.map((entry) => ({
           button_text: entry.buttonText,
           prompt: entry.promptText,
+          prompt_dataFilter: entry.promptDataFilter,
+          api_dataFilter: entry.apiDataFilter,
           api_response: entry.apiResponse,
           dataApi_response: entry.dataApiResponse,
           enable_prompt: entry.isPrompt,
@@ -1304,6 +1456,8 @@ export default function ChatwithDataActions({
                 ...button,
                 button_text: updatedEntry.buttonText,
                 prompt: updatedEntry.promptText,
+                prompt_dataFilter: updatedEntry.promptDataFilter,
+                api_dataFilter: updatedEntry.apiDataFilter,
                 api_response: updatedEntry.apiResponse,
                 dataApi_response: updatedEntry.dataApiResponse,
                 enable_prompt: updatedEntry.isPrompt,

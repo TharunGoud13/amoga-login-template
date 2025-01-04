@@ -68,6 +68,8 @@ export type FormFieldType = {
         enable_api: boolean;
         enable_dataApi: boolean;
         enable_prompt: boolean;
+        promptDataFilter: string;
+        apiDataFilter: string;
         component_name?: string;
       }
     ];

@@ -43,7 +43,8 @@ export default function Page() {
     setLoadingStep(1);
     setActiveQuery("");
     try {
-      const query = await generateQuery(question, session);
+      let dataFilter = "";
+      const query = await generateQuery(question, session, dataFilter);
       if (query === undefined) {
         toast.error("An error occurred. Please try again.");
         setLoading(false);
