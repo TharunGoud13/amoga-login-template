@@ -15,6 +15,8 @@ import { Results } from "@/components/chat-with-db/results";
 import { SuggestedQueries } from "@/components/chat-with-db/suggested-queries";
 import { QueryViewer } from "@/components/chat-with-db/query-viewer";
 import { Search } from "@/components/chat-with-db/search";
+import { useSession } from "next-auth/react";
+import { Session } from "@/components/form-builder-2/FormBuilder";
 
 export default function Page() {
   const [inputValue, setInputValue] = useState("");
@@ -25,6 +27,10 @@ export default function Page() {
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(1);
   const [chartConfig, setChartConfig] = useState<Config | null>(null);
+  const { data: sessionData } = useSession();
+  const session: Session | null = sessionData
+    ? (sessionData as unknown as Session)
+    : null;
 
   const handleSubmit = async (suggestion?: string) => {
     const question = suggestion ?? inputValue;
@@ -37,7 +43,7 @@ export default function Page() {
     setLoadingStep(1);
     setActiveQuery("");
     try {
-      const query = await generateQuery(question);
+      const query = await generateQuery(question, session);
       if (query === undefined) {
         toast.error("An error occurred. Please try again.");
         setLoading(false);
