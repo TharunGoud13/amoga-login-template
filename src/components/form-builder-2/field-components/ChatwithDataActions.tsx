@@ -30,6 +30,7 @@ interface FormEntry {
   promptText: string;
   promptDataFilter: string;
   apiDataFilter: string;
+  // prompt_dataFilter: string;
   isApi: boolean;
   apiEndpoint: string;
   apiField: string;
@@ -215,8 +216,8 @@ function SortableItem({
                 ...button,
                 button_text: editedEntry.buttonText,
                 prompt: editedEntry.promptText,
-                prompt_dataFilter: editedEntry.promptDataFilter,
-                api_dataFilter: editedEntry.apiDataFilter,
+                promptDataFilter: editedEntry.promptDataFilter,
+                apiDataFilter: editedEntry.apiDataFilter,
                 api_response: editedEntry.apiResponse,
                 dataApi_response: editedEntry.dataApiResponse,
                 enable_prompt: editedEntry.isPrompt,
@@ -246,6 +247,8 @@ function SortableItem({
     setIsEditing(false);
     setEditedEntry(entry);
   };
+
+  console.log("edit----", editedEntry);
 
   return (
     <Draggable draggableId={String(entry.id)} index={entry.id}>
@@ -451,6 +454,7 @@ function SortableItem({
                   onValueChange={(value) =>
                     setEditedEntry({ ...editedEntry, apiDataFilter: value })
                   }
+                  value={editedEntry.apiDataFilter}
                 >
                   <SelectTrigger id="api-data-filter">
                     <SelectValue placeholder="Select option to filter data" />
@@ -673,6 +677,7 @@ function NewEntryForm({
     buttonText: "",
     isPrompt: false,
     promptText: "",
+    // prompt_dataFilter: "",
     promptDataFilter: "",
     apiDataFilter: "",
     isApi: false,
@@ -794,6 +799,7 @@ function NewEntryForm({
         id: Date.now(),
         buttonText: "",
         isPrompt: false,
+        // prompt_dataFilter: "",
         promptText: "",
         promptDataFilter: "",
         apiDataFilter: "",
@@ -1305,8 +1311,8 @@ export default function ChatwithDataActions({
         buttonText: button.button_text || "",
         isPrompt: button.enable_prompt || false,
         promptText: button.prompt || "",
-        prompt_dataFilter: button.promptDataFilter,
-        prompt_apiDataFilter: button.apiDataFilter,
+        promptDataFilter: button.promptDataFilter,
+        apiDataFilter: button.apiDataFilter,
         isApi: button.enable_api || false,
         dataApi: button.enable_dataApi || false,
         apiEndpoint: button.apiEndpoint || "",
@@ -1338,8 +1344,8 @@ export default function ChatwithDataActions({
           buttonText: button.button_text || "",
           isPrompt: button.enable_prompt || false,
           promptText: button.prompt || "",
-          prompt_dataFilter: button.promptDataFilter,
-          api_dataFilter: button.apiDataFilter,
+          promptDataFilter: button.promptDataFilter,
+          apiDataFilter: button.apiDataFilter,
           isApi: button.enable_api || false,
           apiEndpoint: button.apiEndpoint || "",
           apiField: button.apiField || "",
@@ -1377,8 +1383,8 @@ export default function ChatwithDataActions({
           api_response: entry.apiResponse,
           dataApi_response: entry.dataApiResponse,
           enable_prompt: entry.isPrompt,
-          prompt_dataFilter: entry.promptDataFilter,
-          api_dataFilter: entry.apiDataFilter,
+          promptDataFilter: entry.promptDataFilter,
+          apiDataFilter: entry.apiDataFilter,
           enable_api: entry.isApi,
           enable_dataApi: entry.dataApi,
           chat_apiEndpoint: entry.chat_apiEndpoint,
@@ -1413,8 +1419,8 @@ export default function ChatwithDataActions({
         buttons: updatedEntries.map((entry) => ({
           button_text: entry.buttonText,
           prompt: entry.promptText,
-          prompt_dataFilter: entry.promptDataFilter,
-          api_dataFilter: entry.apiDataFilter,
+          promptDataFilter: entry.promptDataFilter,
+          apiDataFilter: entry.apiDataFilter,
           api_response: entry.apiResponse,
           dataApi_response: entry.dataApiResponse,
           enable_prompt: entry.isPrompt,
@@ -1456,8 +1462,8 @@ export default function ChatwithDataActions({
                 ...button,
                 button_text: updatedEntry.buttonText,
                 prompt: updatedEntry.promptText,
-                prompt_dataFilter: updatedEntry.promptDataFilter,
-                api_dataFilter: updatedEntry.apiDataFilter,
+                promptDataFilter: updatedEntry.promptDataFilter,
+                apiDataFilter: updatedEntry.apiDataFilter,
                 api_response: updatedEntry.apiResponse,
                 dataApi_response: updatedEntry.dataApiResponse,
                 enable_prompt: updatedEntry.isPrompt,
