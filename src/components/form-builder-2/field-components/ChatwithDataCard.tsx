@@ -64,6 +64,7 @@ const ChatwithDataCard = ({
   apiData,
 }: any) => {
   // Process the data based on which props are provided
+  console.log("apiData-----", apiData);
 
   const generateChartApiConfig = (data: any[]) => {
     if (!data || data.length === 0) return null;

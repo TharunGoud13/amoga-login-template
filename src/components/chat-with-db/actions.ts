@@ -6,12 +6,12 @@ import { generateObject } from "ai";
 import { Client } from "pg";
 import { z } from "zod";
 
-export const generateQuery = async (input: string) => {
+export const generateQuery = async (input: string, session: any) => {
   "use server";
   try {
     const result = await generateObject({
       model: openai("gpt-4o"),
-      system: `You are a SQL (Postgres) and data visualization expert. Your job is to help the user write a SQL query to retrieve the data they need. The table schemas are as follows:
+      system: `You are a SQL (Postgres) and data visualization expert. Your job is to help the user write a SQL query to retrieve the data they need and provide query based on user session details. The table schemas are as follows:
 
       user_catalog (
         user_catalog_id SERIAL PRIMARY KEY,
@@ -43,7 +43,8 @@ export const generateQuery = async (input: string) => {
         shipping_country VARCHAR(2),
         shipping_company VARCHAR(255),
         email VARCHAR(255),
-        phone VARCHAR(50)
+        phone VARCHAR(50),
+        customer VARCHAR(255),
       );
 
       The queries should be dynamic and retrieve data based on the user's request. If the user asks about orders or customer or products, the query should be based on the order_sample table.
@@ -54,6 +55,8 @@ export const generateQuery = async (input: string) => {
 
       For date-based queries (e.g., year 2024), use EXTRACT(YEAR FROM date_field)::INTEGER for comparing years:
       Example: EXTRACT(YEAR FROM created_date)::INTEGER = 2024
+
+      If the user asks for company details like Give me top 10 orders for a company then note that company names are in customer field
 
       If a numeric field like 'product_total' is stored as VARCHAR, the query should use REGEXP_REPLACE to clean it and cast it to DECIMAL for proper calculations.`,
       prompt: `Generate the query necessary to retrieve the data the user wants: ${input}`,

@@ -60,6 +60,8 @@ import {
 } from "../chat-with-db/actions";
 import { toast } from "sonner";
 import { Result } from "@/lib/types";
+import { useSession } from "next-auth/react";
+import { Session } from "./FormBuilder";
 
 const ALLOWED_FILES_TYPES = [
   "application/pdf",
@@ -157,6 +159,10 @@ const RenderInputField = ({
   const [enhancedDate, setEnhancedDate] = useState<Date>(new Date());
   const [rating, setRating] = useState(0);
   const [score, setScore] = useState<number | null>(null);
+  const { data: sessionData } = useSession();
+  const session: Session | null = sessionData
+    ? (sessionData as unknown as Session)
+    : null;
 
   const MAX_VIDEO_SIZE = 2 * 1024 * 1024;
   const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -182,7 +188,8 @@ const RenderInputField = ({
     const question = suggestion;
     if (!suggestion) return;
     try {
-      const query = await generateQuery(question);
+      const query = await generateQuery(question, session);
+      console.log("query----", query);
       if (query === undefined) {
         toast.error("An error occurred. Please try again.");
         return;

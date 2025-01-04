@@ -18,6 +18,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ADD_CONNECTIONS, NEXT_PUBLIC_API_KEY } from "@/constants/envConfig";
 import { toast } from "@/components/ui/use-toast";
+import { useSession } from "next-auth/react";
+import { Session } from "../FormBuilder";
 
 // Define the shape of the data you are working with
 interface FormEntry {
@@ -75,6 +77,10 @@ function SortableItem({
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedEntry, setEditedEntry] = useState(entry);
+  const { data: sessionData } = useSession();
+  const session: Session | null = sessionData
+    ? (sessionData as unknown as Session)
+    : null;
 
   const fetchValidApi = async () => {
     const requestOptions = {
@@ -144,9 +150,12 @@ function SortableItem({
           });
         }
         const data = await response.json();
+        const filterData = data.filter(
+          (item: any) => item.customer === session?.user?.business_name
+        );
 
-        if (data) {
-          const fieldData = data.map((item: any) => ({
+        if (filterData) {
+          const fieldData = filterData.map((item: any) => ({
             [chat_field_1]: item[chat_field_1],
             [chat_field_2]: item[chat_field_2],
           }));
@@ -217,8 +226,6 @@ function SortableItem({
     setIsEditing(false);
     setEditedEntry(entry);
   };
-
-  console.log("editedEntry----", editedEntry);
 
   return (
     <Draggable draggableId={String(entry.id)} index={entry.id}>
@@ -604,6 +611,10 @@ function NewEntryForm({
     component_name: "",
   });
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const { data: sessionData } = useSession();
+  const session: Session | null = sessionData
+    ? (sessionData as unknown as Session)
+    : null;
 
   const validateField = (name: string, value: any) => {
     let fieldErrors: ValidationErrors = {};
@@ -851,12 +862,19 @@ function NewEntryForm({
           });
         }
         const data = await response.json();
+        console.log("data----", data.length);
 
-        if (data) {
-          const fieldData = data.map((item: any) => ({
+        const filterData = data.filter(
+          (item: any) => item.customer === session?.user?.business_name
+        );
+        console.log("filterData----", filterData.length);
+
+        if (filterData) {
+          const fieldData = filterData.map((item: any) => ({
             [chat_field_1]: item[chat_field_1],
             [chat_field_2]: item[chat_field_2],
           }));
+          console.log("fieldData----", fieldData);
           setNewEntry({ ...newEntry, dataApiResponse: fieldData });
           setLoading(false);
           toast({
