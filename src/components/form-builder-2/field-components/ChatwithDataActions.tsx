@@ -604,11 +604,11 @@ function SortableItem({
                 />
               </div>
               <div className="flex justify-end space-x-2">
-                <Button variant="outline" size="sm" onClick={handleCancel}>
-                  Cancel
+                <Button variant="ghost" size="sm" onClick={handleCancel}>
+                  <X className="h-4 w-4" />
                 </Button>
-                <Button variant="default" size="sm" onClick={handleSave}>
-                  Save
+                <Button variant="ghost" size="sm" onClick={handleSave}>
+                  <Check className="h-4 w-4" />
                 </Button>
               </div>
             </div>

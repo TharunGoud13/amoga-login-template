@@ -731,7 +731,7 @@ export function ChatWithDB({ formFields, apiFieldData }: any) {
     if (currentField?.variant === "Chat with Data") {
       addMessage(
         "user",
-        <div className="flex w-full md:w-[80vw] items-center">
+        <div className="flex w-full overflow-x-auto  md:w-[80vw] items-center">
           <ChatwithDataCard
             results={results}
             column={columns}

@@ -210,14 +210,14 @@ export function DynamicChart({
           {renderChart() || <div>No chart available</div>}
         </ChartContainer>
       )}
-      <div className="w-full">
+      {/* <div className="w-full">
         <p className="mt-4 text-sm">
           {activeConfig?.description || "No description available."}
         </p>
         <p className="mt-4 text-sm">
           {activeConfig?.takeaway || "No takeaways available."}
         </p>
-      </div>
+      </div> */}
     </div>
   );
 }

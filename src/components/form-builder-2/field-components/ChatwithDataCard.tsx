@@ -259,13 +259,28 @@ const ChatwithDataCard = ({
 
   return (
     <div>
-      <Card className="p-2.5 overflow-x-auto md:w-[550px]">
+      <Card className="p-2.5 overflow-x-auto w-[500px]  md:w-[550px]">
         <Tabs className="w-full" defaultValue="data">
-          <TabsList defaultValue={"data"} className="grid grid-cols-3">
+          <TabsList defaultValue={"data"} className="grid grid-cols-5">
+            <TabsTrigger value="json">JSON</TabsTrigger>
             <TabsTrigger value="data">Data</TabsTrigger>
+            <TabsTrigger value="narrative">Narrative</TabsTrigger>
             <TabsTrigger value="chart">Chart</TabsTrigger>
             <TabsTrigger value="actionables">Actionables</TabsTrigger>
           </TabsList>
+          <TabsContent value="json">
+            <pre>{JSON.stringify({ chat_with_db_data: data }, null, 2)}</pre>
+            <pre>
+              {JSON.stringify(
+                { chart_data: chartConfig ? chartConfig : chartApiConfig },
+                null,
+                2
+              )}
+            </pre>
+          </TabsContent>
+          <TabsContent value="narrative">
+            Narrative Content goes here
+          </TabsContent>
           <TabsContent value="data">
             <Table className="min-w-full overflow-x-auto divide-y divide-border">
               <TableHeader className="bg-secondary sticky top-0 shadow-sm">
