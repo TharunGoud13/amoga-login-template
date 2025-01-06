@@ -112,13 +112,8 @@ const ChatwithDataCard = ({
     }, {} as Record<string, string>);
 
     return {
-      description: "Generated chart configuration from API data.",
-      takeaway: "This chart is dynamically configured.",
-      title: "Dynamic Chart",
       xKey,
       yKeys,
-      legend: false,
-      colors,
     };
   };
 
@@ -331,7 +326,7 @@ const ChatwithDataCard = ({
                 ))}
               </TableBody>
             </Table>
-            <div className="flex justify-between items-center">
+            <div className="flex gap-2.5 items-center">
               <div>
                 <span>
                   Page {currentPage} of {totalPages}

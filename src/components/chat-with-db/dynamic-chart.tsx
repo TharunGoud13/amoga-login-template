@@ -96,7 +96,7 @@ export function DynamicChart({
               />
             </YAxis>
             <ChartTooltip content={<ChartTooltipContent />} />
-            {activeConfig.legend && <Legend />}
+            {/* {activeConfig.legend && <Legend />} */}
             {activeConfig.yKeys.map((key, index) => (
               <Bar
                 key={key}
@@ -141,7 +141,7 @@ export function DynamicChart({
               />
             </YAxis>
             <ChartTooltip content={<ChartTooltipContent />} />
-            {activeConfig.legend && <Legend />}
+            {/* {activeConfig.legend && <Legend />} */}
             {useTransformedData
               ? lineFields.map((key, index) => (
                   <Line
@@ -182,7 +182,7 @@ export function DynamicChart({
               ))}
             </Pie>
             <ChartTooltip content={<ChartTooltipContent />} />
-            {activeConfig.legend && <Legend />}
+            {/* {activeConfig.legend && <Legend />} */}
           </PieChart>
         );
 
@@ -194,7 +194,7 @@ export function DynamicChart({
   return (
     <div className="w-full flex flex-col justify-center items-center">
       <h2 className="text-lg font-bold mb-2">
-        {activeConfig?.title || "Chart"}
+        {/* {activeConfig?.title || "Chart"} */}
       </h2>
       {activeConfig && chartData.length > 0 && (
         <ChartContainer

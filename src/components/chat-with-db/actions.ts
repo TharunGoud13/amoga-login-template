@@ -241,7 +241,7 @@ export const generateChartConfig = async (
       colors[key] = `hsl(var(--chart-${index + 1}))`;
     });
 
-    const updatedConfig: Config = { ...config, colors };
+    const updatedConfig: Config = { ...config };
     return { config: updatedConfig };
   } catch (e) {
     console.error((e as Error).message);

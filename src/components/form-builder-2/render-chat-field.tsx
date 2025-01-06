@@ -1590,29 +1590,36 @@ const RenderInputField = ({
     case "Analytic Card":
       return <AnalyticCard field={currentField} />;
     case "Chat with Data":
+      console.log("currentField-----", currentField);
       return (
-        <RadioGroup
-          value={formData.preference}
-          onValueChange={(value) => {
-            handleRadioChange(value);
-          }}
-          className="flex w-full flex-wrap items-center"
-        >
-          <div className="flex flex-wrap items-center gap-2.5">
-            {currentField.chat_with_data?.buttons?.map(
-              (item: any, index: any) =>
-                item?.button_text ? (
-                  <div
-                    key={index}
-                    className="flex border rounded-full p-2.5  items-center gap-2"
-                  >
-                    <RadioGroupItem value={item?.button_text} id={index} />
-                    <Label htmlFor={index}>{item?.button_text}</Label>
-                  </div>
-                ) : null
-            )}
-          </div>
-        </RadioGroup>
+        <div>
+          {(currentField?.media_card_data?.media_url ||
+            currentField?.media_card_data?.custom_html) && (
+            <SendMediaCard field={currentField} />
+          )}
+          <RadioGroup
+            value={formData.preference}
+            onValueChange={(value) => {
+              handleRadioChange(value);
+            }}
+            className="flex w-full flex-wrap items-center"
+          >
+            <div className="flex flex-wrap items-center gap-2.5">
+              {currentField.chat_with_data?.buttons?.map(
+                (item: any, index: any) =>
+                  item?.button_text ? (
+                    <div
+                      key={index}
+                      className="flex border rounded-full p-2.5  items-center gap-2"
+                    >
+                      <RadioGroupItem value={item?.button_text} id={index} />
+                      <Label htmlFor={index}>{item?.button_text}</Label>
+                    </div>
+                  ) : null
+              )}
+            </div>
+          </RadioGroup>
+        </div>
       );
 
     default:
