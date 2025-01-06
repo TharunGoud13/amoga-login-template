@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Key } from "react";
+import { Key, useState } from "react";
 import {
   CartesianGrid,
   Line,
@@ -23,6 +23,12 @@ import BarChart from "./ChartTypes/BarChart";
 import LineGraph from "./ChartTypes/LineGraph";
 import HorizontalBarChart from "./ChartTypes/BarChartHorizontal";
 import { DynamicChart } from "@/components/chat-with-db/dynamic-chart";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
 
 function Actionables() {
   return (
@@ -65,6 +71,8 @@ const ChatwithDataCard = ({
 }: any) => {
   // Process the data based on which props are provided
   console.log("apiData-----", apiData);
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 10;
 
   const generateChartApiConfig = (data: any[]) => {
     if (!data || data.length === 0) return null;
@@ -257,6 +265,17 @@ const ChatwithDataCard = ({
     );
   };
 
+  const totalPages = Math.ceil(data.length / recordsPerPage);
+  const currentData = data.slice(
+    (currentPage - 1) * recordsPerPage,
+    currentPage * recordsPerPage
+  );
+  const handlePageChange = (page: number) => {
+    if (page > 0 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   return (
     <div>
       <Card className="p-2.5 overflow-x-auto w-[500px]  md:w-[550px]">
@@ -298,7 +317,7 @@ const ChatwithDataCard = ({
                 </TableRow>
               </TableHeader>
               <TableBody className="bg-card overflow-x-auto divide-y divide-border">
-                {data.map((item: any, index: Key | null | undefined) => (
+                {currentData.map((item: any, index: Key | null | undefined) => (
                   <TableRow key={index} className="hover:bg-muted">
                     {columnTitles?.map((column: any, cellIndex: any) => (
                       <TableCell
@@ -312,6 +331,47 @@ const ChatwithDataCard = ({
                 ))}
               </TableBody>
             </Table>
+            <div className="flex justify-between items-center">
+              <div>
+                <span>
+                  Page {currentPage} of {totalPages}
+                </span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <button
+                  // variant="outline"
+                  className="cursor-pointer border rounded p-1"
+                  disabled={currentPage === 1}
+                  onClick={() => handlePageChange(currentPage - 10)}
+                >
+                  <ChevronsLeft className="w-5 h-5" />
+                </button>
+                <button
+                  // variant="outline"
+                  className="cursor-pointer border rounded p-1"
+                  disabled={currentPage === 1}
+                  onClick={() => handlePageChange(currentPage - 1)}
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  className="cursor-pointer border rounded p-1"
+                  // variant="outline"
+                  disabled={currentPage === totalPages}
+                  onClick={() => handlePageChange(currentPage + 1)}
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+                <button
+                  className="cursor-pointer border rounded p-1"
+                  // variant="outline"
+                  disabled={currentPage === totalPages}
+                  onClick={() => handlePageChange(currentPage + 10)}
+                >
+                  <ChevronsRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
           </TabsContent>
           <TabsContent value="chart">
             <div className="mt-4">{renderChart()}</div>

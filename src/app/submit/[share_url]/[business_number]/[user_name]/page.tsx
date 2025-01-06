@@ -21,6 +21,7 @@ import { useSession } from "next-auth/react";
 import { trackPageView } from "@/utils/tracking";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ChatPreview from "@/components/form-builder-2/ChatPreview";
+import ChatwithData from "@/components/form-builder-2/ChatWithData";
 import { Session } from "@/components/form-builder-2/FormBuilder";
 
 const renderFormFields = (fields: any, form: any) => {
@@ -502,7 +503,7 @@ const Page = (props: any) => {
         </TabsContent>
         <TabsContent value="chat-with-data">
           <div className=" flex justify-center items-center">
-            <ChatPreview formFields={formJsonData} />
+            <ChatwithData formFields={formJsonData} />
           </div>
         </TabsContent>
       </Tabs>
