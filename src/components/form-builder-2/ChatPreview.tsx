@@ -963,7 +963,7 @@ export function ChatForm({ formFields, apiFieldData }: any) {
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto mt-8 shadow-lg">
+    <Card className="w-full max-w-[950px]  mx-auto mt-8 shadow-lg">
       <CardContent className="space-y-4 overflow-x-hidden max-h-[60vh] overflow-y-auto p-4">
         {messages.map((message) => (
           <div

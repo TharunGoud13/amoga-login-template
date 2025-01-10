@@ -1590,7 +1590,6 @@ const RenderInputField = ({
     case "Analytic Card":
       return <AnalyticCard field={currentField} />;
     case "Chat with Data":
-      console.log("currentField-----", currentField);
       return (
         <div>
           {(currentField?.media_card_data?.media_url ||

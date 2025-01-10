@@ -1,4 +1,4 @@
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -29,6 +29,10 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
+import ExtractMetrices from "../../../../hooks/extract-metrics";
+import { useMetrics } from "../../../../hooks/MetricContext";
+import ExtractMetrics, { ExtractMetricJson } from "./ExtractMetrics";
+import NarrativeTemplate from "./NarrativeTemplate";
 
 function Actionables() {
   return (
@@ -61,6 +65,19 @@ function Actionables() {
   );
 }
 
+export function MetricJson() {
+  const { metrics } = useMetrics();
+  return (
+    <Card>
+      <CardContent>
+        <pre className="bg-gray-100 p-4 rounded-lg overflow-auto max-h-[500px]">
+          {JSON.stringify(metrics, null, 2)}
+        </pre>
+      </CardContent>
+    </Card>
+  );
+}
+
 const ChatwithDataCard = ({
   results,
   columns,
@@ -70,7 +87,6 @@ const ChatwithDataCard = ({
   apiData,
 }: any) => {
   // Process the data based on which props are provided
-  console.log("apiData-----", apiData);
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 10;
 
@@ -273,11 +289,13 @@ const ChatwithDataCard = ({
 
   return (
     <div>
-      <Card className="p-2.5 overflow-x-auto w-[500px]  md:w-[550px]">
+      <Card className="p-2.5 overflow-x-auto  md:w-[760px]">
         <Tabs className="w-full" defaultValue="data">
-          <TabsList defaultValue={"data"} className="grid grid-cols-5">
+          <TabsList defaultValue={"data"} className="grid grid-cols-7 gap-2.5">
             <TabsTrigger value="json">JSON</TabsTrigger>
             <TabsTrigger value="data">Data</TabsTrigger>
+            <TabsTrigger value="key-metrics">Metrics</TabsTrigger>
+            <TabsTrigger value="key-metrics-json">KM JSON</TabsTrigger>
             <TabsTrigger value="narrative">Narrative</TabsTrigger>
             <TabsTrigger value="chart">Chart</TabsTrigger>
             <TabsTrigger value="actionables">Actionables</TabsTrigger>
@@ -292,8 +310,22 @@ const ChatwithDataCard = ({
               )}
             </pre>
           </TabsContent>
+          <TabsContent value="key-metrics">
+            {componentName?.metricApiEnabled ? (
+              <ExtractMetrics data={data} componentName={componentName} />
+            ) : (
+              <ExtractMetrices data={data} />
+            )}
+          </TabsContent>
+          <TabsContent value="key-metrics-json">
+            {componentName?.metricApiEnabled ? (
+              <ExtractMetricJson />
+            ) : (
+              <MetricJson />
+            )}
+          </TabsContent>
           <TabsContent value="narrative">
-            Narrative Content goes here
+            <NarrativeTemplate data={data} componentName={componentName} />
           </TabsContent>
           <TabsContent value="data">
             <Table className="min-w-full overflow-x-auto divide-y divide-border">

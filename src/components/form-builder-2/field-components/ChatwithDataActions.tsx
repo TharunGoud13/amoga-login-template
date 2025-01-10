@@ -39,6 +39,8 @@ interface FormEntry {
   chat_field_1: string;
   chat_field_2: string;
   component_name: string;
+  metricApiEnabled: boolean;
+  metricApi: string;
   storyApiEnabled: boolean;
   storyApi: string;
   apiResponse: [];
@@ -55,6 +57,8 @@ interface ValidationErrors {
   component_name?: string;
   prompt?: string;
   apiEndpoint?: string;
+  metricApiValid?: string;
+  storyApiValid?: string;
 }
 
 const COMPONENT_NAMES = [
@@ -71,6 +75,7 @@ function SortableItem({
   onSave,
   setEditedField,
   editedField,
+  validApi,
 }: {
   entry: FormEntry;
   onEdit: () => void;
@@ -78,6 +83,7 @@ function SortableItem({
   onSave: (updatedEntry: FormEntry) => void;
   setEditedField: (field: any) => void;
   editedField: any;
+  validApi: any;
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedEntry, setEditedEntry] = useState(entry);
@@ -155,10 +161,6 @@ function SortableItem({
           });
         }
         const data = await response.json();
-        console.log("data----", data.length);
-
-        // console.log("filterData----", filterData.length);
-        console.log("apiDataFilter----", apiDataFilter);
 
         let filterData;
         if (apiDataFilter === "get-all-api-data") {
@@ -204,6 +206,21 @@ function SortableItem({
   };
 
   const handleSave = () => {
+    const isValidAPi = validApi.filter(
+      (item: any) => item?.api_url === editedEntry?.metricApi
+    );
+    const isValidStoryApi = validApi.filter(
+      (item: any) => item?.api_url === editedEntry?.storyApi
+    );
+    if (editedEntry.metricApiEnabled && !(isValidAPi?.length > 0)) {
+      toast({ description: "Invalid API URL", variant: "destructive" });
+      return;
+    }
+    if (editedEntry.storyApiEnabled && !(isValidStoryApi?.length > 0)) {
+      toast({ description: "Invalid API URL", variant: "destructive" });
+      return;
+    }
+
     setIsEditing(false);
     onSave(editedEntry);
     setEditedField({
@@ -230,6 +247,8 @@ function SortableItem({
                 chat_field_2: editedEntry.chat_field_2,
                 apiField: editedEntry.apiField,
                 storyApiEnabled: editedEntry.storyApiEnabled,
+                metricApiEnabled: editedEntry.metricApiEnabled,
+                metricApi: editedEntry.metricApi,
                 storyApi: editedEntry.storyApi,
                 actionApiEnabled: editedEntry.actionApiEnabled,
                 actionApi: editedEntry.actionApi,
@@ -247,8 +266,6 @@ function SortableItem({
     setIsEditing(false);
     setEditedEntry(entry);
   };
-
-  console.log("edit----", editedEntry);
 
   return (
     <Draggable draggableId={String(entry.id)} index={entry.id}>
@@ -506,7 +523,40 @@ function SortableItem({
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
-                  id={`story-api-${entry.id}`}
+                  id={`metrics-api-${entry.id}`}
+                  checked={editedEntry.metricApiEnabled}
+                  onCheckedChange={(checked) =>
+                    setEditedEntry({
+                      ...editedEntry,
+                      metricApiEnabled: checked as boolean,
+                    })
+                  }
+                />
+                <Label htmlFor={`metrics-api-${entry.id}`}>
+                  Use Metrics API
+                </Label>
+              </div>
+              <div>
+                <Label htmlFor={`metrics-endpoint-${entry.id}`}>
+                  Metrics API
+                </Label>
+                <Input
+                  id={`metrics-endpoint-${entry.id}`}
+                  value={editedEntry.metricApi}
+                  disabled={!editedEntry.metricApiEnabled}
+                  onChange={(e) =>
+                    setEditedEntry({
+                      ...editedEntry,
+                      metricApi: e.target.value,
+                    })
+                  }
+                  className="mt-1"
+                  placeholder="Enter Metrics API endpoint"
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id={`metrics-api-${entry.id}`}
                   checked={editedEntry.storyApiEnabled}
                   onCheckedChange={(checked) =>
                     setEditedEntry({
@@ -664,6 +714,7 @@ function NewEntryForm({
   setEditedField,
   setLoading,
   existingButtons,
+  validApi,
 }: {
   onSave: (entry: FormEntry) => void;
   onCancel: () => void;
@@ -671,6 +722,7 @@ function NewEntryForm({
   setEditedField: (field: any) => void;
   setLoading: (loading: boolean) => void;
   existingButtons: FormEntry[];
+  validApi: any;
 }) {
   const [newEntry, setNewEntry] = useState<FormEntry>({
     id: Date.now(),
@@ -688,6 +740,8 @@ function NewEntryForm({
     chat_apiEndpoint: "",
     chat_field_1: "",
     chat_field_2: "",
+    metricApiEnabled: false,
+    metricApi: "",
     storyApiEnabled: false,
     storyApi: "",
     actionApiEnabled: false,
@@ -741,6 +795,13 @@ function NewEntryForm({
   };
 
   const validateForm = () => {
+    const isValidAPi = validApi.filter(
+      (item: any) => item?.api_url === newEntry?.metricApi
+    );
+    const isValidStoryApi = validApi.filter(
+      (item: any) => item?.api_url === newEntry?.storyApi
+    );
+
     let formErrors: ValidationErrors = {};
 
     // Validate button text
@@ -758,6 +819,21 @@ function NewEntryForm({
       formErrors.buttonText = "Button text must be unique";
       toast({
         description: "Button text must be unique",
+        variant: "destructive",
+      });
+    }
+    if (newEntry.metricApiEnabled && !(isValidAPi.length > 0)) {
+      formErrors.metricApiValid = "Invalid metric API";
+      toast({
+        description: "Invalid metric API",
+        variant: "destructive",
+      });
+    }
+
+    if (newEntry.storyApiEnabled && !(isValidStoryApi.length > 0)) {
+      formErrors.storyApiValid = "Invalid story API";
+      toast({
+        description: "Invalid story API",
         variant: "destructive",
       });
     }
@@ -813,6 +889,8 @@ function NewEntryForm({
         chat_field_2: "",
         apiField: "",
         component_name: "",
+        metricApiEnabled: false,
+        metricApi: "",
         storyApi: "",
         storyApiEnabled: false,
         actionApiEnabled: false,
@@ -955,10 +1033,6 @@ function NewEntryForm({
           });
         }
         const data = await response.json();
-        console.log("data----", data.length);
-
-        // console.log("filterData----", filterData.length);
-        console.log("apiDataFilter----", apiDataFilter);
 
         let filterData;
         if (apiDataFilter === "get-all-api-data") {
@@ -978,7 +1052,6 @@ function NewEntryForm({
             [chat_field_1]: item[chat_field_1],
             [chat_field_2]: item[chat_field_2],
           }));
-          console.log("fieldData----", fieldData);
           setNewEntry({ ...newEntry, dataApiResponse: fieldData });
           setLoading(false);
           toast({
@@ -1209,6 +1282,29 @@ function NewEntryForm({
         </div>
         <div className="flex items-center space-x-2">
           <Checkbox
+            id="metrics-api"
+            checked={newEntry.metricApiEnabled}
+            onCheckedChange={(checked) =>
+              setNewEntry({ ...newEntry, metricApiEnabled: checked as boolean })
+            }
+          />
+          <Label htmlFor="metrics-api">Use Metrics API</Label>
+        </div>
+        <div>
+          <Label htmlFor="metrics-endpoint">Metrics API </Label>
+          <Input
+            id="metrics-endpoint"
+            disabled={!newEntry.metricApiEnabled}
+            value={newEntry.metricApi}
+            onChange={(e) =>
+              setNewEntry({ ...newEntry, metricApi: e.target.value })
+            }
+            className="mt-1"
+            placeholder="Enter Metric API endpoint"
+          />
+        </div>
+        <div className="flex items-center space-x-2">
+          <Checkbox
             id="story-api"
             checked={newEntry.storyApiEnabled}
             onCheckedChange={(checked) =>
@@ -1303,6 +1399,7 @@ export default function ChatwithDataActions({
   editedField,
   setEditedField,
   setLoading,
+  validApi,
 }: any) {
   const [entries, setEntries] = useState<FormEntry[]>(() => {
     return (editedField?.chat_with_data?.buttons || []).map(
@@ -1326,6 +1423,8 @@ export default function ChatwithDataActions({
         dataApiResponse: button.dataApiResponse || [],
         storyApiEnabled: button.storyApiEnabled || false,
         storyApi: button.storyApi || "",
+        metricApiEnabled: button.metricApiEnabled || false,
+        metricApi: button.metricApi || "",
         actionApiEnabled: button.actionApiEnabled || false,
         actionApi: button.actionApi || "",
         automationName: button.automationName || "",
@@ -1358,6 +1457,8 @@ export default function ChatwithDataActions({
           dataApiResponse: button.dataApi_response || [],
           storyApiEnabled: button.storyApiEnabled || false,
           storyApi: button.storyApi || "",
+          metricApiEnabled: button.metricApiEnabled || false,
+          metricApi: button.metricApi || "",
           actionApiEnabled: button.actionApiEnabled || false,
           actionApi: button.actionApi || "",
           automationName: button.automationName || "",
@@ -1395,6 +1496,8 @@ export default function ChatwithDataActions({
           apiField: entry.apiField,
           storyApiEnabled: entry.storyApiEnabled,
           storyApi: entry.storyApi,
+          metricApiEnabled: entry.metricApiEnabled,
+          metricApi: entry.metricApi,
           actionApiEnabled: entry.actionApiEnabled,
           actionApi: entry.actionApi,
           automationName: entry.automationName,
@@ -1434,6 +1537,8 @@ export default function ChatwithDataActions({
           apiField: entry.apiField,
           storyApiEnabled: entry.storyApiEnabled,
           storyApi: entry.storyApi,
+          metricApiEnabled: entry.metricApiEnabled,
+          metricApi: entry.metricApi,
           actionApiEnabled: entry.actionApiEnabled,
           actionApi: entry.actionApi,
           automationName: entry.automationName,
@@ -1477,6 +1582,8 @@ export default function ChatwithDataActions({
                 apiField: updatedEntry.apiField,
                 storyApiEnabled: updatedEntry.storyApiEnabled,
                 storyApi: updatedEntry.storyApi,
+                metricApiEnabled: updatedEntry.metricApiEnabled,
+                metricApi: updatedEntry.metricApi,
                 actionApiEnabled: updatedEntry.actionApiEnabled,
                 actionApi: updatedEntry.actionApi,
                 automationName: updatedEntry.automationName,
@@ -1525,6 +1632,7 @@ export default function ChatwithDataActions({
                       onSave={handleSaveEdit}
                       editedField={editedField}
                       setEditedField={setEditedField}
+                      validApi={validApi}
                     />
                   ))}
                 {provided.placeholder}
@@ -1541,6 +1649,7 @@ export default function ChatwithDataActions({
             setEditedField={setEditedField}
             setLoading={setLoading}
             existingButtons={entries}
+            validApi={validApi}
           />
         ) : (
           <Button

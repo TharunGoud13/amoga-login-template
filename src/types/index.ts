@@ -71,6 +71,8 @@ export type FormFieldType = {
         promptDataFilter: string;
         apiDataFilter: string;
         component_name?: string;
+        metricApi?: string;
+        metricApiEnabled?: boolean;
       }
     ];
   };

@@ -138,6 +138,8 @@ export default function FormBuilder() {
             promptDataFilter: "",
             apiDataFilter: "",
             component_name: "",
+            metricApi: "",
+            metricApiEnabled: false,
           },
         ],
       },
@@ -394,7 +396,7 @@ export default function FormBuilder() {
           {viewPath && <TabsTrigger value="view">Form Data</TabsTrigger>}
         </TabsList>
         <TabsContent value="form">
-          <div className="w-full min-h-screen overflow-y-auto  max-w-[800px] mx-auto md:p-4 space-y-6">
+          <div className="w-full min-h-screen overflow-y-auto  max-w-[950px] mx-auto md:p-4 space-y-6">
             <div className="border rounded-lg p-4 mb-8">
               <div className="flex items-center gap-4">
                 <Input
@@ -515,7 +517,7 @@ export default function FormBuilder() {
                 </div>
               </TabsContent>
               <TabsContent value="chat_with_data">
-                <div className=" w-full h-full">
+                <div className="max-w-[950px] h-full">
                   {formFields?.length > 0 ? (
                     <ChatWithDB
                       formFields={formFields}

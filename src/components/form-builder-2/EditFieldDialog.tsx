@@ -88,6 +88,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
   const [isPlaceholderChecked, setIsPlaceholderChecked] = useState(false);
   const [isUrlChecked, setIsUrlChecked] = useState(false);
   const [selectedValue, setSelectedValue] = useState("");
+  const [validApi, setValidApi] = useState([]);
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
   const MAX_VIDEO_SIZE = 2 * 1024 * 1024;
 
@@ -621,6 +622,15 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
   const removeMedia = () => {
     setMediaCardPreviews("");
   };
+
+  useEffect(() => {
+    const getValidApis = async () => {
+      const apis = await fetchValidApi();
+      setValidApi(apis);
+    };
+
+    getValidApis();
+  }, []);
 
   const fetchValidApi = async () => {
     const requestOptions = {
@@ -2286,6 +2296,8 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                     editedField={editedField}
                     setEditedField={setEditedField}
                     setLoading={setUploading}
+                    validApi={validApi}
+
                     // handleSaveField={handleSave}
                   />
                   <div className="w-full flex items-end justify-end">

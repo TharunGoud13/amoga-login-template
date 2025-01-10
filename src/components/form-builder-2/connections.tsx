@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -20,15 +21,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { ADD_CONNECTIONS, NEXT_PUBLIC_API_KEY } from "@/constants/envConfig";
 import { FaEdit } from "react-icons/fa";
 
@@ -38,10 +33,12 @@ type Connection = {
   created_date: string;
   connection_name: string;
   connection_type: string;
+  api_method: "GET" | "POST";
   api_url: string;
   key: string;
   secret: string;
   test_status: "passed" | "failed" | "pending";
+  test_data?: string;
 };
 
 export function ConnectionTable() {
@@ -56,6 +53,8 @@ export function ConnectionTable() {
       status: "inactive",
       created_date: new Date().toISOString().split("T")[0],
       test_status: "pending",
+      api_method: "GET",
+      test_data: '{\n  "key": "value"\n}',
     }
   );
 
@@ -68,8 +67,7 @@ export function ConnectionTable() {
       )
     );
     setFilteredData(results);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm]);
+  }, [searchTerm, data]);
 
   const fetchConnections = async () => {
     try {
@@ -99,11 +97,13 @@ export function ConnectionTable() {
     fetchConnections();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setNewConnection({ ...newConnection, [e.target.name]: e.target.value });
   };
 
-  const handleEdit = (item: any) => {
+  const handleEdit = (item: Connection) => {
     setIsDialogOpen(true);
     setIsEditing(true);
     setNewConnection(item);
@@ -114,11 +114,14 @@ export function ConnectionTable() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
     try {
       const myHeaders = new Headers();
       myHeaders.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
       myHeaders.append("Content-Type", "application/json");
+
+      const { test_data, ...connectionData } = newConnection;
 
       const url = isEditing
         ? `${ADD_CONNECTIONS}?id=eq.${newConnection?.id}`
@@ -127,80 +130,92 @@ export function ConnectionTable() {
       const requestOptions = {
         method: method,
         headers: myHeaders,
-        body: JSON.stringify(newConnection),
+        body: JSON.stringify(connectionData),
       };
-      e.preventDefault();
+
       const response = await fetch(url, requestOptions);
       if (!response.ok) {
-        toast({
-          description: "Failed to add connection",
-          variant: "destructive",
-        });
-      } else {
-        toast(
-          isEditing
-            ? {
-                description: "Connection updated successfully",
-                variant: "default",
-              }
-            : {
-                description: "Connection added successfully",
-                variant: "default",
-              }
-        );
-        setLoading(false);
-        setIsDialogOpen(false);
-        fetchConnections();
+        throw new Error("Failed to save connection");
       }
+
+      toast({
+        description: `Connection ${
+          isEditing ? "updated" : "added"
+        } successfully`,
+        variant: "default",
+      });
+      setLoading(false);
+      setIsDialogOpen(false);
+      fetchConnections();
     } catch (error) {
       setLoading(false);
-      toast(
-        isEditing
-          ? {
-              description: "Failed to Edit connection",
-              variant: "destructive",
-            }
-          : {
-              description: "Failed to add connection",
-              variant: "destructive",
-            }
-      );
-    } finally {
-      setLoading(false);
+      toast({
+        description: `Failed to ${isEditing ? "edit" : "add"} connection`,
+        variant: "destructive",
+      });
     }
   };
 
   const handleTestConnection = async (newConnection: Partial<Connection>) => {
-    if (!newConnection.key && !newConnection.secret && !newConnection.api_url) {
+    if (!newConnection.key || !newConnection.secret || !newConnection.api_url) {
       toast({
-        description: "API Key and Secret are required",
+        description: "API URL, Key and Secret are required",
         variant: "destructive",
       });
       return;
     }
-    const headers = new Headers();
-    headers.append(newConnection.key as string, newConnection.secret as string);
 
-    const requestOptions = {
-      method: "GET",
-      headers: headers,
-    };
-    const response = await fetch(
-      newConnection?.api_url as string,
-      requestOptions
-    );
-    if (!response.ok) {
+    try {
+      const headers = new Headers();
+      headers.append("Content-Type", "application/json");
+      headers.append(newConnection.key, newConnection.secret);
+
+      let requestOptions: RequestInit = {
+        method: newConnection.api_method,
+        headers: headers,
+      };
+
+      if (newConnection.api_method === "POST") {
+        if (!newConnection.test_data) {
+          toast({
+            description: "Test data is required for POST requests",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        try {
+          const parsedData = JSON.parse(newConnection.test_data);
+          requestOptions.body = JSON.stringify(parsedData);
+        } catch (e) {
+          toast({
+            description: "Invalid JSON data format",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
+      const response = await fetch(newConnection.api_url, requestOptions);
+
+      if (!response.ok) {
+        setNewConnection({ ...newConnection, test_status: "failed" });
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Connection test failed");
+      }
+
+      await response.json();
+      setNewConnection({ ...newConnection, test_status: "passed" });
+      toast({
+        description: "Connection test successful",
+        variant: "default",
+      });
+    } catch (error: any) {
       setNewConnection({ ...newConnection, test_status: "failed" });
       toast({
-        description: "Failed to test connection",
+        description: error.message || "Connection test failed",
         variant: "destructive",
       });
-      return;
-    }
-    const responseData = await response.json();
-    if (response.ok) {
-      setNewConnection({ ...newConnection, test_status: "passed" });
-      toast({ description: "Connection successful", variant: "default" });
     }
   };
 
@@ -223,6 +238,8 @@ export function ConnectionTable() {
                   status: "inactive",
                   created_date: new Date().toISOString().split("T")[0],
                   test_status: "pending",
+                  api_method: "GET",
+                  test_data: '[{\n  "product_name": "Cap"\n}]',
                 });
               }}
             >
@@ -232,7 +249,9 @@ export function ConnectionTable() {
           <DialogContent className="w-full max-w-[800px]">
             <Card className="border-none">
               <CardHeader>
-                <CardTitle>Add New Connection</CardTitle>
+                <CardTitle>
+                  {isEditing ? "Edit Connection" : "Add New Connection"}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -261,6 +280,23 @@ export function ConnectionTable() {
                         <SelectContent>
                           <SelectItem value="REST">REST</SelectItem>
                           <SelectItem value="GraphQL">GraphQL</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="api_method">API Method</Label>
+                      <Select
+                        value={newConnection.api_method}
+                        onValueChange={(value) =>
+                          handleSelectChange("api_method", value)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select method" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="GET">GET</SelectItem>
+                          <SelectItem value="POST">POST</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -312,6 +348,21 @@ export function ConnectionTable() {
                         </SelectContent>
                       </Select>
                     </div>
+
+                    {newConnection.api_method === "POST" && (
+                      <div className="col-span-2 space-y-2">
+                        <Label htmlFor="test_data">Test Data (JSON)</Label>
+                        <Textarea
+                          id="test_data"
+                          name="test_data"
+                          value={newConnection.test_data || ""}
+                          onChange={handleInputChange}
+                          className="min-h-[100px] font-mono"
+                          placeholder="Enter JSON data for POST request"
+                          required={newConnection.api_method === "POST"}
+                        />
+                      </div>
+                    )}
                   </div>
                   <div className="flex justify-between items-center">
                     <Button type="submit">
@@ -343,10 +394,12 @@ export function ConnectionTable() {
             <TableHead>Created Date</TableHead>
             <TableHead>Connection Name</TableHead>
             <TableHead>Connection Type</TableHead>
+            <TableHead>API Method</TableHead>
             <TableHead>API URL</TableHead>
             <TableHead>Key</TableHead>
             <TableHead>Secret</TableHead>
             <TableHead>Test Status</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -362,6 +415,7 @@ export function ConnectionTable() {
               <TableCell>{item.created_date}</TableCell>
               <TableCell>{item.connection_name}</TableCell>
               <TableCell>{item.connection_type}</TableCell>
+              <TableCell>{item.api_method}</TableCell>
               <TableCell>{item.api_url}</TableCell>
               <TableCell>{item.key}</TableCell>
               <TableCell>******</TableCell>
