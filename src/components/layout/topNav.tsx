@@ -42,6 +42,9 @@ export default function Header() {
             <Link href="/chat_with_db" className="text-primary">
               Chat with DB
             </Link>
+            <Link href="/story_builder" className="text-primary">
+              Story Builder
+            </Link>
           </div>
         </div>
         <div className={cn("block lg:!hidden")}>

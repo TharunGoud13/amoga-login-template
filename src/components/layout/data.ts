@@ -25,4 +25,10 @@ export const navItems: NavItem[] = [
     icon: "dashboard",
     label: "Chat with DB",
   },
+  {
+    title: "Story Builder",
+    href: "/story_builder",
+    icon: "dashboard",
+    label: "Story Builder",
+  },
 ];
