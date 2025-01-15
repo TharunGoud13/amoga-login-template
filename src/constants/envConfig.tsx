@@ -12,5 +12,7 @@ export const ADD_CONNECTIONS =
 export const STORY_TEMPLATE =
   "https://amogademo-postgrest.morr.biz/story_template";
 
+export const TEMPLATE_API = "https://nlg.morr.biz/templates";
+
 export const NEXT_PUBLIC_API_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYXBpX3VzZXIifQ.Ks_9ISeorCCS73q1WKEjZHu9kRx107eOx5VcImPh9U8";

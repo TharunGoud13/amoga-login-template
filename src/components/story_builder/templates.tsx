@@ -35,16 +35,20 @@ const Templates = () => {
   };
   return (
     <div>
-      {templates.map((template: any) => (
-        <Card key={template} className="flex relative mt-2.5 gap-2.5">
-          <CardContent className="p-2.5 space-y-2.5">
+      {templates.map((template: any, index) => (
+        <Card key={template} className="flex flex-wrap relative mt-2.5 gap-2.5">
+          <CardContent className="p-2.5 space-y-2.5 overflow-x-auto md:overflow-hidden">
             <h3>Template Name: {template.template_name}</h3>
             <p>Template Type: {template.template_type}</p>
             <p>Template JSON: {template.template_json}</p>
             <p>PUG Template: {template.pug_template}</p>
+            <p>Story API URL: {template.story_api_url}</p>
           </CardContent>
-          <div className=" absolute right-2 top-5">
-            <Trash />
+          <div className="absolute right-2 top-5">
+            <Trash
+              className="cursor-pointer"
+              onClick={() => console.log("index----", index, template)}
+            />
           </div>
         </Card>
       ))}

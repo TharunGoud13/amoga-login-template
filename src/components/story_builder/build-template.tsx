@@ -18,7 +18,11 @@ import {
 import { toast } from "../ui/use-toast";
 import { generateTemplate } from "./actions";
 import CodeEditor from "@uiw/react-textarea-code-editor";
-import { NEXT_PUBLIC_API_KEY, STORY_TEMPLATE } from "@/constants/envConfig";
+import {
+  NEXT_PUBLIC_API_KEY,
+  STORY_TEMPLATE,
+  TEMPLATE_API,
+} from "@/constants/envConfig";
 import { useSession } from "next-auth/react";
 import { Session } from "../form-builder-2/FormBuilder";
 
@@ -65,6 +69,28 @@ export default function BuildTemplate() {
         return;
       }
 
+      const templateRequestOptions = {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Basic YWRtaW46cGFzc3dvcmQxMjM=",
+        },
+        body: JSON.stringify({ template: pugTemplate }),
+      };
+      const resultTemplate = await fetch(
+        `${TEMPLATE_API}/${templateName}`,
+        templateRequestOptions
+      );
+      const resultData = await resultTemplate.json();
+
+      if (!resultTemplate.ok) {
+        toast({
+          variant: "destructive",
+          description: "Failed to Create template",
+        });
+        return;
+      }
+
       const header = new Headers();
       header.append("Content-Type", "application/json");
       header.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
@@ -78,6 +104,7 @@ export default function BuildTemplate() {
           created_date: new Date().toDateString(),
           business_name: session?.user?.business_name,
           business_number: session?.user?.business_number,
+          story_api_url: `${TEMPLATE_API}/${templateName}`,
           template_name: templateName,
           template_type: additionalField,
           template_json: dataModel,
