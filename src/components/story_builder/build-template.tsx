@@ -2,13 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -40,11 +34,37 @@ export default function BuildTemplate() {
   const session: Session | null = sessionData
     ? (sessionData as unknown as Session)
     : null;
-  console.log("session---", session);
-  console.log("date---", new Date().toDateString());
 
   const handleSave = async () => {
+    if (!pugTemplate) {
+      toast({
+        variant: "destructive",
+        description: "Please provide a Pug template",
+      });
+      return;
+    }
+
     try {
+      setLoading(true);
+
+      const response = await fetch("/api/validatePug", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ template: pugTemplate }),
+      });
+
+      const result = await response.json();
+
+      if (!result.valid) {
+        toast({
+          variant: "destructive",
+          description: `Error: ${result.error}`,
+        });
+        return;
+      }
+
       const header = new Headers();
       header.append("Content-Type", "application/json");
       header.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
@@ -66,9 +86,8 @@ export default function BuildTemplate() {
         }),
       };
 
-      const result = await fetch(STORY_TEMPLATE, requestOptions);
-      console.log("result---", result);
-      if (!result.ok) {
+      const resultSave = await fetch(STORY_TEMPLATE, requestOptions);
+      if (!resultSave.ok) {
         toast({
           variant: "destructive",
           description: "Failed to save template",
@@ -84,6 +103,8 @@ export default function BuildTemplate() {
         variant: "destructive",
         description: "Failed to save template",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -104,7 +125,6 @@ export default function BuildTemplate() {
       const template = await generateTemplate(dataModel, prompt);
       setLoading(false);
       setPugTemplate(template);
-      console.log("template---", template);
     } catch (err) {
       toast({
         variant: "destructive",

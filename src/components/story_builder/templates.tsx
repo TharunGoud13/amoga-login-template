@@ -4,6 +4,7 @@ import { NEXT_PUBLIC_API_KEY, STORY_TEMPLATE } from "@/constants/envConfig";
 import { useEffect, useState } from "react";
 import { toast } from "../ui/use-toast";
 import { Card, CardContent } from "../ui/card";
+import { Trash } from "lucide-react";
 
 const Templates = () => {
   const [templates, setTemplates] = useState([]);
@@ -35,13 +36,16 @@ const Templates = () => {
   return (
     <div>
       {templates.map((template: any) => (
-        <Card key={template} className="flex mt-2.5 gap-2.5">
+        <Card key={template} className="flex relative mt-2.5 gap-2.5">
           <CardContent className="p-2.5 space-y-2.5">
             <h3>Template Name: {template.template_name}</h3>
             <p>Template Type: {template.template_type}</p>
             <p>Template JSON: {template.template_json}</p>
             <p>PUG Template: {template.pug_template}</p>
           </CardContent>
+          <div className=" absolute right-2 top-5">
+            <Trash />
+          </div>
         </Card>
       ))}
     </div>
