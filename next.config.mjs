@@ -15,20 +15,19 @@ const nextConfig = {
       "secure.gravatar.com",
       "images.tmcnet.com",
       "amoga-login-template.vercel.app",
-      "d8pvobupkiop1vno.public.blob.vercel-storage.com"
-      
+      "d8pvobupkiop1vno.public.blob.vercel-storage.com",
     ],
     remotePatterns: [
       {
-        hostname: '**',
-        protocol: "https"
+        hostname: "**",
+        protocol: "https",
       },
     ],
   },
   reactStrictMode: false,
-  compiler: {
-      removeConsole: process.env.NODE_ENV === "production"
-  },
+  // compiler: {
+  //     removeConsole: process.env.NODE_ENV === "production"
+  // },
 };
 
 const withPWAConfig = withPWA({

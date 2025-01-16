@@ -5,6 +5,13 @@ import { z } from "zod";
 
 export const generateAIStory = async (aiPrompt: string, pugStory: string) => {
   try {
+    const trimmedPugStory =
+      pugStory.length > 4000 ? pugStory.slice(0, 4000) : pugStory;
+    const trimmedAiPrompt =
+      aiPrompt.length > 500 ? aiPrompt.slice(0, 500) : aiPrompt;
+
+    console.log("trimmedPugStory-----", trimmedPugStory);
+    console.log("trimmedAiPrompt-----", trimmedAiPrompt);
     // Create a dynamic system prompt based on user-provided aiPrompt
     const systemPrompt = `
       You are tasked with generating a detailed and engaging story based on the provided input story (pugStory) and user-entered prompt (aiPrompt).
@@ -33,7 +40,7 @@ export const generateAIStory = async (aiPrompt: string, pugStory: string) => {
 
     // Generate the story using the AI model
     const result = await generateObject({
-      model: openai("gpt-4o"),
+      model: openai("gpt-3.5-turbo"),
       system: systemPrompt,
       prompt: "Create a detailed story based on the inputs.",
       schema: z.object({
