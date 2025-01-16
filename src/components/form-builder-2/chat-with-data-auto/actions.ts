@@ -71,7 +71,6 @@ export const generatePugTemplate = async (data: string[]) => {
     });
 
     const template = result.object.template.trim();
-    console.log("Generated Pug Template:", template);
     return template;
   } catch (err) {
     console.error(`Failed to generate template: ${err}`);
