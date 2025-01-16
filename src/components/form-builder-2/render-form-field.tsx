@@ -2410,6 +2410,7 @@ export const renderFormField = (
         </FormItem>
       );
     case "Chat with Data":
+    case "Chat with Data Auto":
       return <div></div>;
     case "Form Section":
     default:

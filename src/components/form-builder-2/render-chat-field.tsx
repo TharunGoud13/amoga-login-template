@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import { ChangeEvent, useEffect, useState } from "react";
 import { Button } from "../ui/button";
@@ -1590,6 +1591,7 @@ const RenderInputField = ({
     case "Analytic Card":
       return <AnalyticCard field={currentField} />;
     case "Chat with Data":
+    case "Chat with Data Auto":
       return (
         <div>
           {(currentField?.media_card_data?.media_url ||

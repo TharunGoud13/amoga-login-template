@@ -1945,7 +1945,8 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
               condition={
                 field?.variant !== "Send Media Card" &&
                 field?.variant !== "Analytic Card" &&
-                field?.variant !== "Chat with Data"
+                field?.variant !== "Chat with Data" &&
+                field?.variant !== "Chat with Data Auto"
               }
               render={() => <div>Card content goes here.</div>}
             />
@@ -1953,7 +1954,8 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
               condition={
                 field?.variant === "Send Media Card" ||
                 field?.variant === "Analytic Card" ||
-                field?.variant === "Chat with Data"
+                field?.variant === "Chat with Data" ||
+                field?.variant === "Chat with Data Auto"
               }
               render={() => (
                 <div className="space-y-2.5">
@@ -2285,11 +2287,17 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
           </TabsContent>
           <TabsContent value="actions">
             <If
-              condition={field?.variant !== "Chat with Data"}
+              condition={
+                field?.variant !== "Chat with Data" &&
+                field?.variant !== "Chat with Data Auto"
+              }
               render={() => <div>Actions content goes here.</div>}
             />
             <If
-              condition={field?.variant == "Chat with Data"}
+              condition={
+                field?.variant == "Chat with Data" ||
+                field?.variant == "Chat with Data Auto"
+              }
               render={() => (
                 <div>
                   <ChatwithDataActions
