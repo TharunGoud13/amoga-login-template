@@ -63,10 +63,12 @@ export default function FormBuilder() {
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [apiFieldData, setApiFieldData] = React.useState<any>([]);
+  const [apiEndpoint, setApiEndpoint] = React.useState("");
 
   const currentPath = path.includes("edit");
   const currentId = path.split("/").at(-1);
   const viewPath = path.includes("view");
+  console.log("editModeData----", editModeData);
 
   const filteredComponents = React.useMemo(
     () =>
@@ -256,8 +258,8 @@ export default function FormBuilder() {
       activeFormFields &&
       activeFormFields.flatMap((field: any) =>
         Array.isArray(field)
-          ? field.map((subField: any) => subField.name)
-          : field.name
+          ? field.map((subField: any) => subField.label)
+          : field.label
       );
 
     if (formInput === "") {
@@ -279,6 +281,7 @@ export default function FormBuilder() {
       form_name: formInput,
       form_json: activeFormFields,
       version_no: 1,
+      data_api_url: apiEndpoint,
       share_url: uuidv4(),
       custom_one: nameFields,
     };
@@ -715,6 +718,8 @@ export default function FormBuilder() {
         <FormSettingsModal
           isOpen={isSettingsOpen}
           onClose={() => setIsSettingsOpen(false)}
+          apiEndpoint={apiEndpoint}
+          setApiEndpoint={setApiEndpoint}
         />
       </Tabs>
     </section>

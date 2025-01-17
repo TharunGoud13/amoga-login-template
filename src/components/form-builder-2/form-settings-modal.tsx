@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { X } from "lucide-react";
 import {
   Dialog,
@@ -12,13 +12,37 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { fetchValidApi } from "@/utils/fetchValidApi";
+import { toast } from "../ui/use-toast";
 
 interface FormSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  apiEndpoint: string;
+  setApiEndpoint: (value: string) => void;
 }
 
-export function FormSettingsModal({ isOpen, onClose }: FormSettingsModalProps) {
+export function FormSettingsModal({
+  isOpen,
+  onClose,
+  setApiEndpoint,
+}: FormSettingsModalProps) {
+  const [apiUrl, setApiUrl] = useState("");
+  const handleSave = async () => {
+    const result = await fetchValidApi();
+    const validApi = result.filter((item: any) => item.api_url === apiUrl);
+
+    if (validApi.length > 0) {
+      setApiEndpoint(apiUrl);
+      toast({
+        description: "API endpoint saved successfully",
+        variant: "default",
+      });
+    } else {
+      toast({ description: "Invalid API endpoint", variant: "destructive" });
+    }
+    onClose;
+  };
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-full max-w-[800px]">
@@ -69,17 +93,15 @@ export function FormSettingsModal({ isOpen, onClose }: FormSettingsModalProps) {
           <TabsContent value="connection">
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Data Connections</h3>
-              <p>
-                Configure how this form connects to your data sources or APIs.
-              </p>
               <div>
                 <Label htmlFor="apiEndpoint">API Endpoint</Label>
                 <Input
+                  value={apiUrl}
+                  onChange={(e) => setApiUrl(e.target.value)}
                   id="apiEndpoint"
-                  placeholder="https://api.example.com/submit"
+                  placeholder="Add API Endpoint"
                 />
               </div>
-              {/* Add more connection options here */}
             </div>
           </TabsContent>
           <TabsContent value="action">
@@ -108,7 +130,7 @@ export function FormSettingsModal({ isOpen, onClose }: FormSettingsModalProps) {
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button>Save Settings</Button>
+          <Button onClick={handleSave}>Save Settings</Button>
         </div>
       </DialogContent>
     </Dialog>

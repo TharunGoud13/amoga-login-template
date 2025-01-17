@@ -193,7 +193,105 @@ const Page = (props: any) => {
     );
   }
 
+  async function validApiFields(apiUrl: string, formData: any) {
+    try {
+      const headers = new Headers();
+      headers.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
+      headers.append("Content-Type", "application/json");
+
+      const response = await fetch(apiUrl, { method: "GET", headers: headers });
+      if (!response.ok) {
+        toast({
+          description: "Error fetching API fields",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+      const data = await response.json();
+      const sampleRecord = Array.isArray(data) ? data[0] : data;
+
+      const apiFields = new Set(Object.keys(sampleRecord));
+
+      const invalidFields = Object.keys(formData).filter(
+        (field) => !apiFields.has(field)
+      );
+      if (invalidFields.length > 0) {
+        toast({ description: "Invalid fields", variant: "destructive" });
+        return {
+          isValid: false,
+          invalidFields,
+          error: `Fields not found in API schema: ${invalidFields.join(", ")}`,
+        };
+      }
+      return {
+        isValid: true,
+        invalidFields: [],
+      };
+    } catch (error) {
+      console.error("Error fetching API fields", error);
+      return {
+        isValid: false,
+        invalidFields: [],
+        error: "Failed to validate API schema",
+      };
+    }
+  }
+
   async function onSubmit(data: any) {
+    const fieldMapping = formJsonData.reduce((acc: any, field: any) => {
+      if (Array.isArray(field)) {
+        // Handle grouped fields
+        field.forEach((subField) => {
+          acc[subField.name] = subField.label;
+        });
+      } else {
+        acc[field.name] = field.label;
+      }
+      return acc;
+    }, {});
+
+    // Transform the submitted data to use labels as keys
+    const transformedData = Object.entries(data).reduce(
+      (acc: any, [key, value]) => {
+        const label = fieldMapping[key] || key; // Fallback to original key if label not found
+        acc[label] = value;
+        return acc;
+      },
+      {}
+    );
+
+    if (formData[0]?.data_api_url) {
+      // Validate fields against API schema
+      const validation = await validApiFields(
+        formData[0].data_api_url,
+        transformedData
+      );
+
+      if (validation && !validation.isValid) {
+        toast({
+          description: validation.error,
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // If validation passed, save to the API
+      const apiHeaders = new Headers();
+      apiHeaders.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
+      apiHeaders.append("Content-Type", "application/json");
+
+      const apiResponse = await fetch(formData[0].data_api_url, {
+        method: "POST",
+        headers: apiHeaders,
+        body: JSON.stringify(transformedData),
+      });
+
+      if (!apiResponse.ok) {
+        throw new Error("Failed to save data to API");
+      }
+    }
     const headers = new Headers();
     headers.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
     headers.append("Content-Type", "application/json");
@@ -376,7 +474,7 @@ const Page = (props: any) => {
       created_user_id: session?.user?.id,
       created_user_name: session?.user?.name,
       created_date: formatDateToCustomFormat(date),
-      form_data: data,
+      form_data: transformedData,
       form_data_row_api: formUrl,
     };
     const requestOptions = {
