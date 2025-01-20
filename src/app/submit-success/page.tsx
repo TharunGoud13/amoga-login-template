@@ -24,8 +24,8 @@ const SubmitSuccess = () => {
 
   useEffect(() => {
     // Get data from URL parameters
-    const formContent = searchParams.get("formContent");
-    const formName = searchParams.get("formName");
+    const formContent = searchParams.get("form_content");
+    const formName = searchParams.get("form_redirect_url");
     const submittedDataStr = searchParams.get("submittedData");
 
     if (formContent || formName || submittedDataStr) {

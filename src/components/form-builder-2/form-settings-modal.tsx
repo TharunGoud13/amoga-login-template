@@ -200,9 +200,9 @@ export function FormSettingsModal({
         <DialogHeader>
           <DialogTitle className="flex justify-between items-center">
             Form Settings
-            <Button variant="ghost" size="icon" onClick={onClose}>
+            {/* <Button variant="ghost" size="icon" onClick={onClose}>
               <X className="h-4 w-4" />
-            </Button>
+            </Button> */}
           </DialogTitle>
         </DialogHeader>
         <Tabs
