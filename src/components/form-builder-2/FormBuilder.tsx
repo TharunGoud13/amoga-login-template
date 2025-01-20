@@ -64,11 +64,14 @@ export default function FormBuilder() {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [apiFieldData, setApiFieldData] = React.useState<any>([]);
   const [apiEndpoint, setApiEndpoint] = React.useState("");
+  const [contentData, setContentData] = React.useState("");
+  const [formStatus, setFormStatus] = React.useState("");
+  const [successMsg, setSuccessMsg] = React.useState("");
+  const [redirectUrl, setRedirectUrl] = React.useState("");
 
   const currentPath = path.includes("edit");
   const currentId = path.split("/").at(-1);
   const viewPath = path.includes("view");
-  console.log("editModeData----", editModeData);
 
   const filteredComponents = React.useMemo(
     () =>
@@ -272,7 +275,7 @@ export default function FormBuilder() {
     }
 
     const payload = {
-      status: "active",
+      status: formStatus,
       created_user_id: session?.user?.id,
       created_user_name: session?.user?.name,
       business_number: session?.user?.business_number,
@@ -282,6 +285,9 @@ export default function FormBuilder() {
       form_json: activeFormFields,
       version_no: 1,
       data_api_url: apiEndpoint,
+      content: contentData,
+      form_success_url: redirectUrl,
+      form_success_message: successMsg,
       share_url: uuidv4(),
       custom_one: nameFields,
     };
@@ -383,21 +389,23 @@ export default function FormBuilder() {
         defaultValue={currentPath ? "edit" : viewPath ? "view" : "form"}
         className=" pt-5 pr-5 pl-5"
       >
-        <TabsList
-          className={`grid md:w-[400px] ${
-            currentPath
-              ? "grid-cols-4"
-              : viewPath
-              ? "grid-cols-4"
-              : "grid-cols-3"
-          }`}
-        >
-          <TabsTrigger value="form">Form</TabsTrigger>
-          <TabsTrigger value="list">Forms</TabsTrigger>
-          <TabsTrigger value="connections">Connections</TabsTrigger>
-          {currentPath && <TabsTrigger value="edit">Edit</TabsTrigger>}
-          {viewPath && <TabsTrigger value="view">Form Data</TabsTrigger>}
-        </TabsList>
+        <div className="flex items-center justify-center">
+          <TabsList
+            className={`grid items-center justify-center md:w-[400px] ${
+              currentPath
+                ? "grid-cols-4"
+                : viewPath
+                ? "grid-cols-4"
+                : "grid-cols-3"
+            }`}
+          >
+            <TabsTrigger value="form">Form</TabsTrigger>
+            <TabsTrigger value="list">Forms</TabsTrigger>
+            <TabsTrigger value="connections">Connections</TabsTrigger>
+            {currentPath && <TabsTrigger value="edit">Edit</TabsTrigger>}
+            {viewPath && <TabsTrigger value="view">Form Data</TabsTrigger>}
+          </TabsList>
+        </div>
         <TabsContent value="form">
           <div className="w-full min-h-screen overflow-y-auto  max-w-[950px] mx-auto md:p-4 space-y-6">
             <div className="border rounded-lg p-4 mb-8">
@@ -720,6 +728,13 @@ export default function FormBuilder() {
           onClose={() => setIsSettingsOpen(false)}
           apiEndpoint={apiEndpoint}
           setApiEndpoint={setApiEndpoint}
+          setContentData={setContentData}
+          editModeData={editModeData}
+          setFormStatus={setFormStatus}
+          setFormInput={setFormInput}
+          setSuccessMsg={setSuccessMsg}
+          setRedirectActionUrl={setRedirectUrl}
+          formInput={formInput}
         />
       </Tabs>
     </section>

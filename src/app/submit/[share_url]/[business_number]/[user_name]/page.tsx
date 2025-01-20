@@ -489,6 +489,12 @@ const Page = (props: any) => {
           description: "Form submitted successfully",
           variant: "default",
         });
+        const params = new URLSearchParams({
+          form_content: formData[0].form_success_message || "",
+          form_redirect_url: formData[0].form_success_url || "",
+        });
+        const successUrl = `/submit-success?${params.toString()}`;
+        window.location.href = successUrl;
         trackPageView({
           description: "Form Submitted Successfully",
           http_method: "POST",
@@ -546,6 +552,8 @@ const Page = (props: any) => {
     }
   }
 
+  console.log("formdata----", formData);
+
   return (
     <div className="md:p-6 flex flex-col justify-center items-center">
       <Tabs defaultValue="form" className="w-full">
@@ -571,6 +579,11 @@ const Page = (props: any) => {
             </TabsTrigger>
           </TabsList>
         </div>
+        {/* <p className="text-center">{formData[0]?.content}</p> */}
+        <div
+          className="mt-2 p-4 text-center"
+          dangerouslySetInnerHTML={{ __html: formData[0]?.content }}
+        />
         <TabsContent value="form">
           <If
             condition={formJsonData.length > 0}
