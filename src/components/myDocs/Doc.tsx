@@ -102,15 +102,15 @@ const Doc = () => {
       if (!response.ok) throw new Error("Failed to fetch template details");
       const data = await response.json();
       console.log("data.....", data);
-      const filteredData = data.filter(
-        (item: any) => item.business_number === session?.user?.business_number
-      );
+      //   const filteredData = data.filter(
+      //     (item: any) => item.business_number === session?.user?.business_number
+      //   );
 
       // Transform the API data into our desired format
       const template = {
-        mydoc_id: filteredData[0].mydoc_id,
-        template_name: filteredData[0].template_name,
-        components: filteredData.flatMap((item: any) => {
+        mydoc_id: data[0].mydoc_id,
+        template_name: data[0].template_name,
+        components: data.flatMap((item: any) => {
           const types = JSON.parse(item.component_type);
 
           return types.map((type: string) => ({
