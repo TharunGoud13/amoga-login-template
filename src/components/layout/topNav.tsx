@@ -8,7 +8,9 @@ import { cn } from "@/lib/utils";
 import { MobileSidebar } from "./mobile-sidebar";
 import Themes from "../ThemeToggle/themes";
 
-export default function Header() {
+export default function Header({ session }: { session: any }) {
+  console.log("session...data....", session);
+  const access = session?.user?.roles_json?.length ?? 0 > 0;
   const t = useTranslations("TopNav");
   return (
     <div className="supports-backdrop-blur:bg-background/60 fixed  left-0 right-0 top-0 z-20 border-b bg-background/95 backdrop-blur">
@@ -36,9 +38,11 @@ export default function Header() {
             <Link href="/form_maker" className="text-primary">
               Form Maker
             </Link>
-            <Link href="/doc-template" className="text-primary">
-              Doc Template
-            </Link>
+            {access && session?.user?.roles_json.includes("Admin") && (
+              <Link href="/doc-template" className="text-primary">
+                Doc Template
+              </Link>
+            )}
             <Link href="/chat" className="text-primary">
               Chat Forms
             </Link>
@@ -48,9 +52,11 @@ export default function Header() {
             <Link href="/story_builder" className="text-primary">
               Story Builder
             </Link>
-            <Link href="/myDocs" className="text-primary">
-              My Docs
-            </Link>
+            {access && session?.user?.roles_json.includes("Admin") && (
+              <Link href="/myDocs" className="text-primary">
+                My Docs
+              </Link>
+            )}
           </div>
         </div>
         <div className={cn("block lg:!hidden")}>

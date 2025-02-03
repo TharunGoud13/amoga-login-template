@@ -30,7 +30,6 @@ export default async function DashboardLayout({
           >
             Login
           </Link>
-          
         </div>
       </div>
     );
@@ -38,7 +37,7 @@ export default async function DashboardLayout({
 
   return (
     <>
-    <Header/>
+      <Header session={session} />
       <div className="flex overflow-hidden">
         <main className="w-full pt-14">{children}</main>
       </div>

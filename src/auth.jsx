@@ -27,7 +27,9 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } =  NextAuth(
         session.user.business_postcode = token?.user?.business_postcode;
         session.user.business_phone_no = token?.user?.business_phone_no;
         session.user.first_name = token?.user?.first_name;
-        session.user.last_name = token?.user?.last_name
+        session.user.last_name = token?.user?.last_name;
+        session.user.roles = token?.user?.roles;
+        session.user.roles_json = token?.user?.roles_json;
         
       }
       return session;

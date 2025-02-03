@@ -103,6 +103,8 @@ export async function middlewareAPI(credentials: {
         last_name: user.last_name,
         business_postcode: user.business_postcode,
         business_phone_no: user.business_phone_no,
+        roles: user.roles,
+        roles_json: user.roles_json,
       };
     }
     if (apiType === "GRAPHQL") {
@@ -117,6 +119,8 @@ export async function middlewareAPI(credentials: {
         last_name: user.lastName,
         business_postcode: user.business_postcode,
         business_phone_no: user.business_phone_no,
+        roles: user.roles,
+        roles_json: user.roles_json,
       };
     }
   }

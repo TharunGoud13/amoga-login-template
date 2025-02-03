@@ -42,6 +42,8 @@ export interface Session {
     first_name: string;
     last_name: string;
     business_postcode: string;
+    roles: string;
+    roles_json: string[];
   };
 }
 
