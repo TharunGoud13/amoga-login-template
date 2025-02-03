@@ -18,6 +18,8 @@ export const MY_DOC_LIST = "https://amogademo-postgrest.morr.biz/mydoc_list";
 export const MY_DOC_CONTENT =
   "https://amogademo-postgrest.morr.biz/mydoc_content";
 
+export const PAGE_LIST = "https://amogademo-postgrest.morr.biz/page_list";
+
 export const TEMPLATE_API = "https://nlg.morr.biz/templates";
 
 export const NEXT_PUBLIC_API_KEY =

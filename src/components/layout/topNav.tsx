@@ -17,7 +17,7 @@ export default function Header({ session }: { session: any }) {
       <nav className="flex h-14 items-center justify-between px-4">
         <div className="hidden lg:block">
           <div className="flex gap-4">
-            <Link href="/" className="flex items-center">
+            <Link href="/role_menu" className="flex items-center">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -30,9 +30,9 @@ export default function Header({ session }: { session: any }) {
               >
                 <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />
               </svg>
-              <span className="text-primary">Home</span>
+              <span className="text-primary"></span>
             </Link>
-            <Link href="/dashboard" className="text-primary">
+            {/* <Link href="/dashboard" className="text-primary">
               {t("dashboard")}
             </Link>
             <Link href="/form_maker" className="text-primary">
@@ -56,7 +56,7 @@ export default function Header({ session }: { session: any }) {
               <Link href="/myDocs" className="text-primary">
                 My Docs
               </Link>
-            )}
+            )} */}
           </div>
         </div>
         <div className={cn("block lg:!hidden")}>

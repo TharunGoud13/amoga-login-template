@@ -34,7 +34,9 @@ const formSchema = z.object({
     .string()
     .email({ message: "Please Enter a valid email address." })
     .min(1, { message: "Email is required" }),
-  password: z.string().min(8, { message: "Password should be at least 8 characters." }),
+  password: z
+    .string()
+    .min(8, { message: "Password should be at least 8 characters." }),
 });
 
 const otpFormSchema = z.object({
@@ -73,7 +75,7 @@ const LoginPage = () => {
     defaultValues,
   });
 
-  const otpForm:any = useForm<OtpFormValue>({
+  const otpForm: any = useForm<OtpFormValue>({
     resolver: zodResolver(otpFormSchema),
     defaultValues: {
       mobile: "",
@@ -128,28 +130,26 @@ const LoginPage = () => {
       return;
     }
     setLoading(true);
-    try{
-      const response:any = await signIn("mobile-otp", {
+    try {
+      const response: any = await signIn("mobile-otp", {
         mobile: data.mobile,
         otp: data.otp,
         redirect: false,
         sessionId: otpSessionId,
       });
-      console.log("response----",response)
+      console.log("response----", response);
       if (response?.error && response?.error === "CredentialsSignin") {
         toast({
           description: "Invalid OTP. Please try again.",
           variant: "destructive",
         });
-      }
-      else if(response?.error && response?.error === "Configuration"){
+      } else if (response?.error && response?.error === "Configuration") {
         toast({
           description: "Invalid OTP. Please try again.",
           variant: "destructive",
         });
-      }
-       else if (response?.ok) {
-        router.push("/");
+      } else if (response?.ok) {
+        router.push("/role_menu");
       } else {
         toast({
           description: "Invalid OTP, please try again.",
@@ -176,10 +176,10 @@ const LoginPage = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: forgotPasswordEmail}),
+        body: JSON.stringify({ email: forgotPasswordEmail }),
       });
-      console.log("response===",response)
-      console.log("---",forgotPasswordEmail)
+      console.log("response===", response);
+      console.log("---", forgotPasswordEmail);
 
       const data = await response.json();
 
@@ -204,7 +204,6 @@ const LoginPage = () => {
     }
   };
 
-
   const onSubmit = async (data: UserFormValue) => {
     setLoading(true);
     try {
@@ -214,7 +213,7 @@ const LoginPage = () => {
         password: data.password,
       });
       if (!result?.error) {
-        router.push("/");
+        router.push("/role_menu");
       } else {
         let text: any = document.getElementById("error-text");
         text.textContent = "Invalid email or password, please try again.";
@@ -337,20 +336,20 @@ const LoginPage = () => {
                       reset your password.
                     </DialogDescription>
                   </DialogHeader>
-                    <div className="space-y-2">
-                      <Label htmlFor="forgot-email">Email</Label>
-                      <Input
-                        id="forgot-email"
-                        placeholder="Email"
-                        type="email"
-                        value={forgotPasswordEmail}
-                        onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <Button onClick={handleForgotPassword}  className="w-full">
-                      {forgotPwdLoading? "Sending..." :  "Send reset link"}
-                    </Button>
+                  <div className="space-y-2">
+                    <Label htmlFor="forgot-email">Email</Label>
+                    <Input
+                      id="forgot-email"
+                      placeholder="Email"
+                      type="email"
+                      value={forgotPasswordEmail}
+                      onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <Button onClick={handleForgotPassword} className="w-full">
+                    {forgotPwdLoading ? "Sending..." : "Send reset link"}
+                  </Button>
                 </DialogContent>
               </Dialog>
             </form>
