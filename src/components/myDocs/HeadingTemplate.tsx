@@ -7,7 +7,6 @@ import RcTiptapEditor, { BaseKit, Heading } from "reactjs-tiptap-editor";
 import "katex/dist/katex.min.css";
 
 import "reactjs-tiptap-editor/style.css";
-import { toast } from "../ui/use-toast";
 
 const extensions = [
   BaseKit.configure({
@@ -23,11 +22,13 @@ const extensions = [
 interface HeadingTemplateProps {
   content: string;
   onContentChange: (content: string) => void;
+  readOnly?: boolean;
 }
 
 export default function HeadingTemplate({
   content,
   onContentChange,
+  readOnly,
 }: HeadingTemplateProps) {
   const [theme, setTheme] = useState("light");
 
@@ -41,7 +42,7 @@ export default function HeadingTemplate({
           onChangeContent={onContentChange}
           extensions={extensions}
           dark={theme === "dark"}
-          //   disabled={disable}
+          disabled={readOnly}
         />
       </div>
     </main>

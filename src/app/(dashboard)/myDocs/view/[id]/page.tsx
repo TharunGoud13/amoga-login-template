@@ -28,7 +28,7 @@ const COMPONENT_MAP = {
   Video: VideoTemplate,
 };
 
-const EditDoc = ({ params }: { params: { id: string } }) => {
+const ViewDoc = ({ params }: { params: { id: string } }) => {
   const { id } = params;
   console.log("id-----", id);
   const [template, setTemplate] = useState<any>(null);
@@ -120,108 +120,6 @@ const EditDoc = ({ params }: { params: { id: string } }) => {
     );
   };
 
-  const handleEditSave = async () => {
-    setIsLoading(true);
-    if (!template) {
-      toast({
-        description: "No template selected",
-
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Ensure at least one component has content
-    const hasContent = componentsData.some(
-      (comp) => comp.content.trim() !== ""
-    );
-    if (!hasContent) {
-      toast({
-        description: "Please enter content in at least one component",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Create updated payload
-    const updatedPayload = {
-      mydoc_list_id: template.mydoc_list_id, // Unique document ID
-      status: "Published",
-      created_user_id: session?.user?.id,
-      created_user_name: session?.user?.name,
-      updated_date: new Date().toISOString(),
-      doc_name: template.template_name,
-      doc_json: JSON.stringify({
-        template_id: template.mydoc_list_id,
-        template_name: template.template_name,
-        components: componentsData.map((comp) => ({
-          type: comp.type,
-          content: comp.content,
-        })),
-      }),
-      content_json: JSON.stringify(componentsData),
-    };
-
-    // Send PATCH request to update the document
-    const response = await fetch(
-      `${MY_DOC_LIST}?mydoc_list_id=eq.${template.mydoc_list_id}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-        },
-        body: JSON.stringify(updatedPayload),
-      }
-    );
-
-    console.log("Edit response", response);
-
-    if (!response.ok) {
-      toast({
-        description: "Failed to update document",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Update content in MY_DOC_CONTENT table
-    const contentUpdatePayload = {
-      field_content: JSON.stringify(componentsData),
-      field_json: JSON.stringify(updatedPayload.doc_json),
-      component_type: JSON.stringify(componentsData.map((comp) => comp.type)),
-      doc_name: template.template_name,
-    };
-
-    const contentResponse = await fetch(
-      `${MY_DOC_CONTENT}?mydoc_list_id=eq.${template.mydoc_list_id}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-        },
-        body: JSON.stringify(contentUpdatePayload),
-      }
-    );
-    setIsLoading(false);
-
-    console.log("contentResponse", contentResponse);
-
-    if (!contentResponse.ok) {
-      setIsLoading(false);
-      toast({
-        description: "Failed to update content",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        description: "Document updated successfully",
-      });
-      router.push("/myDocs");
-    }
-  };
-
   const renderComponent = (component: ComponentData) => {
     console.log("component", component);
     const Component =
@@ -235,7 +133,7 @@ const EditDoc = ({ params }: { params: { id: string } }) => {
           onContentChange={(content: string) =>
             handleContentChange(component.id, content)
           }
-          readOnly={false}
+          readOnly={true}
         />
       </div>
     );
@@ -259,6 +157,7 @@ const EditDoc = ({ params }: { params: { id: string } }) => {
                 <Input
                   type="text"
                   value={template.template_name}
+                  disabled
                   onChange={(e) =>
                     setTemplate((prev: any) =>
                       prev ? { ...prev, template_name: e.target.value } : null
@@ -266,14 +165,6 @@ const EditDoc = ({ params }: { params: { id: string } }) => {
                   }
                   className="text-4xl mb-1 font-bold tracking-tight border-none bg-transparent p-0 focus-visible:ring-0 focus-visible:ring-offset-0 w-full"
                 />
-                <Button
-                  className="rounded-full px-6 h-10 text-base"
-                  onClick={handleEditSave}
-                  disabled={isLoading}
-                >
-                  <Save className="w-5 h-5 mr-2" />
-                  {isLoading ? "Saving..." : "Save"}
-                </Button>
               </div>
 
               <div className="space-y-4">
@@ -287,4 +178,4 @@ const EditDoc = ({ params }: { params: { id: string } }) => {
   );
 };
 
-export default EditDoc;
+export default ViewDoc;

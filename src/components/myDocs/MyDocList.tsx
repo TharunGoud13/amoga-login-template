@@ -1,7 +1,7 @@
 import { MY_DOC_LIST } from "@/constants/envConfig";
 import React, { useEffect, useState } from "react";
 import { toast } from "../ui/use-toast";
-import { Edit, Loader, User } from "lucide-react";
+import { Edit, Eye, Loader, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Session } from "../doc-template/DocTemplate";
 import { useSession } from "next-auth/react";
@@ -67,7 +67,13 @@ const MyDocList = () => {
                     </p>
                   </span>
                 </div>
-                <div>
+                <div className="flex items-center gap-2">
+                  <Eye
+                    className="w-5 h-5 cursor-pointer"
+                    onClick={() => {
+                      router.push(`/myDocs/view/${doc.mydoc_list_id}`);
+                    }}
+                  />
                   <Edit
                     className="w-5 h-5 cursor-pointer"
                     onClick={() => {

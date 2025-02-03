@@ -182,11 +182,13 @@ const extensions = [
 interface RichTextTemplateProps {
   content: string;
   onContentChange: (content: string) => void;
+  readOnly?: boolean;
 }
 
 export default function RichTextTemplate({
   content,
   onContentChange,
+  readOnly,
 }: RichTextTemplateProps) {
   const refEditor = React.useRef<any>(null);
 
@@ -203,6 +205,7 @@ export default function RichTextTemplate({
           onChangeContent={onContentChange}
           extensions={extensions}
           dark={theme === "dark"}
+          disabled={readOnly}
           //   disabled={disable}
         />
       </div>

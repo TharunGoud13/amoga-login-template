@@ -61,11 +61,13 @@ const extensions = [
 interface VideoTemplateProps {
   content: string;
   onContentChange: (content: string) => void;
+  readOnly?: boolean;
 }
 
 export default function VideoTemplate({
   content,
   onContentChange,
+  readOnly,
 }: VideoTemplateProps) {
   const [theme, setTheme] = useState("light");
   const [disable, setDisable] = useState(false);
@@ -80,6 +82,7 @@ export default function VideoTemplate({
           onChangeContent={onContentChange}
           extensions={extensions}
           dark={theme === "dark"}
+          disabled={readOnly}
           //   disabled={disable}
         />
       </div>

@@ -1,55 +1,8 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 
-import RcTiptapEditor, {
-  BaseKit,
-  Blockquote,
-  Bold,
-  BulletList,
-  Clear,
-  Code,
-  CodeBlock,
-  Color,
-  ColumnActionButton,
-  Emoji,
-  ExportPdf,
-  ExportWord,
-  FontFamily,
-  FontSize,
-  FormatPainter,
-  Heading,
-  Highlight,
-  History,
-  HorizontalRule,
-  Iframe,
-  Image,
-  ImportWord,
-  Indent,
-  Italic,
-  Katex,
-  LineHeight,
-  Link,
-  MoreMark,
-  OrderedList,
-  SearchAndReplace,
-  SlashCommand,
-  Strike,
-  Table,
-  TaskList,
-  TextAlign,
-  Underline,
-  Video,
-  locale,
-  TableOfContents,
-  Excalidraw,
-  TextDirection,
-  Mention,
-  Attachment,
-  ImageGif,
-  Mermaid,
-  Twitter,
-} from "reactjs-tiptap-editor";
+import RcTiptapEditor, { BaseKit, Image } from "reactjs-tiptap-editor";
 
 import "katex/dist/katex.min.css";
 
@@ -107,17 +60,17 @@ const extensions = [
 interface ImageTemplateProps {
   content: string;
   onContentChange: (content: string) => void;
+  readOnly?: boolean;
 }
 
 export default function ImageTemplate({
   content,
   onContentChange,
+  readOnly,
 }: ImageTemplateProps) {
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const refEditor = React.useRef<any>(null);
 
   const [theme, setTheme] = useState("light");
-  const [disable, setDisable] = useState(false);
 
   return (
     <main className="">
@@ -129,6 +82,7 @@ export default function ImageTemplate({
           onChangeContent={onContentChange}
           extensions={extensions}
           dark={theme === "dark"}
+          disabled={readOnly}
           //   disabled={disable}
         />
       </div>

@@ -1,47 +1,12 @@
 "use client";
 
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 
-import RcTiptapEditor, {
-  BaseKit,
-  Blockquote,
-  Bold,
-  BulletList,
-  Clear,
-  Code,
-  CodeBlock,
-  Color,
-  ColumnActionButton,
-  Emoji,
-  ExportPdf,
-  ExportWord,
-  FontFamily,
-  FontSize,
-  FormatPainter,
-  Heading,
-  Highlight,
-  History,
-  HorizontalRule,
-  Iframe,
-  Image,
-  ImportWord,
-  Indent,
-  Italic,
-  Katex,
-  LineHeight,
-  Link,
-  MoreMark,
-  OrderedList,
-  SearchAndReplace,
-  SlashCommand,
-  Strike,
-  Table,
-} from "reactjs-tiptap-editor";
+import RcTiptapEditor, { BaseKit, Table } from "reactjs-tiptap-editor";
 
 import "katex/dist/katex.min.css";
 
 import "reactjs-tiptap-editor/style.css";
-import { toast } from "../ui/use-toast";
 
 function convertBase64ToBlob(base64: string) {
   const arr = base64.split(",");
@@ -71,11 +36,13 @@ const extensions = [
 interface TableTemplateProps {
   content: string;
   onContentChange: (content: string) => void;
+  readOnly?: boolean;
 }
 
 export default function TableTemplate({
   content,
   onContentChange,
+  readOnly,
 }: TableTemplateProps) {
   const [theme, setTheme] = useState("light");
 
@@ -89,6 +56,8 @@ export default function TableTemplate({
           onChangeContent={onContentChange}
           extensions={extensions}
           dark={theme === "dark"}
+          disabled={readOnly}
+          disableBubble={readOnly}
           //   disabled={disable}
         />
       </div>
