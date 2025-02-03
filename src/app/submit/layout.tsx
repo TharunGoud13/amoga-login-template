@@ -17,7 +17,7 @@ export default async function DashboardLayout({
   const session = await auth();
   return (
     <>
-    {session?.user ? <Header/> : <PublicHeader/>}
+      {session?.user ? <Header session={session} /> : <PublicHeader />}
       <div className="flex overflow-hidden">
         <main className="w-full pt-14">{children}</main>
       </div>
