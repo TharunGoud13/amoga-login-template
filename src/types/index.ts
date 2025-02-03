@@ -103,3 +103,5 @@ export type FormFieldType = {
 };
 
 export type FieldType = { name: string; isNew: boolean; index?: number };
+
+export type DocFieldType = { name: string; isNew: boolean; index?: number };

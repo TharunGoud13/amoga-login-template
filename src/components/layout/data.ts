@@ -20,6 +20,12 @@ export const navItems: NavItem[] = [
     label: "Form Maker",
   },
   {
+    title: "Doc Template",
+    href: "/doc-template",
+    icon: "dashboard",
+    label: "Doc Template",
+  },
+  {
     title: "Chat with DB",
     href: "/chat_with_db",
     icon: "dashboard",
@@ -30,5 +36,11 @@ export const navItems: NavItem[] = [
     href: "/story_builder",
     icon: "dashboard",
     label: "Story Builder",
+  },
+  {
+    title: "My Docs",
+    href: "/myDocs",
+    icon: "dashboard",
+    label: "My Docs",
   },
 ];

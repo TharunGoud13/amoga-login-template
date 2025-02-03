@@ -11,6 +11,12 @@ export const ADD_CONNECTIONS =
   "https://amogademo-postgrest.morr.biz/form_connections";
 export const STORY_TEMPLATE =
   "https://amogademo-postgrest.morr.biz/story_template";
+export const SAVE_DOC_TEMPLATE = "https://amogademo-postgrest.morr.biz/mydocs";
+export const ADD_DOC_FIELDS =
+  "https://amogademo-postgrest.morr.biz/mydoc_fields";
+export const MY_DOC_LIST = "https://amogademo-postgrest.morr.biz/mydoc_list";
+export const MY_DOC_CONTENT =
+  "https://amogademo-postgrest.morr.biz/mydoc_content";
 
 export const TEMPLATE_API = "https://nlg.morr.biz/templates";
 

@@ -36,6 +36,9 @@ export default function Header() {
             <Link href="/form_maker" className="text-primary">
               Form Maker
             </Link>
+            <Link href="/doc-template" className="text-primary">
+              Doc Template
+            </Link>
             <Link href="/chat" className="text-primary">
               Chat Forms
             </Link>
@@ -44,6 +47,9 @@ export default function Header() {
             </Link>
             <Link href="/story_builder" className="text-primary">
               Story Builder
+            </Link>
+            <Link href="/myDocs" className="text-primary">
+              My Docs
             </Link>
           </div>
         </div>
