@@ -1,8 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import NewContact from "../../new/page";
 import { GET_CONTACTS_API } from "@/constants/envConfig";
 import { toast } from "@/components/ui/use-toast";
+import NewContact from "@/components/contacts/NewContacts";
 
 const EditContacts = ({ params }: { params: { id: string } }) => {
   const { id } = params;
