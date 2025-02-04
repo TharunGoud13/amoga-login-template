@@ -237,8 +237,8 @@ const NewContact = ({
     }
   };
   return (
-    <div className="w-full max-w-[800px] mx-auto p-4">
-      <Card className="p-4">
+    <div className="w-full max-w-[800px] mx-auto md:p-4 p-2">
+      <Card className="border-0 p-0 m-0 md:border md:p-4 md:m-4">
         <CardContent>
           <div className="flex justify-between mb-6 items-center">
             <h1 className="text-2xl font-bold">

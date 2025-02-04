@@ -35,7 +35,7 @@ const EditContacts = ({ params }: { params: { id: string } }) => {
   console.log("contactData-------", contactData);
 
   return (
-    <div className="max-w-[800px]  w-full p-4 mx-auto">
+    <div className="max-w-[800px]  w-full md:p-4 p-2 mx-auto">
       <NewContact data={contactData} isEdit={true} isView={false} />
     </div>
   );
