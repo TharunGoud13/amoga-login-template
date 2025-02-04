@@ -19,9 +19,11 @@ import React, { useEffect } from "react";
 const NewContact = ({
   data,
   isEdit = false,
+  isView = false,
 }: {
   data?: any;
   isEdit?: boolean;
+  isView?: boolean;
 }) => {
   const router = useRouter();
   const [availableStates, setAvailableStates] = React.useState<string[]>([]);
@@ -240,7 +242,11 @@ const NewContact = ({
         <CardContent>
           <div className="flex justify-between mb-6 items-center">
             <h1 className="text-2xl font-bold">
-              {isEdit ? "Edit Contact" : "Add New Contact"}
+              {isEdit
+                ? "Edit Contact"
+                : isView
+                ? "View Contact"
+                : "Add New Contact"}
             </h1>
             <Button
               variant={"outline"}
@@ -264,6 +270,7 @@ const NewContact = ({
                 <Input
                   id="firstName"
                   placeholder="Enter First Name"
+                  readOnly={isView}
                   onChange={handleChange}
                   value={formData.firstName}
                   className={errors.firstName ? "border-red-500" : ""}
@@ -280,6 +287,7 @@ const NewContact = ({
                 </div>
                 <Input
                   id="lastName"
+                  readOnly={isView}
                   placeholder="Enter Last Name"
                   onChange={handleChange}
                   value={formData.lastName}
@@ -299,6 +307,7 @@ const NewContact = ({
               <Input
                 id="fullName"
                 placeholder="Enter Full Name"
+                readOnly={isView}
                 onChange={handleChange}
                 value={formData.fullName}
                 className={errors.fullName ? "border-red-500" : ""}
@@ -317,6 +326,7 @@ const NewContact = ({
               <Input
                 id="businessName"
                 placeholder="Enter Business Name"
+                readOnly={isView}
                 onChange={handleChange}
                 value={formData.businessName}
                 className={errors.businessName ? "border-red-500" : ""}
@@ -336,6 +346,7 @@ const NewContact = ({
               <Input
                 id="businessNumber"
                 placeholder="Enter Business Number"
+                readOnly={isView}
                 onChange={handleChange}
                 value={formData.businessNumber}
                 className={errors.businessNumber ? "border-red-500" : ""}
@@ -353,6 +364,7 @@ const NewContact = ({
               <Input
                 id="designation"
                 placeholder="Enter Designation"
+                readOnly={isView}
                 onChange={handleChange}
                 value={formData.designation}
                 className={errors.designation ? "border-red-500" : ""}
@@ -369,6 +381,7 @@ const NewContact = ({
               </div>
               <Input
                 id="department"
+                readOnly={isView}
                 placeholder="Enter Department"
                 onChange={handleChange}
                 value={formData.department}
@@ -387,6 +400,7 @@ const NewContact = ({
               <Input
                 type="email"
                 id="email"
+                readOnly={isView}
                 placeholder="Enter Email"
                 onChange={handleChange}
                 value={formData.email}
@@ -406,6 +420,7 @@ const NewContact = ({
               <Input
                 type="number"
                 id="mobile"
+                readOnly={isView}
                 placeholder="Enter Mobile"
                 onChange={handleChange}
                 value={formData.mobile}
@@ -423,6 +438,7 @@ const NewContact = ({
               </div>
               <Input
                 id="address1"
+                readOnly={isView}
                 placeholder="Enter Address 1"
                 onChange={handleChange}
                 value={formData.address1}
@@ -441,6 +457,7 @@ const NewContact = ({
 
               <Input
                 id="address2"
+                readOnly={isView}
                 placeholder="Enter Address 2"
                 onChange={handleChange}
                 value={formData.address2}
@@ -458,6 +475,7 @@ const NewContact = ({
                   )}
                 </div>
                 <Select
+                  disabled={isView}
                   value={
                     countries.find((c) => c.name === formData.country)?.code ||
                     ""
@@ -494,7 +512,7 @@ const NewContact = ({
                 <Select
                   value={formData.state}
                   onValueChange={(value) => handleSelectChange(value, "state")}
-                  disabled={!formData.country}
+                  disabled={!formData.country || isView}
                 >
                   <SelectTrigger
                     className={errors.state ? "border-red-500" : ""}
@@ -525,6 +543,7 @@ const NewContact = ({
 
               <Input
                 id="zipcode"
+                readOnly={isView}
                 placeholder="Enter Zipcode"
                 onChange={handleChange}
                 value={formData.zipcode}
@@ -543,6 +562,7 @@ const NewContact = ({
 
               <Input
                 id="mapLink"
+                readOnly={isView}
                 placeholder="Enter Map Link"
                 onChange={handleChange}
                 value={formData.mapLink}
@@ -560,6 +580,7 @@ const NewContact = ({
               </div>
               <Input
                 id="password"
+                readOnly={isView}
                 type="password"
                 placeholder="Enter Password"
                 onChange={handleChange}
@@ -579,6 +600,7 @@ const NewContact = ({
               <Input
                 id="roles"
                 placeholder="Enter Roles"
+                readOnly={isView}
                 onChange={handleChange}
                 value={formData.roles}
                 className={errors.roles ? "border-red-500" : ""}
@@ -594,6 +616,7 @@ const NewContact = ({
                 )}
               </div>
               <Select
+                disabled={isView}
                 value={formData.status}
                 onValueChange={(value) => handleSelectChange(value, "status")}
               >
@@ -610,18 +633,20 @@ const NewContact = ({
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => router.push("/contacts")}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Saving..." : "Save"}
-              </Button>
-            </div>
+            {!isView && (
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push("/contacts")}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? "Saving..." : "Save"}
+                </Button>
+              </div>
+            )}
           </form>
         </CardContent>
       </Card>

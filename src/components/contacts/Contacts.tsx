@@ -6,6 +6,7 @@ import {
   Briefcase,
   Building2,
   Edit,
+  Eye,
   Loader,
   Mail,
   MapPin,
@@ -113,6 +114,14 @@ const Contacts = () => {
                         <span>{item.business_name}</span>
                       </p>
                       <div className="flex space-x-2">
+                        <Eye
+                          className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground"
+                          onClick={() =>
+                            router.push(
+                              `/contacts/view/${item.user_catalog_id}`
+                            )
+                          }
+                        />
                         <Edit
                           className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground"
                           onClick={() =>

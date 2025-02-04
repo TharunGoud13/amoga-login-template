@@ -4,7 +4,7 @@ import { GET_CONTACTS_API } from "@/constants/envConfig";
 import { toast } from "@/components/ui/use-toast";
 import NewContact from "@/components/contacts/NewContacts";
 
-const EditContacts = ({ params }: { params: { id: string } }) => {
+const ViewContacts = ({ params }: { params: { id: string } }) => {
   const { id } = params;
   const [contactData, setContactData] = useState([]);
 
@@ -36,9 +36,9 @@ const EditContacts = ({ params }: { params: { id: string } }) => {
 
   return (
     <div className="max-w-[800px]  w-full p-4 mx-auto">
-      <NewContact data={contactData} isEdit={true} isView={false} />
+      <NewContact isEdit={false} data={contactData} isView={true} />
     </div>
   );
 };
 
-export default EditContacts;
+export default ViewContacts;
