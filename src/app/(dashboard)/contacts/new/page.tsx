@@ -16,7 +16,13 @@ import { countries, states } from "@/lib/country-state-data";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
-const NewContact = ({ data, isEdit }: { data: any; isEdit: boolean }) => {
+const NewContact = ({
+  data,
+  isEdit = false,
+}: {
+  data?: any;
+  isEdit?: boolean;
+}) => {
   const router = useRouter();
   const [availableStates, setAvailableStates] = React.useState<string[]>([]);
 
