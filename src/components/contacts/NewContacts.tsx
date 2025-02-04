@@ -25,6 +25,7 @@ const NewContact = ({
 }) => {
   const router = useRouter();
   const [availableStates, setAvailableStates] = React.useState<string[]>([]);
+  const [errors, setErrors] = React.useState<Record<string, string>>({});
 
   const [formData, setFormData] = React.useState({
     firstName: "",
@@ -75,8 +76,59 @@ const NewContact = ({
     }
   }, [data]);
 
+  useEffect(() => {
+    if (formData.country) {
+      const selectedCountry = countries.find(
+        (c) => c.name === formData.country
+      );
+      if (selectedCountry) {
+        const countryStates = states[selectedCountry.code] || [];
+        setAvailableStates(countryStates);
+      } else {
+        setAvailableStates([]);
+      }
+    }
+  }, [formData.country]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = e.target;
+    console.log({ id, value });
+    setFormData((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
+    setErrors((prev) => ({ ...prev, [id]: "" }));
+  };
+
+  const validateForm = () => {
+    let newErrors: Record<string, string> = {};
+    if (!formData.firstName.trim()) newErrors.firstName = "Required";
+    if (!formData.lastName.trim()) newErrors.lastName = "Required";
+    if (!formData.fullName.trim()) newErrors.fullName = "Required";
+    if (!formData.businessName.trim()) newErrors.businessName = "Required";
+    if (!formData.businessNumber.trim()) newErrors.businessNumber = "Required";
+    if (!formData.designation.trim()) newErrors.designation = "Required";
+    if (!formData.department.trim()) newErrors.department = "Required";
+    if (!formData.email.trim()) newErrors.email = "Required";
+    if (!formData.mobile.trim()) newErrors.mobile = "Required";
+    if (!formData.address1.trim()) newErrors.address1 = "Required";
+    if (!formData.address2.trim()) newErrors.address2 = "Required";
+    if (!formData.country.trim()) newErrors.country = "Required";
+    if (!formData.state.trim()) newErrors.state = "Required";
+    if (!formData.zipcode.trim()) newErrors.zipcode = "Required";
+    if (!formData.mapLink.trim()) newErrors.mapLink = "Required";
+    if (!formData.password.trim()) newErrors.password = "Required";
+    if (!formData.roles.trim()) newErrors.roles = "Required";
+    if (!formData.status.trim()) newErrors.status = "Required";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log("validate----", !validateForm());
+    if (!validateForm()) return;
 
     setIsLoading(true);
 
@@ -155,30 +207,8 @@ const NewContact = ({
     }
   };
 
-  useEffect(() => {
-    if (formData.country) {
-      const selectedCountry = countries.find(
-        (c) => c.name === formData.country
-      );
-      if (selectedCountry) {
-        const countryStates = states[selectedCountry.code] || [];
-        setAvailableStates(countryStates);
-      } else {
-        setAvailableStates([]);
-      }
-    }
-  }, [formData.country]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = e.target;
-    console.log({ id, value });
-    setFormData((prev) => ({
-      ...prev,
-      [id]: value,
-    }));
-  };
-
   const handleSelectChange = (value: string, field: string) => {
+    setErrors((prev) => ({ ...prev, [field]: "" }));
     if (field === "country") {
       const selectedCountry = countries.find((c) => c.code === value);
       setFormData((prev) => ({
@@ -212,125 +242,211 @@ const NewContact = ({
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="firstName">First Name</Label>
+                <div className="flex justify-between">
+                  <Label htmlFor="firstName">
+                    First Name <span className="text-red-500">*</span>
+                  </Label>
+                  {errors.firstName && (
+                    <p className="text-red-500 text-sm">{errors.firstName}</p>
+                  )}
+                </div>
                 <Input
                   id="firstName"
-                  required
                   placeholder="Enter First Name"
                   onChange={handleChange}
                   value={formData.firstName}
+                  className={errors.firstName ? "border-red-500" : ""}
                 />
               </div>
               <div>
-                <Label htmlFor="lastName">Last Name</Label>
+                <div className="flex justify-between">
+                  <Label htmlFor="lastName">
+                    Last Name <span className="text-red-500">*</span>
+                  </Label>
+                  {errors.lastName && (
+                    <p className="text-red-500 text-sm">{errors.lastName}</p>
+                  )}
+                </div>
                 <Input
                   id="lastName"
-                  required
                   placeholder="Enter Last Name"
                   onChange={handleChange}
                   value={formData.lastName}
+                  className={errors.lastName ? "border-red-500" : ""}
                 />
               </div>
             </div>
             <div>
-              <Label htmlFor="fullName">Full Name</Label>
+              <div className="flex justify-between">
+                <Label htmlFor="fullName">
+                  Full Name <span className="text-red-500">*</span>
+                </Label>
+                {errors.fullName && (
+                  <p className="text-red-500 text-sm">{errors.fullName}</p>
+                )}
+              </div>
               <Input
                 id="fullName"
-                required
                 placeholder="Enter Full Name"
                 onChange={handleChange}
                 value={formData.fullName}
+                className={errors.fullName ? "border-red-500" : ""}
               />
             </div>
             <div>
-              <Label htmlFor="businessName">Business Name</Label>
+              <div className="flex justify-between">
+                <Label htmlFor="businessName">
+                  Business Name <span className="text-red-500">*</span>
+                </Label>
+                {errors.businessName && (
+                  <p className="text-red-500 text-sm">{errors.businessName}</p>
+                )}
+              </div>
 
               <Input
                 id="businessName"
-                required
                 placeholder="Enter Business Name"
                 onChange={handleChange}
                 value={formData.businessName}
+                className={errors.businessName ? "border-red-500" : ""}
               />
             </div>
             <div>
-              <Label htmlFor="businessNumber">Business Number</Label>
+              <div className="flex justify-between">
+                <Label htmlFor="businessNumber">
+                  Business Number <span className="text-red-500">*</span>
+                </Label>
+                {errors.businessNumber && (
+                  <p className="text-red-500 text-sm">
+                    {errors.businessNumber}
+                  </p>
+                )}
+              </div>
               <Input
                 id="businessNumber"
-                required
                 placeholder="Enter Business Number"
                 onChange={handleChange}
                 value={formData.businessNumber}
+                className={errors.businessNumber ? "border-red-500" : ""}
               />
             </div>
             <div>
-              <Label htmlFor="designation">Designation</Label>
+              <div className="flex justify-between">
+                <Label htmlFor="designation">
+                  Designation <span className="text-red-500">*</span>
+                </Label>
+                {errors.designation && (
+                  <p className="text-red-500 text-sm">{errors.designation}</p>
+                )}
+              </div>
               <Input
                 id="designation"
-                required
                 placeholder="Enter Designation"
                 onChange={handleChange}
                 value={formData.designation}
+                className={errors.designation ? "border-red-500" : ""}
               />
             </div>
             <div>
-              <Label htmlFor="department">Department</Label>
+              <div className="flex justify-between">
+                <Label htmlFor="department">
+                  Department <span className="text-red-500">*</span>
+                </Label>
+                {errors.department && (
+                  <p className="text-red-500 text-sm">{errors.department}</p>
+                )}
+              </div>
               <Input
                 id="department"
-                required
                 placeholder="Enter Department"
                 onChange={handleChange}
                 value={formData.department}
+                className={errors.department ? "border-red-500" : ""}
               />
             </div>
             <div>
-              <Label htmlFor="email">Email</Label>
+              <div className="flex justify-between">
+                <Label htmlFor="email">
+                  Email <span className="text-red-500">*</span>
+                </Label>
+                {errors.email && (
+                  <p className="text-red-500 text-sm">{errors.email}</p>
+                )}
+              </div>
               <Input
                 type="email"
-                required
                 id="email"
                 placeholder="Enter Email"
                 onChange={handleChange}
                 value={formData.email}
+                className={errors.email ? "border-red-500" : ""}
               />
             </div>
             <div>
-              <Label htmlFor="mobile">Mobile</Label>
+              <div className="flex justify-between">
+                <Label htmlFor="mobile">
+                  Mobile <span className="text-red-500">*</span>
+                </Label>
+                {errors.mobile && (
+                  <p className="text-red-500 text-sm">{errors.mobile}</p>
+                )}
+              </div>
 
               <Input
                 type="number"
-                required
                 id="mobile"
                 placeholder="Enter Mobile"
                 onChange={handleChange}
                 value={formData.mobile}
+                className={errors.mobile ? "border-red-500" : ""}
               />
             </div>
             <div>
-              <Label htmlFor="address1">Address 1</Label>
+              <div className="flex justify-between">
+                <Label htmlFor="address1">
+                  Address 1 <span className="text-red-500">*</span>
+                </Label>
+                {errors.address1 && (
+                  <p className="text-red-500 text-sm">{errors.address1}</p>
+                )}
+              </div>
               <Input
-                required
                 id="address1"
                 placeholder="Enter Address 1"
                 onChange={handleChange}
                 value={formData.address1}
+                className={errors.address1 ? "border-red-500" : ""}
               />
             </div>
             <div>
-              <Label htmlFor="address2">Address 2</Label>
+              <div className="flex justify-between">
+                <Label htmlFor="address2">
+                  Address 2 <span className="text-red-500">*</span>
+                </Label>
+                {errors.address2 && (
+                  <p className="text-red-500 text-sm">{errors.address2}</p>
+                )}
+              </div>
+
               <Input
-                required
                 id="address2"
                 placeholder="Enter Address 2"
                 onChange={handleChange}
                 value={formData.address2}
+                className={errors.address2 ? "border-red-500" : ""}
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="country">Country</Label>
+                <div className="flex justify-between">
+                  <Label htmlFor="country">
+                    Country <span className="text-red-500">*</span>
+                  </Label>
+                  {errors.country && (
+                    <p className="text-red-500 text-sm">{errors.country}</p>
+                  )}
+                </div>
                 <Select
-                  required
                   value={
                     countries.find((c) => c.name === formData.country)?.code ||
                     ""
@@ -339,7 +455,10 @@ const NewContact = ({
                     handleSelectChange(value, "country")
                   }
                 >
-                  <SelectTrigger className="w-full" id="country">
+                  <SelectTrigger
+                    className={errors.country ? "border-red-500" : ""}
+                    id="country"
+                  >
                     <SelectValue placeholder="Select Country" />
                   </SelectTrigger>
                   <SelectContent>
@@ -352,16 +471,27 @@ const NewContact = ({
                 </Select>
               </div>
               <div>
-                <Label htmlFor="state">State</Label>
+                <div className="flex justify-between">
+                  <Label htmlFor="state">
+                    State <span className="text-red-500">*</span>
+                  </Label>
+                  {errors.state && (
+                    <p className="text-red-500 text-sm">{errors.state}</p>
+                  )}
+                </div>
+
                 <Select
-                  required
                   value={formData.state}
                   onValueChange={(value) => handleSelectChange(value, "state")}
                   disabled={!formData.country}
                 >
-                  <SelectTrigger className="w-full" id="state">
+                  <SelectTrigger
+                    className={errors.state ? "border-red-500" : ""}
+                    id="state"
+                  >
                     <SelectValue placeholder="Select State" />
                   </SelectTrigger>
+
                   <SelectContent>
                     {availableStates.map((state) => (
                       <SelectItem key={state} value={state}>
@@ -373,54 +503,93 @@ const NewContact = ({
               </div>
             </div>
             <div>
-              <Label htmlFor="zipcode">Zipcode</Label>
+              <div className="flex justify-between">
+                <Label htmlFor="zipcode">
+                  Zipcode <span className="text-red-500">*</span>
+                </Label>
+                {errors.zipcode && (
+                  <p className="text-red-500 text-sm">{errors.zipcode}</p>
+                )}
+              </div>
+
               <Input
-                required
                 id="zipcode"
                 placeholder="Enter Zipcode"
                 onChange={handleChange}
                 value={formData.zipcode}
+                className={errors.zipcode ? "border-red-500" : ""}
               />
             </div>
             <div>
-              <Label htmlFor="mapLink">Map Link</Label>
+              <div className="flex justify-between">
+                <Label htmlFor="mapLink">
+                  Map Link <span className="text-red-500">*</span>
+                </Label>
+                {errors.mapLink && (
+                  <p className="text-red-500 text-sm">{errors.mapLink}</p>
+                )}
+              </div>
+
               <Input
-                required
                 id="mapLink"
                 placeholder="Enter Map Link"
                 onChange={handleChange}
                 value={formData.mapLink}
+                className={errors.mapLink ? "border-red-500" : ""}
               />
             </div>
             <div>
-              <Label htmlFor="password">Password</Label>
+              <div className="flex justify-between">
+                <Label htmlFor="password">
+                  Password <span className="text-red-500">*</span>
+                </Label>
+                {errors.password && (
+                  <p className="text-red-500 text-sm">{errors.password}</p>
+                )}
+              </div>
               <Input
-                required
                 id="password"
                 type="password"
                 placeholder="Enter Password"
                 onChange={handleChange}
                 value={formData.password}
+                className={errors.password ? "border-red-500" : ""}
               />
             </div>
             <div>
-              <Label htmlFor="roles">Roles</Label>
+              <div className="flex justify-between">
+                <Label htmlFor="roles">
+                  Roles <span className="text-red-500">*</span>
+                </Label>
+                {errors.roles && (
+                  <p className="text-red-500 text-sm">{errors.roles}</p>
+                )}
+              </div>
               <Input
-                required
                 id="roles"
                 placeholder="Enter Roles"
                 onChange={handleChange}
                 value={formData.roles}
+                className={errors.roles ? "border-red-500" : ""}
               />
             </div>
             <div>
-              <Label htmlFor="status">Status</Label>
+              <div className="flex justify-between">
+                <Label htmlFor="status">
+                  Status <span className="text-red-500">*</span>
+                </Label>
+                {errors.status && (
+                  <p className="text-red-500 text-sm">{errors.status}</p>
+                )}
+              </div>
               <Select
-                required
                 value={formData.status}
                 onValueChange={(value) => handleSelectChange(value, "status")}
               >
-                <SelectTrigger className="w-full" id="status">
+                <SelectTrigger
+                  className={errors.status ? "border-red-500" : ""}
+                  id="status"
+                >
                   <SelectValue placeholder="Select Status" />
                 </SelectTrigger>
 
