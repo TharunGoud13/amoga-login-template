@@ -102,24 +102,35 @@ const NewContact = ({
 
   const validateForm = () => {
     let newErrors: Record<string, string> = {};
-    if (!formData.firstName.trim()) newErrors.firstName = "Required";
-    if (!formData.lastName.trim()) newErrors.lastName = "Required";
-    if (!formData.fullName.trim()) newErrors.fullName = "Required";
-    if (!formData.businessName.trim()) newErrors.businessName = "Required";
-    if (!formData.businessNumber.trim()) newErrors.businessNumber = "Required";
-    if (!formData.designation.trim()) newErrors.designation = "Required";
-    if (!formData.department.trim()) newErrors.department = "Required";
-    if (!formData.email.trim()) newErrors.email = "Required";
-    if (!formData.mobile.trim()) newErrors.mobile = "Required";
-    if (!formData.address1.trim()) newErrors.address1 = "Required";
-    if (!formData.address2.trim()) newErrors.address2 = "Required";
-    if (!formData.country.trim()) newErrors.country = "Required";
-    if (!formData.state.trim()) newErrors.state = "Required";
-    if (!formData.zipcode.trim()) newErrors.zipcode = "Required";
-    if (!formData.mapLink.trim()) newErrors.mapLink = "Required";
-    if (!formData.password.trim()) newErrors.password = "Required";
-    if (!formData.roles.trim()) newErrors.roles = "Required";
-    if (!formData.status.trim()) newErrors.status = "Required";
+
+    const fields = [
+      "firstName",
+      "lastName",
+      "fullName",
+      "businessName",
+      "businessNumber",
+      "designation",
+      "department",
+      "email",
+      "mobile",
+      "address1",
+      "address2",
+      "country",
+      "state",
+      "zipcode",
+      "mapLink",
+      "password",
+      "roles",
+      "status",
+    ];
+    fields.forEach((field) => {
+      if (
+        !formData[field as keyof typeof formData] ||
+        formData[field as keyof typeof formData].trim() === ""
+      ) {
+        newErrors[field] = "Required";
+      }
+    });
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
