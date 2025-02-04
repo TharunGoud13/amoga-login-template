@@ -38,9 +38,9 @@ const RoleList = async () => {
   });
 
   return (
-    <div className="flex flex-col items-center justify-center  w-full min-w-screen gap-4 min-h-screen">
-      <div className="flex  w-full justify-center items-center">
-        <div className="grid grid-cols-1 w-full px-2.5 md:px-0 my-5 md:my-0 md:grid-cols-3 gap-4">
+    <div className="flex flex-col items-center justify-center   w-full min-w-screen gap-4 min-h-screen">
+      <div className="flex   w-full justify-center items-center">
+        <div className="grid grid-cols-1  w-full md:w-auto px-4 md:px-0 my-5 md:my-0 md:grid-cols-3 gap-4">
           {filteredPages.map((page: any, index: number) => (
             <Link href={`${page.page_link}`} key={index}>
               <Card className="md:w-[300px] w-full h-[75px] md:h-[100px]  flex items-center justify-center">

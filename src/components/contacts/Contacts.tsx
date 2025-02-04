@@ -85,8 +85,8 @@ const Contacts = () => {
                 //   item.business_name.toLowerCase().includes(searchTerm)
               })
               .map((item: any) => (
-                <Card key={item.user_catalog_id} className="p-4">
-                  <CardContent className="space-y-1">
+                <Card key={item.user_catalog_id} className="py-1.5 px-1.5">
+                  <CardContent className="space-y-1 px-1.5 py-1.5">
                     <h2 className="font-semibold">{item.user_name}</h2>
                     <p className="text-sm text-muted-foreground">
                       {item.designation}

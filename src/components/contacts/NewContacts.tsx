@@ -238,8 +238,8 @@ const NewContact = ({
   };
   return (
     <div className="w-full max-w-[800px] mx-auto md:p-4 p-2">
-      <Card className="border-0 p-0 m-0 md:border md:p-4 md:m-4">
-        <CardContent>
+      <Card className="border-0 p-0 m-0 md:border md:p-2 md:m-4">
+        <CardContent className="px-1.5 py-1.5">
           <div className="flex justify-between mb-6 items-center">
             <h1 className="text-2xl font-bold">
               {isEdit
