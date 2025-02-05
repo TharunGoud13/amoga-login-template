@@ -64,6 +64,7 @@
     "@tanstack/react-table": "^8.19.3",
     "@types/socket.io": "^3.0.2",
     "@uiw/react-textarea-code-editor": "^3.1.0",
+    "@vercel/analytics": "^1.4.1",
     "@vercel/blob": "^0.26.0",
     "@vercel/otel": "^1.9.1",
     "@vercel/postgres": "^0.10.0",

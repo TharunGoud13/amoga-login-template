@@ -10,6 +10,7 @@ import { getLocale, getMessages } from "next-intl/server";
 import { MetricProvider } from "../../hooks/MetricContext";
 import { MetricDataProvider } from "../../hooks/useMetricData";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/react";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -43,6 +44,7 @@ export default async function RootLayout({
               <MetricProvider>
                 {children}
                 <SpeedInsights />
+                <Analytics />
               </MetricProvider>
             </MetricDataProvider>
           </Providers>
