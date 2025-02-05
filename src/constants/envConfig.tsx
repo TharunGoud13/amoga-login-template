@@ -22,5 +22,10 @@ export const PAGE_LIST = "https://amogademo-postgrest.morr.biz/page_list";
 
 export const TEMPLATE_API = "https://nlg.morr.biz/templates";
 
+export const TASKS_API = "https://amogademo-postgrest.morr.biz/task";
+export const TASK_GROUP_API = "https://amogademo-postgrest.morr.biz/task_group";
+export const PROJECTS_API = "https://amogademo-postgrest.morr.biz/plan";
+export const PLAN_GROUP_API = "https://amogademo-postgrest.morr.biz/plan_group";
+export const PLAN_API = "https://amogademo-postgrest.morr.biz/plan";
 export const NEXT_PUBLIC_API_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYXBpX3VzZXIifQ.Ks_9ISeorCCS73q1WKEjZHu9kRx107eOx5VcImPh9U8";
