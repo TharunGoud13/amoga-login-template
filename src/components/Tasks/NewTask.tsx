@@ -93,10 +93,14 @@ const NewTask = ({
         return;
       }
       const data = await response.json();
-      setPlanName(data);
+      console.log("data-----", data);
+      const filteredData = data.filter(
+        (item: any) => item.business_number === session?.user?.business_number
+      );
+      setPlanName(filteredData);
     };
     fetchPlanName();
-  }, []);
+  }, [session]);
 
   useEffect(() => {
     const fetchTaskGroup = async () => {

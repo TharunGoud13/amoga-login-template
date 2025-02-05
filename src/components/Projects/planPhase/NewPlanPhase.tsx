@@ -12,43 +12,41 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import {
-  GET_CONTACTS_API,
   PLAN_API,
   PLAN_GROUP_API,
-  TASK_GROUP_API,
-  TASKS_API,
+  PLAN_PHASE_API,
 } from "@/constants/envConfig";
-import { countries, states } from "@/lib/country-state-data";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
-import { CalendarDatePicker } from "../ui/calendar-date-picker";
-import { DateTimePicker } from "../ui/DateTimePicker";
-import { DatetimePicker } from "../ui/datetime-picker";
+import { CalendarDatePicker } from "@/components/ui/calendar-date-picker";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { Session } from "../doc-template/DocTemplate";
+import { Session } from "@/components/doc-template/DocTemplate";
 
-const NewProject = ({
+const NewPlanPhase = ({
   data,
   isEdit = false,
   isView = false,
+  id,
 }: {
   data?: any;
   isEdit?: boolean;
   isView?: boolean;
+  id?: string;
 }) => {
   const router = useRouter();
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [planGroup, setPlanGroup] = React.useState<any[]>([]);
-  const [planName, setPlanName] = React.useState<any[]>([]);
+  const [planData, setPlanData] = React.useState<any[]>([]);
   const { data: sessionData } = useSession();
   const session: Session | null = sessionData
     ? (sessionData as unknown as Session)
     : null;
 
+  console.log("planData----", planData);
+
   const [formData, setFormData] = React.useState({
-    planName: "",
-    planGroup: "",
+    phaseName: "",
     description: "",
     start: "",
     end: "",
@@ -63,9 +61,8 @@ const NewProject = ({
   useEffect(() => {
     if (data) {
       setFormData({
-        planGroup: data.plan_group,
-        planName: data.plan_name,
-        description: data.plan_description,
+        phaseName: data.plan_phase_name,
+        description: data.plan_phase_description,
         start: data.plan_start_date,
         end: data.plan_end_date,
         actualStart: data.actual_start_date,
@@ -76,8 +73,8 @@ const NewProject = ({
   }, [data]);
 
   useEffect(() => {
-    const fetchPlanGroup = async () => {
-      const response = await fetch(PLAN_API, {
+    const fetchPlanDetails = async () => {
+      const response = await fetch(`${PLAN_API}?plan_id=eq.${id}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -92,32 +89,10 @@ const NewProject = ({
         return;
       }
       const data = await response.json();
-      setPlanName(data);
+      setPlanData(data);
     };
-    fetchPlanGroup();
-  }, []);
-
-  useEffect(() => {
-    const fetchPlanGroup = async () => {
-      const response = await fetch(PLAN_GROUP_API, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-        },
-      });
-      if (!response.ok) {
-        toast({
-          description: "Failed to fetch plan group",
-          variant: "destructive",
-        });
-        return;
-      }
-      const data = await response.json();
-      setPlanGroup(data);
-    };
-    fetchPlanGroup();
-  }, []);
+    fetchPlanDetails();
+  }, [id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
@@ -137,14 +112,7 @@ const NewProject = ({
   const validateForm = () => {
     let newErrors: Record<string, string> = {};
 
-    const fields = [
-      "planName",
-      "planGroup",
-      "description",
-      "start",
-      "end",
-      "status",
-    ];
+    const fields = ["phaseName", "description", "start", "end", "status"];
 
     fields.forEach((field) => {
       if (
@@ -166,9 +134,10 @@ const NewProject = ({
     setIsLoading(true);
 
     const payload = {
-      plan_name: formData.planName,
-      plan_group: formData.planGroup,
-      plan_description: formData.description,
+      plan_id: planData[0].plan_id,
+      plan_name: planData[0].plan_name,
+      plan_phase_name: formData.phaseName,
+      plan_phase_description: formData.description,
       plan_start_date: formData.start,
       plan_end_date: formData.end,
       ...(formData.actualStart && { actual_start_date: formData.actualStart }),
@@ -181,7 +150,9 @@ const NewProject = ({
       business_number: session?.user?.business_number,
     };
     const response = await fetch(
-      isEdit ? `${PLAN_API}?plan_id=eq.${data.plan_id}` : PLAN_API,
+      isEdit
+        ? `${PLAN_PHASE_API}?plan_phase_id=eq.${data.plan_phase_id}`
+        : PLAN_PHASE_API,
 
       {
         method: isEdit ? "PATCH" : "POST",
@@ -197,27 +168,27 @@ const NewProject = ({
       setIsLoading(false);
       toast({
         description: isEdit
-          ? "Plan updated successfully"
-          : "Plan created successfully",
+          ? "Plan Phase updated successfully"
+          : "Plan Phase created successfully",
         variant: "default",
       });
 
       setFormData({
-        planGroup: "",
-        planName: "",
+        phaseName: "",
         description: "",
         start: "",
         end: "",
         actualStart: "",
         actualEnd: "",
+
         status: "",
       });
     } else {
       setIsLoading(false);
       toast({
         description: isEdit
-          ? "Failed to updated Plan"
-          : "Failed to create Plan",
+          ? "Failed to updated Plan Phase"
+          : "Failed to create Plan Phase",
         variant: "destructive",
       });
     }
@@ -237,84 +208,39 @@ const NewProject = ({
         <CardContent className="px-1.5 py-1.5">
           <div className="flex justify-between mb-6 items-center">
             <h1 className="text-2xl font-bold">
-              {isEdit ? "Edit Plan" : isView ? "View Plan" : "Add New Plan"}
+              {isEdit
+                ? "Edit Plan Phase"
+                : isView
+                ? "View Plan Phase"
+                : "Add New Plan Phase"}
             </h1>
-            <Link href="/Projects">
+            <Link href={`/Projects/planPhase/${planData[0]?.plan_id}`}>
               <Button variant={"outline"} className="border-0">
-                Back to Plans
+                Back to Plan Phase
               </Button>
             </Link>
           </div>
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
               <div className="flex justify-between">
-                <Label htmlFor="planName">
-                  Plan Name <span className="text-red-500">*</span>
+                <Label htmlFor="phaseName">
+                  Plan Phase Name <span className="text-red-500">*</span>
                 </Label>
-                {errors.planName && (
-                  <p className="text-red-500 text-sm">{errors.planName}</p>
+
+                {errors.phaseName && (
+                  <p className="text-red-500 text-sm">{errors.phaseName}</p>
                 )}
               </div>
               <Input
-                id="planName"
-                placeholder="Enter Plan Name"
+                id="phaseName"
+                placeholder="Enter Plan Phase Name"
                 readOnly={isView}
                 onChange={handleChange}
-                value={formData.planName}
-                className={errors.planName ? "border-red-500" : ""}
+                value={formData.phaseName}
+                className={errors.phaseName ? "border-red-500" : ""}
               />
             </div>
-            <div>
-              <div className="flex justify-between">
-                <Label htmlFor="planGroup">Plan Group</Label>
-                {errors.planGroup && (
-                  <p className="text-red-500 text-sm">{errors.planGroup}</p>
-                )}
-              </div>
 
-              <Select
-                disabled={isView}
-                value={formData.planGroup}
-                onValueChange={(value) =>
-                  handleSelectChange(value, "planGroup")
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Plan Group" />
-                </SelectTrigger>
-
-                <SelectContent>
-                  {planGroup.map((item: any) => (
-                    <SelectItem
-                      key={item.plan_group_id}
-                      value={item.plan_group}
-                    >
-                      {item.plan_group}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* <div>
-              <div className="flex justify-between">
-                <Label htmlFor="planName">
-                  Plan Name <span className="text-red-500">*</span>
-                </Label>
-
-                {errors.planName && (
-                  <p className="text-red-500 text-sm">{errors.planName}</p>
-                )}
-              </div>
-              <Input
-                id="planName"
-                placeholder="Enter Plan Name"
-                readOnly={isView}
-                onChange={handleChange}
-                value={formData.planName}
-                className={errors.planName ? "border-red-500" : ""}
-              />
-            </div> */}
             <div>
               <div className="flex justify-between">
                 <Label htmlFor="description">
@@ -441,7 +367,7 @@ const NewProject = ({
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => router.push("/Projects")}
+                  onClick={() => router.push("/Projects/planPhase")}
                 >
                   Cancel
                 </Button>
@@ -457,4 +383,4 @@ const NewProject = ({
   );
 };
 
-export default NewProject;
+export default NewPlanPhase;

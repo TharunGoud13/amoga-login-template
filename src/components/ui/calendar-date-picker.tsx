@@ -25,6 +25,7 @@ export const CalendarDatePicker = ({
   const path = usePathname();
   const isTask = path.includes("Tasks");
   const isView = path.includes("view");
+  const isPlanPhase = path.includes("planPhase");
 
   useEffect(() => {
     setSelectedDate(date);
@@ -50,7 +51,7 @@ export const CalendarDatePicker = ({
             className={cn(
               buttonClass,
               `${
-                isTask ? "w-full" : "w-[200px]"
+                isTask || isPlanPhase ? "w-full" : "w-[200px]"
               } justify-start text-left font-normal`,
               !selectedDate && "text-muted-foreground"
             )}

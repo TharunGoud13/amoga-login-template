@@ -2,12 +2,26 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { Calendar, Edit, Eye, Loader, Plus, Search } from "lucide-react";
+import {
+  Calendar,
+  ClipboardCheck,
+  Edit,
+  Eye,
+  File,
+  Loader,
+  Plus,
+  Search,
+} from "lucide-react";
 import { PLAN_API, TASKS_API } from "@/constants/envConfig";
 import { toast } from "../ui/use-toast";
 import { Card, CardContent } from "../ui/card";
 import { useRouter } from "next/navigation";
-import { LuCopyCheck, LuChartPie, LuChartNoAxesGantt } from "react-icons/lu";
+import {
+  LuCopyCheck,
+  LuChartPie,
+  LuChartNoAxesGantt,
+  LuMessageCircleMore,
+} from "react-icons/lu";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Session } from "../doc-template/DocTemplate";
@@ -121,6 +135,8 @@ const Projects = () => {
                         <span>{item.plan_progress_track}</span>
                       </p>
                       <div className="flex space-x-2">
+                        <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         <Link href={`/Projects/view/${item.plan_id}`}>
                           <Eye
                             className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground"
@@ -132,6 +148,10 @@ const Projects = () => {
                         <Link href={`/Projects/edit/${item.plan_id}`}>
                           <Edit className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
+                        <Link href={`/Projects/planPhase/${item.plan_id}`}>
+                          <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        </Link>
+                        <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </div>
                     </div>
                   </CardContent>
