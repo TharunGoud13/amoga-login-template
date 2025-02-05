@@ -18,6 +18,7 @@ import { GET_CONTACTS_API } from "@/constants/envConfig";
 import { toast } from "../ui/use-toast";
 import { Card, CardContent } from "../ui/card";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const Contacts = () => {
   const [search, setSearch] = useState("");
@@ -50,10 +51,6 @@ const Contacts = () => {
     fetchContacts();
   }, []);
 
-  const handleAddContact = () => {
-    router.push("/contacts/new");
-  };
-
   return (
     <div>
       <div className="flex flex-col gap-4 w-full items-center">
@@ -67,9 +64,11 @@ const Contacts = () => {
               className="pl-10"
             />
           </div>
-          <Button onClick={handleAddContact} size={"icon"}>
-            <Plus className="h-4 w-4" />
-          </Button>
+          <Link href="/contacts/new">
+            <Button size={"icon"}>
+              <Plus className="h-4 w-4" />
+            </Button>
+          </Link>
         </div>
 
         {isLoading ? (
@@ -114,22 +113,12 @@ const Contacts = () => {
                         <span>{item.business_name}</span>
                       </p>
                       <div className="flex space-x-2">
-                        <Eye
-                          className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground"
-                          onClick={() =>
-                            router.push(
-                              `/contacts/view/${item.user_catalog_id}`
-                            )
-                          }
-                        />
-                        <Edit
-                          className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground"
-                          onClick={() =>
-                            router.push(
-                              `/contacts/edit/${item.user_catalog_id}`
-                            )
-                          }
-                        />
+                        <Link href={`/contacts/view/${item.user_catalog_id}`}>
+                          <Eye className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        </Link>
+                        <Link href={`/contacts/edit/${item.user_catalog_id}`}>
+                          <Edit className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        </Link>
                       </div>
                     </div>
                   </CardContent>

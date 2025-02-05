@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import If from "@/components/ui/if";
 
-import { LuColumns, LuPencil, LuTrash2 } from "react-icons/lu";
+import { LuColumns2, LuPencil, LuTrash2 } from "react-icons/lu";
 import { ScrollArea } from "../ui/scroll-area";
 import { Plus } from "lucide-react";
 import { docFieldTypes } from "@/constants/docIndex";
@@ -93,7 +93,7 @@ export const FieldItem = ({
         <div className="flex items-center gap-1 border rounded-md  p-5 py-1.5 w-full">
           <If
             condition={Array.isArray(formFields[index])}
-            render={() => <LuColumns className="cursor-grab w-4 h-4" />}
+            render={() => <LuColumns2 className="cursor-grab w-4 h-4" />}
           />
           <div className="flex items-center w-full">
             <div className="w-full text-sm">{field.variant}</div>

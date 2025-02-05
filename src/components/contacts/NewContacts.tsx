@@ -13,6 +13,7 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { GET_CONTACTS_API } from "@/constants/envConfig";
 import { countries, states } from "@/lib/country-state-data";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 
@@ -248,13 +249,11 @@ const NewContact = ({
                 ? "View Contact"
                 : "Add New Contact"}
             </h1>
-            <Button
-              variant={"outline"}
-              className="border-0"
-              onClick={() => router.push("/contacts")}
-            >
-              Back to List
-            </Button>
+            <Link href="/contacts">
+              <Button variant={"outline"} className="border-0">
+                Back to List
+              </Button>
+            </Link>
           </div>
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
