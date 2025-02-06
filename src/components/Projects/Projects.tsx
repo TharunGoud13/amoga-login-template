@@ -151,7 +151,9 @@ const Projects = () => {
                         <Link href={`/Projects/planPhase/${item.plan_id}`}>
                           <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
-                        <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <Link href={`/Projects/Docs/${item.plan_id}`}>
+                          <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        </Link>
                       </div>
                     </div>
                   </CardContent>

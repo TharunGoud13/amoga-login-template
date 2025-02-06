@@ -1,39 +1,40 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import {
   ADD_DOC_FIELDS,
   DOC_GROUP_API,
   MY_DOC_CONTENT,
   MY_DOC_LIST,
+  PLAN_API,
   PLAN_GROUP_API,
   SAVE_DOC_TEMPLATE,
 } from "@/constants/envConfig";
-import { toast } from "../ui/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../ui/select";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Save } from "lucide-react";
-import HeadingTemplate from "../myDocs/HeadingTemplate";
-import RichTextTemplate from "../myDocs/RichTextTemplate";
-import TableTemplate from "../myDocs/TableTemplate";
-import ImageTemplate from "../myDocs/ImageTemplate";
-import VideoTemplate from "../myDocs/VideoTemplate";
+import HeadingTemplate from "@/components/myDocs/HeadingTemplate";
+import RichTextTemplate from "@/components/myDocs/RichTextTemplate";
+
+import TableTemplate from "@/components/myDocs/TableTemplate";
+import ImageTemplate from "@/components/myDocs/ImageTemplate";
+import VideoTemplate from "@/components/myDocs/VideoTemplate";
 import { useSession } from "next-auth/react";
-import { Session } from "../doc-template/DocTemplate";
+import { Session } from "@/components/doc-template/DocTemplate";
 
 import { v4 as uuidv4 } from "uuid";
-import MyDocList from "../myDocs/MyDocList";
-import { Card, CardContent } from "../ui/card";
+import MyDocList from "@/components/myDocs/MyDocList";
+import { Card, CardContent } from "@/components/ui/card";
 import Link from "next/link";
-import { Label } from "../ui/label";
+import { Label } from "@/components/ui/label";
 
 // Component mapping object
 const COMPONENT_MAP = {
@@ -56,14 +57,16 @@ interface Template {
   components: ComponentData[];
 }
 
-const NewDocs = ({
+const NewProjectDocs = ({
   data,
   isEdit,
   isView,
+  id,
 }: {
   data?: any;
   isEdit?: boolean;
   isView?: boolean;
+  id?: string;
 }) => {
   const [myDocTemplates, setMyDocTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(
@@ -77,6 +80,9 @@ const NewDocs = ({
     : null;
   const [docGroup, setDocGroup] = useState([]);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
+  const [planData, setPlanData] = useState<any>([]);
+
+  console.log("planData----", planData);
 
   const [formData, setFormData] = useState({
     template: "",
@@ -85,6 +91,35 @@ const NewDocs = ({
     description: "",
     status: "",
   });
+
+  useEffect(() => {
+    const fetchPlan = async () => {
+      setIsLoading(true);
+      const response = await fetch(`${PLAN_API}?plan_id=eq.${id}`, {
+        method: "GET",
+
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+        },
+      });
+      const data = await response.json();
+      const filteredData = data.filter(
+        (item: any) => item.business_number === session?.user?.business_number
+      );
+      console.log("filteredData----", filteredData);
+      setPlanData(filteredData[0]);
+
+      if (!response.ok) {
+        toast({
+          description: "Error fetching contacts",
+          variant: "destructive",
+        });
+      }
+      setIsLoading(false);
+    };
+    fetchPlan();
+  }, [session, id]);
 
   useEffect(() => {
     if (data) {
@@ -360,7 +395,6 @@ const NewDocs = ({
     const share_url = uuidv4();
     const payload = {
       mydoc_id: selectedTemplate.mydoc_id,
-
       created_user_id: session?.user?.id,
       created_user_name: session?.user?.name,
       business_number: session?.user?.business_number,
@@ -375,6 +409,8 @@ const NewDocs = ({
       doc_json: JSON.stringify(output),
       shareurl: share_url,
       content_json: JSON.stringify(componentsData),
+      plan_id: planData.plan_id,
+      plan_name: planData.plan_name,
     };
 
     const response = await fetch(
@@ -473,10 +509,11 @@ const NewDocs = ({
             </h1>
             <div>
               <Button className="border-0" variant="outline">
-                <Link href="/Docs">Back to Docs</Link>
+                <Link href={`/Projects/Docs/${id}`}>Back to Docs</Link>
               </Button>
             </div>
           </div>
+
           <div className="space-y-8 mt-4">
             <div>
               <div className="flex justify-between">
@@ -641,7 +678,7 @@ const NewDocs = ({
             </div>
             {!isView && (
               <div className="flex justify-end gap-2">
-                <Link href="/Docs">
+                <Link href={`/Projects/Docs/${id}`}>
                   <Button variant="outline">Cancel</Button>
                 </Link>
                 <Button className="" onClick={handleSave} disabled={isLoading}>
@@ -656,4 +693,4 @@ const NewDocs = ({
   );
 };
 
-export default NewDocs;
+export default NewProjectDocs;
