@@ -265,19 +265,7 @@ const NewMsg = ({
   const validateForm = () => {
     let newErrors: Record<string, string> = {};
 
-    const fields = [
-      "date",
-      "plan",
-      "phase",
-      "taskTitle",
-      "docName",
-      "msgGroup",
-      "to",
-      "cc",
-      "subject",
-      "body",
-      "status",
-    ];
+    const fields = ["date", "msgGroup", "to", "subject", "body", "status"];
 
     fields.forEach((field) => {
       if (
@@ -292,8 +280,6 @@ const NewMsg = ({
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  console.log("plan------", plan);
-  console.log("phase------", phase);
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -415,9 +401,7 @@ const NewMsg = ({
 
             <div>
               <div className="flex justify-between">
-                <Label htmlFor="project">
-                  Project <span className="text-red-500">*</span>
-                </Label>
+                <Label htmlFor="project">Project</Label>
                 {errors.plan && (
                   <p className="text-red-500 text-sm">{errors.plan}</p>
                 )}
@@ -444,9 +428,7 @@ const NewMsg = ({
 
             <div>
               <div className="flex justify-between">
-                <Label htmlFor="planPhase">
-                  Phase <span className="text-red-500">*</span>
-                </Label>
+                <Label htmlFor="planPhase">Phase</Label>
                 {errors.phase && (
                   <p className="text-red-500 text-sm">{errors.phase}</p>
                 )}
@@ -475,9 +457,7 @@ const NewMsg = ({
             </div>
             <div>
               <div className="flex justify-between">
-                <Label htmlFor="taskTitle">
-                  Task Title <span className="text-red-500">*</span>
-                </Label>
+                <Label htmlFor="taskTitle">Task Title</Label>
                 {errors.taskTitle && (
                   <p className="text-red-500 text-sm">{errors.taskTitle}</p>
                 )}
@@ -505,9 +485,7 @@ const NewMsg = ({
             </div>
             <div>
               <div className="flex justify-between">
-                <Label htmlFor="docName">
-                  Doc Name <span className="text-red-500">*</span>
-                </Label>
+                <Label htmlFor="docName">Doc Name</Label>
                 {errors.docName && (
                   <p className="text-red-500 text-sm">{errors.docName}</p>
                 )}
@@ -613,9 +591,7 @@ const NewMsg = ({
             </div>
             <div>
               <div className="flex justify-between">
-                <Label htmlFor="cc">
-                  CC <span className="text-red-500">*</span>
-                </Label>
+                <Label htmlFor="cc">CC</Label>
                 {errors.cc && (
                   <p className="text-red-500 text-sm">{errors.cc}</p>
                 )}

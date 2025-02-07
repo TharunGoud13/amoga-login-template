@@ -67,8 +67,6 @@ const Msg = () => {
     fetchMessages();
   }, [session]);
 
-  console.log("data----", data);
-
   return (
     <div>
       <div className="flex flex-col gap-4 w-full items-center">
@@ -98,17 +96,26 @@ const Msg = () => {
             {data
               .filter((item: any) => {
                 const searchTerm = search.toLowerCase();
-                return item.plan_name.toLowerCase().includes(searchTerm);
+                return (
+                  item.plan_name?.toLowerCase().includes(searchTerm) ||
+                  item.plan_phase_name?.toLowerCase().includes(searchTerm) ||
+                  item.task_title?.toLowerCase().includes(searchTerm) ||
+                  item.mydoc_name?.toLowerCase().includes(searchTerm) ||
+                  item.msg_subject?.toLowerCase().includes(searchTerm) ||
+                  item.msg_group?.toLowerCase().includes(searchTerm) ||
+                  item.msg_description?.toLowerCase().includes(searchTerm) ||
+                  item.status?.toLowerCase().includes(searchTerm)
+                );
               })
               .map((item: any) => (
-                <Card key={item.plan_id} className="py-1.5 px-1.5">
+                <Card key={item.msg_id} className="py-1.5 px-1.5">
                   <CardContent className="space-y-1 px-1.5 py-1.5">
-                    <h2 className="flex items-center gap-2 text-2xl font-bold">
+                    <p className="flex items-center gap-2 text-sm">
                       <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground" />
                       {item.plan_name}
-                    </h2>
+                    </p>
                     <p className="flex items-center gap-2 text-sm">
-                      <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                      <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground" />
                       <span>{item.plan_phase_name}</span>
                     </p>
                     <p className="flex items-center gap-2 text-sm">
