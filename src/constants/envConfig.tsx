@@ -29,5 +29,7 @@ export const PLAN_GROUP_API = "https://amogademo-postgrest.morr.biz/plan_group";
 export const PLAN_API = "https://amogademo-postgrest.morr.biz/plan";
 export const PLAN_PHASE_API = "https://amogademo-postgrest.morr.biz/plan_phase";
 export const DOC_GROUP_API = "https://amogademo-postgrest.morr.biz/doc_group";
+export const MESSAGES_API = "https://amogademo-postgrest.morr.biz/msg";
+export const MSG_GROUP_API = "https://amogademo-postgrest.morr.biz/msg_group";
 export const NEXT_PUBLIC_API_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYXBpX3VzZXIifQ.Ks_9ISeorCCS73q1WKEjZHu9kRx107eOx5VcImPh9U8";
