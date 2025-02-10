@@ -167,10 +167,10 @@ const DoBoxTasks = ({ id }: { id: string }) => {
                       <Link href={`/Msg/edit/${item.msg_id}`}>
                         <Edit className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </Link>
-                      <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       <Link href={`/Msg/view/${item.msg_id}`}>
                         <Eye className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </Link>
+                      <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                     </div>
                   </div>
                 </CardContent>

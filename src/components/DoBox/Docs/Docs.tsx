@@ -167,10 +167,10 @@ const DoBoxDocs = ({ id }: { id: string }) => {
                       <Link href={`/Msg/edit/${item.msg_id}`}>
                         <Edit className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </Link>
-                      <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       <Link href={`/Msg/view/${item.msg_id}`}>
                         <Eye className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </Link>
+                      <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                     </div>
                   </div>
                 </CardContent>
@@ -235,22 +235,22 @@ const DoBoxDocs = ({ id }: { id: string }) => {
                       <span>{item.plan_progress_track}</span>
                     </p> */}
                       <div className="flex space-x-2">
-                        <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <Link
+                          href={`/DoBox/Docs/${id}/edit/${item.mydoc_list_id}`}
+                        >
+                          <Edit className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        </Link>
                         <Link
                           href={`/DoBox/Docs/${id}/view/${item.mydoc_list_id}`}
                         >
                           <Eye className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
 
-                        <Link
-                          href={`/DoBox/Docs/${id}/edit/${item.mydoc_list_id}`}
-                        >
-                          <Edit className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                        </Link>
+                        <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
 
                         {/* <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" /> */}
-                        <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </div>
                     </div>
                   </CardContent>
