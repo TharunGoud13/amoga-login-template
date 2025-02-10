@@ -261,14 +261,10 @@ const DoBoxChat = ({ id }: { id?: string }) => {
                         <Link href={`/DoBox/Tasks/${item.msg_id}`}>
                           <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
-                        <Link
-                          href={`/DoBox/Chat/${item.msg_id}/edit/${item.ref_msg_id}`}
-                        >
+                        <Link href={`/DoBox/Chat/${id}/edit/${item.msg_id}`}>
                           <Edit className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
-                        <Link
-                          href={`/DoBox/Chat/${item.msg_id}/view/${item.ref_msg_id}`}
-                        >
+                        <Link href={`/DoBox/Chat/${id}/view/${item.msg_id}`}>
                           <Eye className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
                         <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />

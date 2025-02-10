@@ -2,17 +2,22 @@
 import React, { useEffect, useState } from "react";
 import { MESSAGES_API } from "@/constants/envConfig";
 import { toast } from "@/components/ui/use-toast";
-import NewMsg from "@/components/Msg/NewMsg";
-import NewDoBox from "@/components/DoBox/NewDoBox";
-import NewDoBoxChat from "@/components/DoBox/Chat/NewChat";
+import dynamic from "next/dynamic";
+const NewDoBoxChat = dynamic(() => import("@/components/DoBox/Chat/NewChat"), {
+  ssr: false,
+});
 
-const ViewDoBox = ({ params }: { params: { id: string } }) => {
-  const { id } = params;
+const EditChatMsg = ({
+  params,
+}: {
+  params: { id: string; msg_id: string };
+}) => {
+  const { id, msg_id } = params;
   const [msgData, setMsgData] = useState([]);
 
   useEffect(() => {
     const fetchMsgData = async () => {
-      const response = await fetch(`${MESSAGES_API}?msg_id=eq.${id}`, {
+      const response = await fetch(`${MESSAGES_API}?msg_id=eq.${msg_id}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -27,16 +32,17 @@ const ViewDoBox = ({ params }: { params: { id: string } }) => {
         });
       }
       const data = await response.json();
+      console.log("data.....", data);
       setMsgData(data[0]);
     };
     fetchMsgData();
-  }, [id]);
+  }, [id, msg_id]);
 
   return (
     <div className="max-w-[800px]  w-full md:p-4 p-2 mx-auto">
-      <NewDoBoxChat data={msgData} isEdit={false} isView={true} id={id} />
+      <NewDoBoxChat data={msgData} isEdit={true} isView={false} id={id} />
     </div>
   );
 };
 
-export default ViewDoBox;
+export default EditChatMsg;

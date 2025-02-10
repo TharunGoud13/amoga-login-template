@@ -30,7 +30,7 @@ import { Session } from "../doc-template/DocTemplate";
 
 const DoBox = () => {
   const [search, setSearch] = useState("");
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { data: sessionData } = useSession();
@@ -67,6 +67,8 @@ const DoBox = () => {
     fetchMessages();
   }, [session]);
 
+  console.log("data----", data);
+
   return (
     <div>
       <div className="flex flex-col gap-4 w-full items-center">
@@ -99,72 +101,77 @@ const DoBox = () => {
                 return item.msg_subject?.toLowerCase().includes(searchTerm);
               })
               .map((item: any) => (
-                <Card key={item.msg_id} className="py-1.5 px-1.5">
-                  <CardContent className="space-y-1 px-1.5 py-1.5">
-                    <p className="flex items-center gap-2 text-sm">
-                      <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground" />
-                      {item.plan_name}
-                    </p>
-                    <p className="flex items-center gap-2 text-sm">
-                      <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span>{item.plan_phase_name}</span>
-                    </p>
-                    <p className="flex items-center gap-2 text-sm">
-                      <CircleCheck className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span>{item.task_title}</span>
-                    </p>
-                    <p className="flex items-center gap-2 text-sm">
-                      <File className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span>{item.mydoc_name}</span>
-                    </p>
+                <div key={item.msg_id}>
+                  {item?.ref_msg_id === null && (
+                    <Card key={item.msg_id} className="py-1.5 px-1.5">
+                      <CardContent className="space-y-1 px-1.5 py-1.5">
+                        <p className="flex items-center gap-2 text-sm">
+                          <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground" />
+                          {item.plan_name}
+                        </p>
+                        <p className="flex items-center gap-2 text-sm">
+                          <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span>{item.plan_phase_name}</span>
+                        </p>
+                        <p className="flex items-center gap-2 text-sm">
+                          <CircleCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span>{item.task_title}</span>
+                        </p>
+                        <p className="flex items-center gap-2 text-sm">
+                          <File className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span>{item.mydoc_name}</span>
+                        </p>
 
-                    <p className="flex items-center gap-2 text-sm">
-                      <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span>
-                        Date: {new Date(item.created_date).toLocaleDateString()}
-                      </span>
-                    </p>
-                    <p className="flex items-center gap-2 text-sm">
-                      <User className="h-3.5 w-3.5 text-muted-foreground" />
+                        <p className="flex items-center gap-2 text-sm">
+                          <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span>
+                            Date:{" "}
+                            {new Date(item.created_date).toLocaleDateString()}
+                          </span>
+                        </p>
+                        <p className="flex items-center gap-2 text-sm">
+                          <User className="h-3.5 w-3.5 text-muted-foreground" />
 
-                      <span>From: {item.created_user_name}</span>
-                    </p>
-                    <p className="flex font-semibold items-center gap-2 text-sm">
-                      <span>Subject: {item.msg_subject}</span>
-                    </p>
-                    <p className="flex items-center text-muted-foreground gap-2 text-sm">
-                      <span>Msg Group: {item.msg_group}</span>
-                    </p>
-                    <p className="flex items-center text-muted-foreground gap-2 text-sm">
-                      <span>Desc: {item.msg_description}</span>
-                    </p>
+                          <span>From: {item.created_user_name}</span>
+                        </p>
+                        <p className="flex font-semibold items-center gap-2 text-sm">
+                          <span>Subject: {item.msg_subject}</span>
+                        </p>
+                        <p className="flex items-center text-muted-foreground gap-2 text-sm">
+                          <span>Msg Group: {item.msg_group}</span>
+                        </p>
+                        <p className="flex items-center text-muted-foreground gap-2 text-sm">
+                          <span>Desc: {item.msg_description}</span>
+                        </p>
 
-                    <div className="flex justify-between items-center">
-                      <p className="flex items-center gap-2 text-sm">
-                        <LuCopyCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                        <div className="flex justify-between items-center">
+                          <p className="flex items-center gap-2 text-sm">
+                            <LuCopyCheck className="h-3.5 w-3.5 text-muted-foreground" />
 
-                        <span>{item.status}</span>
-                      </p>
-                      <div className="flex space-x-2">
-                        <Link href={`/DoBox/Docs/${item.msg_id}`}>
-                          <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                        </Link>
-                        <Link href={`/DoBox/Tasks/${item.msg_id}`}>
-                          <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                        </Link>
-                        <Link href={`/DoBox/edit/${item.msg_id}`}>
-                          <Edit className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                        </Link>
-                        <Link href={`/DoBox/view/${item.msg_id}`}>
-                          <Eye className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                        </Link>
-                        <Link href={`/DoBox/Chat/${item.msg_id}`}>
-                          <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                        </Link>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                            <span>{item.status}</span>
+                          </p>
+                          <div className="flex space-x-2">
+                            <Link href={`/DoBox/Docs/${item.msg_id}`}>
+                              <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                            </Link>
+                            <Link href={`/DoBox/Tasks/${item.msg_id}`}>
+                              <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                            </Link>
+                            <Link href={`/DoBox/edit/${item.msg_id}`}>
+                              <Edit className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                            </Link>
+                            <Link href={`/DoBox/view/${item.msg_id}`}>
+                              <Eye className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                            </Link>
+                            <Link href={`/DoBox/Chat/${item.msg_id}`}>
+                              <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                            </Link>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
               ))}
           </div>
         )}
