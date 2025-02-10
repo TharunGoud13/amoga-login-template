@@ -37,8 +37,6 @@ const PlanPhase = ({ id }: { id: string }) => {
     ? (sessionData as unknown as Session)
     : null;
 
-  console.log("planData----", planData);
-
   useEffect(() => {
     const fetchPlan = async () => {
       setIsLoading(true);
@@ -54,7 +52,6 @@ const PlanPhase = ({ id }: { id: string }) => {
       const filteredData = data.filter(
         (item: any) => item.business_number === session?.user?.business_number
       );
-      console.log("filteredData----", filteredData);
       setData(filteredData);
 
       if (!response.ok) {

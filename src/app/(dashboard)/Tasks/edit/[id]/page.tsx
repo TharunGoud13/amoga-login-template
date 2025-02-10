@@ -29,8 +29,6 @@ const EditTasks = ({ params }: { params: { id: string } }) => {
     fetchTaskData();
   }, [id]);
 
-  console.log("taskData-------", taskData);
-
   return (
     <div className="max-w-[800px]  w-full md:p-4 p-2 mx-auto">
       <NewTask data={taskData} isEdit={true} isView={false} />

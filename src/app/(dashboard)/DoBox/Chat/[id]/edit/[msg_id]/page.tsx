@@ -32,7 +32,6 @@ const EditChatMsg = ({
         });
       }
       const data = await response.json();
-      console.log("data.....", data);
       setMsgData(data[0]);
     };
     fetchMsgData();

@@ -298,7 +298,7 @@ export default function DocTemplate() {
             headers: headers,
           }
         );
-        console.log("getResponse------", getResponse);
+
         if (!getResponse.ok) {
           toast({
             description: "Failed to fetch document id",
@@ -306,7 +306,7 @@ export default function DocTemplate() {
           });
         }
         const getData = await getResponse.json();
-        console.log("getdata------", getData);
+
         const myDocFieldsPayload = {
           mydoc_id: getData[0].mydoc_id,
           template_name: getData[0].template_name,
@@ -317,7 +317,7 @@ export default function DocTemplate() {
           headers: headers,
           body: JSON.stringify(myDocFieldsPayload),
         });
-        console.log("fieldResponse------", fieldResponse);
+
         if (!fieldResponse.ok) {
           toast({
             description: "Failed to save form fields",

@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
 export async function POST(req: Request) {
   try {
     const { email } = await req.json();
-    console.log("email----", email);
+
     const header = new Headers();
     header.append("Content-Type", "application/json");
     header.append("Authorization", `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`);

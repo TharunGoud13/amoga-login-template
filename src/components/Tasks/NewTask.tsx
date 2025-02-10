@@ -58,8 +58,6 @@ const NewTask = ({
   });
   const [isLoading, setIsLoading] = React.useState(false);
 
-  console.log("formData-----", formData);
-
   useEffect(() => {
     if (data) {
       setFormData({
@@ -93,7 +91,7 @@ const NewTask = ({
         return;
       }
       const data = await response.json();
-      console.log("data-----", data);
+
       const filteredData = data.filter(
         (item: any) => item.business_number === session?.user?.business_number
       );

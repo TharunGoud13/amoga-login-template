@@ -9,7 +9,6 @@ import { MobileSidebar } from "./mobile-sidebar";
 import Themes from "../ThemeToggle/themes";
 
 export default function Header({ session }: { session: any }) {
-  console.log("session...data....", session);
   const access = session?.user?.roles_json?.length ?? 0 > 0;
   const t = useTranslations("TopNav");
   return (

@@ -99,7 +99,7 @@ export const generateTemplate = async (dataModel: any, userPrompt: string) => {
     });
 
     const template = result.object.template.trim();
-    console.log("template----", template);
+
     return template;
   } catch (err) {
     console.error(`Failed to generate template: ${err}`);

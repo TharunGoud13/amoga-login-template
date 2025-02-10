@@ -67,7 +67,6 @@ const NewDoBox = ({
   isEdit?: boolean;
   isView?: boolean;
 }) => {
-  console.log("data.....:::", data);
   const router = useRouter();
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [plan, setPlan] = React.useState<any[]>([]);
@@ -95,8 +94,6 @@ const NewDoBox = ({
     status: "",
   });
   const [isLoading, setIsLoading] = React.useState(false);
-
-  console.log("formData-----", formData);
 
   useEffect(() => {
     if (data) {
@@ -257,9 +254,10 @@ const NewDoBox = ({
     setErrors((prev) => ({ ...prev, [id]: "" }));
   };
 
+  console.log("formData-----", formData);
   const handleFromDateSelect = (date: Date | undefined, field: string) => {
     if (date) {
-      setFormData((prev) => ({ ...prev, [field]: date.toISOString() }));
+      setFormData((prev) => ({ ...prev, [field]: date.toDateString() }));
     }
   };
 

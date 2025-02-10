@@ -74,7 +74,6 @@ const NewDoBoxChat = ({
   isView?: boolean;
   id?: string;
 }) => {
-  console.log("data.....:::", data);
   const router = useRouter();
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [message, setMessage] = React.useState<any>(null);
@@ -104,8 +103,6 @@ const NewDoBoxChat = ({
     status: "",
   });
   const [isLoading, setIsLoading] = React.useState(false);
-
-  console.log("formData-----", formData);
 
   useEffect(() => {
     if (data) {
@@ -147,7 +144,6 @@ const NewDoBoxChat = ({
     fetchMessage();
   }, [id]);
 
-  console.log("message-----", message);
   useEffect(() => {
     const fetchPlans = async () => {
       const response = await fetch(PLAN_API, {
@@ -291,7 +287,7 @@ const NewDoBoxChat = ({
 
   const handleFromDateSelect = (date: Date | undefined, field: string) => {
     if (date) {
-      setFormData((prev) => ({ ...prev, [field]: date.toISOString() }));
+      setFormData((prev) => ({ ...prev, [field]: date.toDateString() }));
     }
   };
 

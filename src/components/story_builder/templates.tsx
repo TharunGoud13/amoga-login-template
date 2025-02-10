@@ -24,9 +24,7 @@ const Templates = () => {
       const response = await fetch(STORY_TEMPLATE, requestOptions);
       const result = await response.json();
       setTemplates(result);
-      console.log("result---", result);
     } catch (error) {
-      console.log("error---", error);
       toast({
         description: "Failed to fetch templates",
         variant: "destructive",

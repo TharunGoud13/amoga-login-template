@@ -82,8 +82,6 @@ const NewProjectDocs = ({
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [planData, setPlanData] = useState<any>([]);
 
-  console.log("planData----", planData);
-
   const [formData, setFormData] = useState({
     template: "",
     docGroup: "",
@@ -107,7 +105,6 @@ const NewProjectDocs = ({
       const filteredData = data.filter(
         (item: any) => item.business_number === session?.user?.business_number
       );
-      console.log("filteredData----", filteredData);
       setPlanData(filteredData[0]);
 
       if (!response.ok) {
@@ -352,8 +349,6 @@ const NewProjectDocs = ({
     }));
   };
 
-  console.log("data----", data);
-
   const handleSave = async () => {
     if (!validateForm()) return;
     if (!selectedTemplate) {
@@ -481,7 +476,6 @@ const NewProjectDocs = ({
   };
 
   const renderComponent = (component: ComponentData) => {
-    console.log("component------", component);
     const Component =
       COMPONENT_MAP[component.type as keyof typeof COMPONENT_MAP];
     if (!Component) return null;

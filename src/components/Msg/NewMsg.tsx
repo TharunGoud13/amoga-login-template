@@ -95,8 +95,6 @@ const NewMsg = ({
   });
   const [isLoading, setIsLoading] = React.useState(false);
 
-  console.log("formData-----", formData);
-
   useEffect(() => {
     if (data) {
       setFormData({

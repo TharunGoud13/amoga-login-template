@@ -65,6 +65,7 @@ const Doc = () => {
 
   useEffect(() => {
     fetchTemplates();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchTemplates = async () => {
@@ -101,12 +102,7 @@ const Doc = () => {
       });
       if (!response.ok) throw new Error("Failed to fetch template details");
       const data = await response.json();
-      console.log("data.....", data);
-      //   const filteredData = data.filter(
-      //     (item: any) => item.business_number === session?.user?.business_number
-      //   );
 
-      // Transform the API data into our desired format
       const template = {
         mydoc_id: data[0].mydoc_id,
         template_name: data[0].template_name,
@@ -170,7 +166,6 @@ const Doc = () => {
       })),
     };
 
-    console.log("fields---", output);
     componentsData.forEach((comp) => {
       console.log(`\n${comp.type}----${comp.content}`);
     });
@@ -198,7 +193,6 @@ const Doc = () => {
       },
       body: JSON.stringify(payload),
     });
-    console.log("response", response);
 
     if (!response.ok) throw new Error("Failed to save document");
     toast({
@@ -211,7 +205,7 @@ const Doc = () => {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
       },
     });
-    console.log("getDocList", getDocList);
+
     if (!getDocList.ok) {
       toast({
         description: "Error fetching Doc List",
@@ -219,7 +213,7 @@ const Doc = () => {
       });
     }
     const getDocData = await getDocList.json();
-    console.log("getDocData", getDocData[0]);
+
     const myDocContentPayload = {
       mydoc_list_id: getDocData[0].mydoc_list_id,
       doc_name: getDocData[0].doc_name,
@@ -235,7 +229,6 @@ const Doc = () => {
       },
       body: JSON.stringify(myDocContentPayload),
     });
-    console.log("contentResponse", contentResponse);
     if (!contentResponse.ok) {
       toast({
         description: "Failed to save content",
@@ -249,7 +242,6 @@ const Doc = () => {
   };
 
   const renderComponent = (component: ComponentData) => {
-    console.log("component", component);
     const Component =
       COMPONENT_MAP[component.type as keyof typeof COMPONENT_MAP];
     if (!Component) return null;
@@ -265,8 +257,6 @@ const Doc = () => {
       </div>
     );
   };
-
-  console.log("selectedTemplate", selectedTemplate);
 
   return (
     <div className="mx-auto flex items-center max-w-[800px] w-full p-4">

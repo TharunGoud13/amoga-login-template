@@ -52,8 +52,6 @@ const NewContact = ({
   });
   const [isLoading, setIsLoading] = React.useState(false);
 
-  console.log("data-------", data);
-
   useEffect(() => {
     if (data) {
       setFormData({
@@ -95,7 +93,7 @@ const NewContact = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target;
-    console.log({ id, value });
+
     setFormData((prev) => ({
       ...prev,
       [id]: value,
@@ -141,7 +139,7 @@ const NewContact = ({
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("validate----", !validateForm());
+
     if (!validateForm()) return;
 
     setIsLoading(true);

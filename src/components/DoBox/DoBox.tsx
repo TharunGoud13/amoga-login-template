@@ -53,7 +53,7 @@ const DoBox = () => {
       const filteredData = data.filter(
         (item: any) => item.business_number === session?.user?.business_number
       );
-      console.log("filteredData----", filteredData);
+
       setData(filteredData);
 
       if (!response.ok) {
@@ -66,8 +66,6 @@ const DoBox = () => {
     };
     fetchMessages();
   }, [session]);
-
-  console.log("data----", data);
 
   return (
     <div>

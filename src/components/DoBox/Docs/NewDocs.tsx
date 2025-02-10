@@ -83,8 +83,6 @@ const NewDoBoxDocs = ({
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [msgData, setMsgData] = useState<any>([]);
 
-  console.log("msgData----", msgData);
-
   const [formData, setFormData] = useState({
     template: "",
     docGroup: "",
@@ -108,7 +106,7 @@ const NewDoBoxDocs = ({
       const filteredData = data.filter(
         (item: any) => item.business_number === session?.user?.business_number
       );
-      console.log("filteredData----", filteredData);
+
       setMsgData(filteredData[0]);
 
       if (!response.ok) {
@@ -353,8 +351,6 @@ const NewDoBoxDocs = ({
     }));
   };
 
-  console.log("data----", data);
-
   const handleSave = async () => {
     if (!validateForm()) return;
     if (!selectedTemplate) {
@@ -481,7 +477,6 @@ const NewDoBoxDocs = ({
   };
 
   const renderComponent = (component: ComponentData) => {
-    console.log("component------", component);
     const Component =
       COMPONENT_MAP[component.type as keyof typeof COMPONENT_MAP];
     if (!Component) return null;

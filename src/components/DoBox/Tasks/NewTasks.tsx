@@ -62,8 +62,6 @@ const NewDoBoxTasks = ({
   });
   const [isLoading, setIsLoading] = React.useState(false);
 
-  console.log("formData-----", formData);
-
   useEffect(() => {
     if (data) {
       setFormData({
@@ -102,8 +100,6 @@ const NewDoBoxTasks = ({
     fetchMessages();
   }, [id]);
 
-  console.log("msgData-----", msgData);
-
   useEffect(() => {
     const fetchPlanName = async () => {
       const response = await fetch(PLAN_API, {
@@ -121,7 +117,7 @@ const NewDoBoxTasks = ({
         return;
       }
       const data = await response.json();
-      console.log("data-----", data);
+
       const filteredData = data.filter(
         (item: any) => item.business_number === session?.user?.business_number
       );
@@ -163,7 +159,7 @@ const NewDoBoxTasks = ({
 
   const handleFromDateSelect = (date: Date | undefined, field: string) => {
     if (date) {
-      setFormData((prev) => ({ ...prev, [field]: date.toISOString() }));
+      setFormData((prev) => ({ ...prev, [field]: date.toDateString() }));
     }
   };
 

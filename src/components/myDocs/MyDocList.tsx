@@ -15,8 +15,6 @@ const MyDocList = () => {
     ? (sessionData as unknown as Session)
     : null;
 
-  console.log("docList----", docList);
-
   useEffect(() => {
     const fetchDocList = async () => {
       setIsLoading(true);
@@ -41,6 +39,7 @@ const MyDocList = () => {
       setIsLoading(false);
     };
     fetchDocList();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

@@ -34,7 +34,6 @@ const EditDoBoxDocs = ({
         });
       }
       const data = await response.json();
-      console.log("data::::::", data);
       setDocData(data[0]);
     };
     fetchDocData();

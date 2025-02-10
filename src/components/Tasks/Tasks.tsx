@@ -37,7 +37,6 @@ const Tasks = () => {
       const filteredData = data.filter(
         (item: any) => item.business_number === session?.user?.business_number
       );
-      console.log("filteredData----", filteredData);
       setData(filteredData);
 
       if (!response.ok) {

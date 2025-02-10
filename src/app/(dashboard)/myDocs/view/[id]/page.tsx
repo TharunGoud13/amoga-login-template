@@ -30,7 +30,6 @@ const COMPONENT_MAP = {
 
 const ViewDoc = ({ params }: { params: { id: string } }) => {
   const { id } = params;
-  console.log("id-----", id);
   const [template, setTemplate] = useState<any>(null);
   const [componentsData, setComponentsData] = useState<ComponentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -39,9 +38,6 @@ const ViewDoc = ({ params }: { params: { id: string } }) => {
     ? (sessionData as unknown as Session)
     : null;
   const router = useRouter();
-
-  console.log("template-----", template);
-  console.log("componentsData-----", componentsData);
 
   useEffect(() => {
     const fetchDocContent = async () => {
@@ -59,7 +55,6 @@ const ViewDoc = ({ params }: { params: { id: string } }) => {
       }
 
       const data = await response.json();
-      console.log("Fetched Data:", data);
 
       if (data.length === 0) return;
 
@@ -87,9 +82,6 @@ const ViewDoc = ({ params }: { params: { id: string } }) => {
         console.warn("Error parsing component_type:", error);
       }
 
-      console.log("Parsed Field Content:", fieldContent);
-      console.log("Parsed Component Types:", componentTypes);
-
       // Ensure we correctly associate types with content
       const components = componentTypes.map((type: string) => {
         const matchingComponent = fieldContent.find(
@@ -105,8 +97,6 @@ const ViewDoc = ({ params }: { params: { id: string } }) => {
         };
       });
 
-      console.log("Final Components:", components);
-
       setTemplate(template);
       setComponentsData(components);
     };
@@ -121,7 +111,6 @@ const ViewDoc = ({ params }: { params: { id: string } }) => {
   };
 
   const renderComponent = (component: ComponentData) => {
-    console.log("component", component);
     const Component =
       COMPONENT_MAP[component.type as keyof typeof COMPONENT_MAP];
     if (!Component) return null;

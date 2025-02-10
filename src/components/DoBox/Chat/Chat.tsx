@@ -56,7 +56,7 @@ const DoBoxChat = ({ id }: { id?: string }) => {
       const filteredData = data.filter(
         (item: any) => item.business_number === session?.user?.business_number
       );
-      console.log("filteredData----", filteredData);
+
       setData(filteredData);
 
       if (!response.ok) {
@@ -85,7 +85,7 @@ const DoBoxChat = ({ id }: { id?: string }) => {
       const filteredData = data.filter(
         (item: any) => item.business_number === session?.user?.business_number
       );
-      console.log("filteredData----", filteredData);
+
       setRefData(filteredData);
 
       if (!response.ok) {
@@ -98,8 +98,6 @@ const DoBoxChat = ({ id }: { id?: string }) => {
     };
     fetchMessages();
   }, [session, id]);
-
-  console.log("refData----", refData);
 
   return (
     <div>

@@ -32,8 +32,6 @@ const ViewContacts = ({ params }: { params: { id: string } }) => {
     fetchContactData();
   }, [id]);
 
-  console.log("contactData-------", contactData);
-
   return (
     <div className="max-w-[800px]  w-full md:p-4 p-2 mx-auto">
       <NewContact isEdit={false} data={contactData} isView={true} />

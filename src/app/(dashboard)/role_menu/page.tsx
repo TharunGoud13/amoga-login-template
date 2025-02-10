@@ -12,7 +12,7 @@ async function getPageList() {
     },
   });
   const data = await response.json();
-  console.log("data....", data);
+
   return data;
 }
 
@@ -32,8 +32,6 @@ const RoleList = async () => {
         ? JSON.parse(page.role_json)
         : page.role_json;
 
-    // Check if user has any of the roles required for this page
-    console.log("pageRoles----", pageRoles);
     return userRoles.some((userRole: string) => pageRoles.includes(userRole));
   });
 

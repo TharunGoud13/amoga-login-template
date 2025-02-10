@@ -317,8 +317,6 @@ const NewDocs = ({
     }));
   };
 
-  console.log("data----", data);
-
   const handleSave = async () => {
     if (!validateForm()) return;
     if (!selectedTemplate) {
@@ -445,7 +443,6 @@ const NewDocs = ({
   };
 
   const renderComponent = (component: ComponentData) => {
-    console.log("component------", component);
     const Component =
       COMPONENT_MAP[component.type as keyof typeof COMPONENT_MAP];
     if (!Component) return null;

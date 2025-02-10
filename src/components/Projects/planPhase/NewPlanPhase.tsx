@@ -43,8 +43,6 @@ const NewPlanPhase = ({
     ? (sessionData as unknown as Session)
     : null;
 
-  console.log("planData----", planData);
-
   const [formData, setFormData] = React.useState({
     phaseName: "",
     description: "",
@@ -55,8 +53,6 @@ const NewPlanPhase = ({
     status: "",
   });
   const [isLoading, setIsLoading] = React.useState(false);
-
-  console.log("formData-----", formData);
 
   useEffect(() => {
     if (data) {

@@ -30,7 +30,6 @@ const COMPONENT_MAP = {
 
 const EditDoc = ({ params }: { params: { id: string } }) => {
   const { id } = params;
-  console.log("id-----", id);
   const [template, setTemplate] = useState<any>(null);
   const [componentsData, setComponentsData] = useState<ComponentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -39,9 +38,6 @@ const EditDoc = ({ params }: { params: { id: string } }) => {
     ? (sessionData as unknown as Session)
     : null;
   const router = useRouter();
-
-  console.log("template-----", template);
-  console.log("componentsData-----", componentsData);
 
   useEffect(() => {
     const fetchDocContent = async () => {
@@ -59,7 +55,6 @@ const EditDoc = ({ params }: { params: { id: string } }) => {
       }
 
       const data = await response.json();
-      console.log("Fetched Data:", data);
 
       if (data.length === 0) return;
 
@@ -87,9 +82,6 @@ const EditDoc = ({ params }: { params: { id: string } }) => {
         console.warn("Error parsing component_type:", error);
       }
 
-      console.log("Parsed Field Content:", fieldContent);
-      console.log("Parsed Component Types:", componentTypes);
-
       // Ensure we correctly associate types with content
       const components = componentTypes.map((type: string) => {
         const matchingComponent = fieldContent.find(
@@ -104,8 +96,6 @@ const EditDoc = ({ params }: { params: { id: string } }) => {
           content: matchingComponent ? matchingComponent.content : "", // Assign correct content
         };
       });
-
-      console.log("Final Components:", components);
 
       setTemplate(template);
       setComponentsData(components);
@@ -175,8 +165,6 @@ const EditDoc = ({ params }: { params: { id: string } }) => {
       }
     );
 
-    console.log("Edit response", response);
-
     if (!response.ok) {
       toast({
         description: "Failed to update document",
@@ -206,8 +194,6 @@ const EditDoc = ({ params }: { params: { id: string } }) => {
     );
     setIsLoading(false);
 
-    console.log("contentResponse", contentResponse);
-
     if (!contentResponse.ok) {
       setIsLoading(false);
       toast({
@@ -223,7 +209,6 @@ const EditDoc = ({ params }: { params: { id: string } }) => {
   };
 
   const renderComponent = (component: ComponentData) => {
-    console.log("component", component);
     const Component =
       COMPONENT_MAP[component.type as keyof typeof COMPONENT_MAP];
     if (!Component) return null;

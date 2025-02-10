@@ -13,8 +13,6 @@ const Page = (props: any) => {
     ? (sessionData as unknown as Session)
     : null;
 
-  console.log("session----", session);
-
   const handleClick = () => {
     navigator.clipboard.writeText(
       `${process.env.NEXT_PUBLIC_API_URL}/submit/${pathName}/business_number=${session?.user?.business_number}/user_name=${session?.user?.name}`
