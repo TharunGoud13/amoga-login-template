@@ -28,7 +28,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Session } from "../doc-template/DocTemplate";
 
-const Msg = () => {
+const DoBox = () => {
   const [search, setSearch] = useState("");
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -80,7 +80,7 @@ const Msg = () => {
               className="pl-10"
             />
           </div>
-          <Link href="/Msg/new">
+          <Link href="/DoBox/new">
             <Button size={"icon"}>
               <Plus className="h-4 w-4" />
             </Button>
@@ -146,19 +146,18 @@ const Msg = () => {
                         <span>{item.status}</span>
                       </p>
                       <div className="flex space-x-2">
-                        <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                        <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                        <Link href={`/Msg/view/${item.msg_id}`}>
-                          <Eye className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <Link href={`/DoBox/Docs/${item.msg_id}`}>
+                          <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
-                        <Link href={`/Msg/edit/${item.msg_id}`}>
+                        <Link href={`/DoBox/Tasks/${item.msg_id}`}>
+                          <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        </Link>
+                        <Link href={`/DoBox/edit/${item.msg_id}`}>
                           <Edit className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
-                        <Link href={`/Msg`}>
-                          <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                        </Link>
-                        <Link href={`/Msg`}>
-                          <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <Link href={`/DoBox/view/${item.msg_id}`}>
+                          <Eye className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
                       </div>
                     </div>
@@ -172,4 +171,4 @@ const Msg = () => {
   );
 };
 
-export default Msg;
+export default DoBox;
