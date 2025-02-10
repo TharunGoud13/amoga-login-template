@@ -158,7 +158,9 @@ const DoBox = () => {
                         <Link href={`/DoBox/view/${item.msg_id}`}>
                           <Eye className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
-                        <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <Link href={`/DoBox/Chat/${item.msg_id}`}>
+                          <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        </Link>
                       </div>
                     </div>
                   </CardContent>
