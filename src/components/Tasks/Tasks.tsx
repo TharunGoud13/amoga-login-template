@@ -2,7 +2,17 @@
 import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { Calendar, Edit, Eye, Loader, Plus, Search } from "lucide-react";
+import {
+  Calendar,
+  ClipboardCheck,
+  Edit,
+  Eye,
+  File,
+  Loader,
+  LucideMessageCircleMore,
+  Plus,
+  Search,
+} from "lucide-react";
 import { TASKS_API } from "@/constants/envConfig";
 import { toast } from "../ui/use-toast";
 import { Card, CardContent } from "../ui/card";
@@ -124,16 +134,20 @@ const Tasks = () => {
                         <span>{item.task_progress_track}</span>
                       </p>
                       <div className="flex space-x-2">
-                        <Link href={`/Tasks/view/${item.task_id}`}>
-                          <Eye
-                            className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground"
-                            onClick={() =>
-                              router.push(`/Tasks/view/${item.task_id}`)
-                            }
-                          />
+                        <Link href={"/Tasks"}>
+                          <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        </Link>
+                        <Link href={`/Tasks/Task/${item.task_id}`}>
+                          <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
                         <Link href={`/Tasks/edit/${item.task_id}`}>
                           <Edit className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        </Link>
+                        <Link href={`/Tasks/view/${item.task_id}`}>
+                          <Eye className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        </Link>
+                        <Link href={`/Tasks/Chat/${item.task_id}`}>
+                          <LucideMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
                       </div>
                     </div>

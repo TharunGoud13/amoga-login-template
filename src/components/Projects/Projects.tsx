@@ -135,24 +135,21 @@ const Projects = () => {
                         <span>{item.plan_progress_track}</span>
                       </p>
                       <div className="flex space-x-2">
-                        <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                        <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                        <Link href={`/Projects/view/${item.plan_id}`}>
-                          <Eye
-                            className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground"
-                            onClick={() =>
-                              router.push(`/Projects/view/${item.plan_id}`)
-                            }
-                          />
+                        <Link href={`/Projects/Docs/${item.plan_id}`}>
+                          <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
+                        <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         <Link href={`/Projects/edit/${item.plan_id}`}>
                           <Edit className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        </Link>
+                        <Link href={`/Projects/view/${item.plan_id}`}>
+                          <Eye className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
                         <Link href={`/Projects/planPhase/${item.plan_id}`}>
                           <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
-                        <Link href={`/Projects/Docs/${item.plan_id}`}>
-                          <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <Link href={`/Projects/Chat/${item.plan_id}`}>
+                          <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
                       </div>
                     </div>
