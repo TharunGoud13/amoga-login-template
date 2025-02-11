@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "../../ui/button";
 import { Input } from "../../ui/input";
 import {
+  ArrowRight,
   Calendar,
   ClipboardCheck,
   Edit,
@@ -15,7 +16,7 @@ import {
 import { PLAN_API, PLAN_PHASE_API, TASKS_API } from "@/constants/envConfig";
 import { toast } from "../../ui/use-toast";
 import { Card, CardContent } from "../../ui/card";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LuCopyCheck,
   LuChartPie,
@@ -31,6 +32,7 @@ const PlanPhase = ({ id }: { id: string }) => {
   const [data, setData] = useState([]);
   const [planData, setPlanData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const pathname = usePathname();
   const router = useRouter();
   const { data: sessionData } = useSession();
   const session: Session | null = sessionData
@@ -95,6 +97,13 @@ const PlanPhase = ({ id }: { id: string }) => {
 
   return (
     <div>
+      <h1 className="text-muted-foreground flex items-center gap-2">
+        <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground" />
+        {pathname.split("/").at(1)}
+        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+        <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground" />
+        {pathname.split("/").at(2)}
+      </h1>
       <div className="flex flex-col gap-4 w-full items-center">
         {isLoading ? (
           <div>

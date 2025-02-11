@@ -15,7 +15,7 @@ import {
 import { PLAN_API, TASKS_API } from "@/constants/envConfig";
 import { toast } from "../ui/use-toast";
 import { Card, CardContent } from "../ui/card";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LuCopyCheck,
   LuChartPie,
@@ -31,6 +31,7 @@ const Projects = () => {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const { data: sessionData } = useSession();
   const session: Session | null = sessionData
     ? (sessionData as unknown as Session)
@@ -67,6 +68,10 @@ const Projects = () => {
 
   return (
     <div>
+      <h1 className="text-muted-foreground flex items-center gap-2">
+        <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground" />
+        {pathname.split("/").at(1)}
+      </h1>
       <div className="flex flex-col gap-4 w-full items-center">
         <div className="flex w-full  gap-4">
           <div className="relative flex-grow">
