@@ -97,13 +97,20 @@ const PlanPhase = ({ id }: { id: string }) => {
 
   return (
     <div>
-      <h1 className="text-muted-foreground flex items-center gap-2">
-        <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground" />
-        {pathname.split("/").at(1)}
-        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
-        <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground" />
-        {pathname.split("/").at(2)}
-      </h1>
+      <div className="flex items-center gap-2 justify-between">
+        <h1 className="text-muted-foreground flex items-center gap-2">
+          <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground" />
+          {pathname.split("/").at(1)}
+          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+          <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground" />
+          {pathname.split("/").at(2)}
+        </h1>
+        <Link href={`/Projects`}>
+          <Button className="border-0" variant={"outline"}>
+            Back to Projects
+          </Button>
+        </Link>
+      </div>
       <div className="flex flex-col gap-4 w-full items-center">
         {isLoading ? (
           <div>
@@ -150,23 +157,18 @@ const PlanPhase = ({ id }: { id: string }) => {
                       <span>{item.plan_progress_track}</span>
                     </p>
                     <div className="flex space-x-2">
-                      <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                      <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                      <Link href={`/Projects/view/${item.plan_id}`}>
-                        <Eye
-                          className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground"
-                          onClick={() =>
-                            router.push(`/Projects/view/${item.plan_id}`)
-                          }
-                        />
-                      </Link>
                       <Link href={`/Projects/edit/${item.plan_id}`}>
                         <Edit className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                      </Link>
+                      <Link href={`/Projects/view/${item.plan_id}`}>
+                        <Eye className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </Link>
                       <Link href={`/Projects/planPhase/${item.plan_id}`}>
                         <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </Link>
-                      <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                      <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                     </div>
                   </div>
                 </CardContent>
@@ -240,21 +242,22 @@ const PlanPhase = ({ id }: { id: string }) => {
                       <span>{item.plan_progress_track}</span>
                     </p>
                     <div className="flex space-x-2">
-                      <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                      <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                      <Link
-                        href={`/Projects/planPhase/${id}/view/${item.plan_phase_id}`}
-                      >
-                        <Eye className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                      </Link>
                       <Link
                         href={`/Projects/planPhase/${id}/edit/${item.plan_phase_id}`}
                       >
                         <Edit className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </Link>
+                      <Link
+                        href={`/Projects/planPhase/${id}/view/${item.plan_phase_id}`}
+                      >
+                        <Eye className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                      </Link>
+
+                      <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
 
                       {/* <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" /> */}
-                      <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                     </div>
                   </div>
                 </CardContent>

@@ -104,13 +104,20 @@ const ProjectChat = ({ id }: { id?: string }) => {
 
   return (
     <div>
-      <h1 className="text-muted-foreground flex items-center gap-2">
-        <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground" />
-        {pathname.split("/").at(1)}
-        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
-        <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground" />
-        {pathname.split("/").at(2)}
-      </h1>
+      <div className="flex items-center gap-2 justify-between">
+        <h1 className="text-muted-foreground flex items-center gap-2">
+          <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground" />
+          {pathname.split("/").at(1)}
+          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+          <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground" />
+          {pathname.split("/").at(2)}
+        </h1>
+        <Link href={`/Projects`}>
+          <Button className="border-0" variant={"outline"}>
+            Back to Projects
+          </Button>
+        </Link>
+      </div>
       <div className="flex flex-col gap-4 w-full items-center">
         {isLoading ? (
           <div>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import {
+  ArrowRight,
   Calendar,
   CircleCheck,
   ClipboardCheck,
@@ -19,7 +20,7 @@ import {
 import { MESSAGES_API, PLAN_API, TASKS_API } from "@/constants/envConfig";
 import { toast } from "@/components/ui/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import {
   LuCopyCheck,
@@ -37,6 +38,7 @@ const Task = ({ id }: { id?: string }) => {
   const [refData, setRefData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const { data: sessionData } = useSession();
   const session: Session | null = sessionData
     ? (sessionData as unknown as Session)
@@ -102,6 +104,20 @@ const Task = ({ id }: { id?: string }) => {
 
   return (
     <div>
+      <div className="flex items-center gap-2 justify-between">
+        <h1 className="text-muted-foreground flex items-center gap-2">
+          <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />
+          {pathname.split("/").at(1)}
+          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+          <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />
+          {pathname.split("/").at(2)}
+        </h1>
+        <Link href={`/Tasks`}>
+          <Button className="border-0" variant={"outline"}>
+            Back to Tasks
+          </Button>
+        </Link>
+      </div>
       <div className="flex flex-col gap-4 w-full items-center">
         {isLoading ? (
           <div>
@@ -151,12 +167,8 @@ const Task = ({ id }: { id?: string }) => {
                       <span>{item.task_progress_track}</span>
                     </p>
                     <div className="flex space-x-2">
-                      <Link href={"/Tasks"}>
-                        <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                      </Link>
-                      <Link href={`/Tasks`}>
-                        <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                      </Link>
+                      <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                      <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       <Link href={`/Tasks/edit/${item.task_id}`}>
                         <Edit className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </Link>
@@ -239,12 +251,8 @@ const Task = ({ id }: { id?: string }) => {
                       <span>{item.task_progress_track}</span>
                     </p>
                     <div className="flex space-x-2">
-                      <Link href={"/Tasks"}>
-                        <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                      </Link>
-                      <Link href={`/Tasks`}>
-                        <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                      </Link>
+                      <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                      <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       <Link href={`/Tasks/Task/${id}/edit/${item.task_id}`}>
                         <Edit className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </Link>
