@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import {
+  ArrowRight,
   Calendar,
   CircleCheck,
   ClipboardCheck,
@@ -18,7 +19,7 @@ import {
 import { MESSAGES_API, PLAN_API, TASKS_API } from "@/constants/envConfig";
 import { toast } from "@/components/ui/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import {
   LuCopyCheck,
@@ -37,6 +38,7 @@ const DoBoxChat = ({ id }: { id?: string }) => {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { data: sessionData } = useSession();
+  const pathname = usePathname();
   const session: Session | null = sessionData
     ? (sessionData as unknown as Session)
     : null;
@@ -101,6 +103,13 @@ const DoBoxChat = ({ id }: { id?: string }) => {
 
   return (
     <div>
+      <h1 className="text-muted-foreground flex items-center gap-2">
+        <CircleCheck className="h-3.5 w-3.5 text-muted-foreground" />
+        {pathname.split("/").at(1)}
+        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+        <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground" />
+        {pathname.split("/").at(2)}
+      </h1>
       <div className="flex flex-col gap-4 w-full items-center">
         {isLoading ? (
           <div>

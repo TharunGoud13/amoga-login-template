@@ -254,7 +254,6 @@ const NewDoBox = ({
     setErrors((prev) => ({ ...prev, [id]: "" }));
   };
 
-  console.log("formData-----", formData);
   const handleFromDateSelect = (date: Date | undefined, field: string) => {
     if (date) {
       setFormData((prev) => ({ ...prev, [field]: date.toDateString() }));

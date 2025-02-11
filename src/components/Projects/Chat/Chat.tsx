@@ -82,11 +82,10 @@ const ProjectChat = ({ id }: { id?: string }) => {
         },
       });
       const data = await response.json();
-      console.log("data----", data);
+
       const filteredData = data.filter(
         (item: any) => item.business_number === session?.user?.business_number
       );
-      console.log("filteredData----", filteredData);
 
       setRefData(filteredData);
 
@@ -100,8 +99,6 @@ const ProjectChat = ({ id }: { id?: string }) => {
     };
     fetchMessages();
   }, [session, id]);
-
-  console.log("refData----", refData);
 
   return (
     <div>

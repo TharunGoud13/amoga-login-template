@@ -99,8 +99,6 @@ const NewTask = ({
     fetchTask();
   }, [id]);
 
-  console.log("taskData----", taskData);
-
   useEffect(() => {
     const fetchPlanName = async () => {
       const response = await fetch(PLAN_API, {

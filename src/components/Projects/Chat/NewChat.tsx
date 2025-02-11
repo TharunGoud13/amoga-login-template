@@ -291,8 +291,6 @@ const NewProjectChat = ({
     }
   };
 
-  console.log("projectData----", projectData);
-
   const validateForm = () => {
     let newErrors: Record<string, string> = {};
 
