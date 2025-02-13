@@ -68,24 +68,24 @@ const Docs = () => {
 
   return (
     <div>
-      <h1 className="text-muted-foreground flex items-center gap-2">
-        <File className="h-3.5 w-3.5 text-muted-foreground" />
+      <h1 className="text-muted-foreground mb-2 flex items-center gap-2">
+        <File className="h-5 w-5 text-muted-foreground" />
         {pathname.split("/").at(1)}
       </h1>
       <div className="flex flex-col gap-4 w-full items-center">
         <div className="flex w-full  gap-4">
           <div className="relative flex-grow">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search"
-              className="pl-10"
+              className="pl-10 text-md"
             />
           </div>
           <Link href="/Docs/new">
             <Button size={"icon"}>
-              <Plus className="h-4 w-4" />
+              <Plus className="h-5 w-5" />
             </Button>
           </Link>
         </div>
@@ -102,52 +102,52 @@ const Docs = () => {
                 return item.doc_name.toLowerCase().includes(searchTerm);
               })
               .map((item: any) => (
-                <Card key={item.plan_id} className="py-1.5 px-1.5">
-                  <CardContent className="space-y-1 px-1.5 py-1.5">
-                    <h2 className="font-semibold">{item.doc_name}</h2>
-                    <p className="text-sm text-muted-foreground">
+                <Card key={item.plan_id} className="py-2 px-2">
+                  <CardContent className="space-y-[10px] px-2 py-2">
+                    <h2 className="font-semibold text-md">{item.doc_name}</h2>
+                    <p className="text-md text-muted-foreground">
                       {item?.doc_group}
                     </p>
 
-                    <p className="flex items-center gap-2 text-sm">
+                    <p className="flex items-center gap-2 text-md">
                       <span>Doc No: {item?.doc_no}</span>
                     </p>
-                    <p className="flex items-center gap-2 text-sm">
+                    <p className="flex items-center gap-2 text-md">
                       <span>Version No: {item.version_no}</span>
                     </p>
-                    <p className="flex items-center gap-2 text-sm">
-                      <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                    <p className="flex items-center gap-2 text-md">
+                      <Calendar className="h-5 w-5 text-muted-foreground" />
                       <span>
                         {new Date(item.created_date).toLocaleDateString()}
                       </span>
                     </p>
 
-                    {/* <p className="flex items-center gap-2 text-sm">
-                      <LuCopyCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                    {/* <p className="flex items-center gap-2 text-md">
+                      <LuCopyCheck className="h-5 w-5 text-muted-foreground" />
 
                       <span>{item.status}</span>
                     </p> */}
 
                     <div className="flex justify-between items-center">
-                      <p className="flex items-center gap-2 text-sm">
-                        <LuCopyCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                      <p className="flex items-center gap-2 text-md">
+                        <LuCopyCheck className="h-5 w-5 text-muted-foreground" />
 
                         <span>{item.status}</span>
                       </p>
-                      {/* <p className="text-sm flex items-center gap-2">
-                        <LuChartPie className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5]" />
+                      {/* <p className="text-md flex items-center gap-2">
+                        <LuChartPie className="h-5 w-5 text-muted-foreground stroke-[1.5]" />
                         <span>{item.plan_progress_track}</span>
                       </p> */}
-                      <div className="flex space-x-2">
-                        <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                        <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                      <div className="flex gap-1.5 md:gap-2 space-x-2">
+                        <File className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <ClipboardCheck className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         <Link href={`/Docs/edit/${item.mydoc_list_id}`}>
-                          <Edit className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                          <Edit className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
                         <Link href={`/Docs/view/${item.mydoc_list_id}`}>
-                          <Eye className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                          <Eye className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
-                        <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <LuMessageCircleMore className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </div>
                     </div>
                   </CardContent>

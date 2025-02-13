@@ -70,7 +70,7 @@ const DoBox = () => {
 
   return (
     <div>
-      <h1 className="text-muted-foreground text-md flex items-center gap-2">
+      <h1 className="text-muted-foreground text-md mb-2 flex items-center gap-2">
         <CircleCheck className="h-5 w-5 text-muted-foreground" />
         {pathname.split("/").pop()}
       </h1>
@@ -87,7 +87,7 @@ const DoBox = () => {
           </div>
           <Link href="/DoBox/new">
             <Button size={"icon"}>
-              <Plus className="h-4 w-4" />
+              <Plus className="h-5 w-5" />
             </Button>
           </Link>
         </div>

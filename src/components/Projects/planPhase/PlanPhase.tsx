@@ -99,10 +99,10 @@ const PlanPhase = ({ id }: { id: string }) => {
     <div>
       <div className="flex items-center gap-2 justify-between">
         <h1 className="text-muted-foreground flex items-center gap-2">
-          <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground" />
+          <LuChartNoAxesGantt className="h-5 w-5 text-muted-foreground" />
           {pathname.split("/").at(1)}
-          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
-          <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground" />
+          <ArrowRight className="h-5 w-5 text-muted-foreground" />
+          <LuChartNoAxesGantt className="h-5 w-5 text-muted-foreground" />
           {pathname.split("/").at(2)}
         </h1>
         <Link href={`/Projects`}>
@@ -119,56 +119,56 @@ const PlanPhase = ({ id }: { id: string }) => {
         ) : (
           <div className="space-y-4 w-full">
             {data.map((item: any) => (
-              <Card key={item.plan_id} className="py-1.5 px-1.5">
-                <CardContent className="space-y-1 px-1.5 py-1.5">
-                  <h2 className="font-semibold">{item.plan_name}</h2>
-                  <p className="text-sm text-muted-foreground">
+              <Card key={item.plan_id} className="py-2 px-2">
+                <CardContent className="space-y-[10px] px-2 py-2">
+                  <h2 className="font-semibold text-md">{item.plan_name}</h2>
+                  <p className="text-md text-muted-foreground">
                     {item.plan_group}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-md text-muted-foreground">
                     {item.plan_description}
                   </p>
 
-                  <p className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                  <p className="flex items-center gap-2 text-md">
+                    <Calendar className="h-5 w-5 text-muted-foreground" />
                     <span>Start Date: {item.plan_start_date}</span>
                   </p>
-                  <p className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                  <p className="flex items-center gap-2 text-md">
+                    <Calendar className="h-5 w-5 text-muted-foreground" />
                     <span>End Date: {item.plan_end_date}</span>
                   </p>
-                  <p className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                  <p className="flex items-center gap-2 text-md">
+                    <Calendar className="h-5 w-5 text-muted-foreground" />
                     <span>Actual Start Date: {item.actual_start_date}</span>
                   </p>
-                  <p className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                  <p className="flex items-center gap-2 text-md">
+                    <Calendar className="h-5 w-5 text-muted-foreground" />
                     <span>Actual End Date: {item.actual_end_date}</span>
                   </p>
-                  <p className="flex items-center gap-2 text-sm">
-                    <LuCopyCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                  <p className="flex items-center gap-2 text-md">
+                    <LuCopyCheck className="h-5 w-5 text-muted-foreground" />
 
                     <span>{item.status}</span>
                   </p>
 
                   <div className="flex justify-between items-center">
-                    <p className="text-sm flex items-center gap-2">
-                      <LuChartPie className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5]" />
+                    <p className="text-md flex items-center gap-2">
+                      <LuChartPie className="h-5 w-5 text-muted-foreground stroke-[1.5]" />
                       <span>{item.plan_progress_track}</span>
                     </p>
-                    <div className="flex space-x-2">
-                      <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                      <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                    <div className="flex gap-1.5 md:gap-2 space-x-2">
+                      <File className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                      <ClipboardCheck className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       <Link href={`/Projects/edit/${item.plan_id}`}>
-                        <Edit className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <Edit className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </Link>
                       <Link href={`/Projects/view/${item.plan_id}`}>
-                        <Eye className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <Eye className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </Link>
                       <Link href={`/Projects/planPhase/${item.plan_id}`}>
-                        <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <LuChartNoAxesGantt className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </Link>
-                      <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                      <LuMessageCircleMore className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                     </div>
                   </div>
                 </CardContent>
@@ -179,17 +179,17 @@ const PlanPhase = ({ id }: { id: string }) => {
       </div>
       <div className="flex w-full mt-4 mb-4  gap-4">
         <div className="relative flex-grow">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search"
-            className="pl-10"
+            className="pl-10 text-md"
           />
         </div>
         <Link href={`/Projects/planPhase/${id}/new`}>
           <Button size={"icon"}>
-            <Plus className="h-4 w-4" />
+            <Plus className="h-5 w-5" />
           </Button>
         </Link>
       </div>
@@ -204,60 +204,62 @@ const PlanPhase = ({ id }: { id: string }) => {
               item.plan_phase_name.toLowerCase().includes(search.toLowerCase())
             )
             .map((item: any) => (
-              <Card key={item.plan_id} className="py-1.5 px-1.5">
-                <CardContent className="space-y-1 px-1.5 py-1.5">
-                  <h2 className="font-semibold">{item.plan_phase_name}</h2>
-                  <p className="text-sm text-muted-foreground">
+              <Card key={item.plan_id} className="py-2 px-2">
+                <CardContent className="space-y-[10px] px-2 py-2">
+                  <h2 className="font-semibold text-md">
+                    {item.plan_phase_name}
+                  </h2>
+                  <p className="text-md text-muted-foreground">
                     {item.plan_phase_description}
                   </p>
-                  <p className="flex items-center gap-2 text-sm">
-                    <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground" />
+                  <p className="flex items-center gap-2 text-md">
+                    <LuChartNoAxesGantt className="h-5 w-5 text-muted-foreground" />
                     <span>{item.plan_name}</span>
                   </p>
-                  <p className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                  <p className="flex items-center gap-2 text-md">
+                    <Calendar className="h-5 w-5 text-muted-foreground" />
                     <span>Start Date: {item.plan_start_date}</span>
                   </p>
-                  <p className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                  <p className="flex items-center gap-2 text-md">
+                    <Calendar className="h-5 w-5 text-muted-foreground" />
                     <span>End Date: {item.plan_end_date}</span>
                   </p>
-                  <p className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                  <p className="flex items-center gap-2 text-md">
+                    <Calendar className="h-5 w-5 text-muted-foreground" />
                     <span>Actual Start Date: {item.actual_start_date}</span>
                   </p>
-                  <p className="flex items-center gap-2 text-sm">
-                    <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                  <p className="flex items-center gap-2 text-md">
+                    <Calendar className="h-5 w-5 text-muted-foreground" />
                     <span>Actual End Date: {item.actual_end_date}</span>
                   </p>
-                  <p className="flex items-center gap-2 text-sm">
-                    <LuCopyCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                  <p className="flex items-center gap-2 text-md">
+                    <LuCopyCheck className="h-5 w-5 text-muted-foreground" />
 
                     <span>{item.status}</span>
                   </p>
 
                   <div className="flex justify-between items-center">
-                    <p className="text-sm flex items-center gap-2">
-                      <LuChartPie className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5]" />
+                    <p className="text-md flex items-center gap-2">
+                      <LuChartPie className="h-5 w-5 text-muted-foreground stroke-[1.5]" />
                       <span>{item.plan_progress_track}</span>
                     </p>
-                    <div className="flex space-x-2">
-                      <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                      <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                    <div className="flex gap-1.5 md:gap-2 space-x-2">
+                      <File className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                      <ClipboardCheck className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       <Link
                         href={`/Projects/planPhase/${id}/edit/${item.plan_phase_id}`}
                       >
-                        <Edit className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <Edit className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </Link>
                       <Link
                         href={`/Projects/planPhase/${id}/view/${item.plan_phase_id}`}
                       >
-                        <Eye className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <Eye className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </Link>
 
-                      <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                      <LuMessageCircleMore className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
 
-                      {/* <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" /> */}
+                      {/* <LuChartNoAxesGantt className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" /> */}
                     </div>
                   </div>
                 </CardContent>

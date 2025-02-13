@@ -109,10 +109,10 @@ const DoBoxDocs = ({ id }: { id: string }) => {
     <div>
       <div className="flex items-center gap-2 justify-between">
         <h1 className="text-muted-foreground text-md flex items-center gap-2">
-          <CircleCheck className="h-4 w-4 text-muted-foreground" />
+          <CircleCheck className="h-5 w-5 text-muted-foreground" />
           {pathname.split("/").at(1)}
-          <ArrowRight className="h-4 w-4 text-muted-foreground" />
-          <File className="h-4 w-4 text-muted-foreground" />
+          <ArrowRight className="h-5 w-5 text-muted-foreground" />
+          <File className="h-5 w-5 text-muted-foreground" />
           {pathname.split("/").at(2)}
         </h1>
         <Link href={`/DoBox`}>
@@ -132,30 +132,30 @@ const DoBoxDocs = ({ id }: { id: string }) => {
               <Card key={item.msg_id} className="py-2 px-2">
                 <CardContent className="space-y-[10px] px-2 py-2">
                   <p className="flex items-center gap-2 text-md">
-                    <LuChartNoAxesGantt className="h-6 w-6 text-muted-foreground" />
+                    <LuChartNoAxesGantt className="h-5 w-5 text-muted-foreground" />
                     {item.plan_name}
                   </p>
                   <p className="flex items-center gap-2 text-md">
-                    <LuChartNoAxesGantt className="h-6 w-6 text-muted-foreground" />
+                    <LuChartNoAxesGantt className="h-5 w-5 text-muted-foreground" />
                     <span>{item.plan_phase_name}</span>
                   </p>
                   <p className="flex items-center gap-2 text-md">
-                    <CircleCheck className="h-6 w-6 text-muted-foreground" />
+                    <CircleCheck className="h-5 w-5 text-muted-foreground" />
                     <span>{item.task_title}</span>
                   </p>
                   <p className="flex items-center gap-2 text-md">
-                    <File className="h-6 w-6 text-muted-foreground" />
+                    <File className="h-5 w-5 text-muted-foreground" />
                     <span>{item.mydoc_name}</span>
                   </p>
 
                   <p className="flex items-center gap-2 text-md">
-                    <Calendar className="h-6 w-6 text-muted-foreground" />
+                    <Calendar className="h-5 w-5 text-muted-foreground" />
                     <span>
                       Date: {new Date(item.created_date).toLocaleDateString()}
                     </span>
                   </p>
                   <p className="flex items-center gap-2 text-md">
-                    <User className="h-6 w-6 text-muted-foreground" />
+                    <User className="h-5 w-5 text-muted-foreground" />
 
                     <span>From: {item.created_user_name}</span>
                   </p>
@@ -171,22 +171,22 @@ const DoBoxDocs = ({ id }: { id: string }) => {
 
                   <div className="flex justify-between items-center">
                     <p className="flex items-center gap-2 text-md">
-                      <LuCopyCheck className="h-6 w-6 text-muted-foreground" />
+                      <LuCopyCheck className="h-5 w-5 text-muted-foreground" />
 
                       <span>{item.status}</span>
                     </p>
                     <div className="flex gap-1.5 md:gap-2 space-x-2">
                       <Link href={`/DoBox/Docs/${item.msg_id}`}>
-                        <File className="h-6 w-6 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <File className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </Link>
-                      <ClipboardCheck className="h-6 w-6 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                      <ClipboardCheck className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       <Link href={`/Msg/edit/${item.msg_id}`}>
-                        <Edit className="h-6 w-6 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <Edit className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </Link>
                       <Link href={`/Msg/view/${item.msg_id}`}>
-                        <Eye className="h-6 w-6 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <Eye className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </Link>
-                      <LuMessageCircleMore className="h-6 w-6 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                      <LuMessageCircleMore className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                     </div>
                   </div>
                 </CardContent>
@@ -197,17 +197,17 @@ const DoBoxDocs = ({ id }: { id: string }) => {
       </div>
       <div className="flex w-full mt-4 mb-4 gap-4">
         <div className="relative flex-grow">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search"
-            className="pl-10"
+            className="pl-10 text-md"
           />
         </div>
         <Link href={`/DoBox/Docs/${id}/new`}>
           <Button size={"icon"}>
-            <Plus className="h-4 w-4" />
+            <Plus className="h-5 w-5" />
           </Button>
         </Link>
       </div>
@@ -223,26 +223,26 @@ const DoBoxDocs = ({ id }: { id: string }) => {
                 item.doc_name.toLowerCase().includes(search.toLowerCase())
               )
               .map((item: any) => (
-                <Card key={item.mydoc_list_id} className="py-1.5 px-1.5">
-                  <CardContent className="space-y-1 px-1.5 py-1.5">
+                <Card key={item.mydoc_list_id} className="py-2 px-2">
+                  <CardContent className="space-y-[10px] px-2 py-2">
                     <h2 className="font-semibold">{item.doc_name}</h2>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-md text-muted-foreground">
                       {item.doc_group}
                     </p>
-                    <p className="flex items-center gap-2 text-sm">
+                    <p className="flex items-center gap-2 text-md">
                       <span>Doc No: {item.doc_no}</span>
                     </p>
-                    <p className="flex items-center gap-2 text-sm">
+                    <p className="flex items-center gap-2 text-md">
                       <span>Version No: {item.version_no}</span>
                     </p>
-                    <p className="flex items-center gap-2 text-sm">
+                    <p className="flex items-center gap-2 text-md">
                       <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                       <span>Date: {item.created_date}</span>
                     </p>
 
                     <div className="flex justify-between items-center">
-                      <p className="flex items-center gap-2 text-sm">
-                        <LuCopyCheck className="h-3.5 w-3.5 text-muted-foreground" />
+                      <p className="flex items-center gap-2 text-md">
+                        <LuCopyCheck className="h-5 w-5 text-muted-foreground" />
 
                         <span>{item.status}</span>
                       </p>
@@ -250,21 +250,21 @@ const DoBoxDocs = ({ id }: { id: string }) => {
                       <LuChartPie className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5]" />
                       <span>{item.plan_progress_track}</span>
                     </p> */}
-                      <div className="flex space-x-2">
-                        <File className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                        <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                      <div className="flex space-x-2 gap-1.5 md:gap-2">
+                        <File className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <ClipboardCheck className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         <Link
                           href={`/DoBox/Docs/${id}/edit/${item.mydoc_list_id}`}
                         >
-                          <Edit className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                          <Edit className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
                         <Link
                           href={`/DoBox/Docs/${id}/view/${item.mydoc_list_id}`}
                         >
-                          <Eye className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                          <Eye className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
 
-                        <LuMessageCircleMore className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        <LuMessageCircleMore className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
 
                         {/* <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" /> */}
                       </div>
