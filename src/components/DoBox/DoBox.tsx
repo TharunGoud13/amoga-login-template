@@ -77,12 +77,12 @@ const DoBox = () => {
       <div className="flex flex-col gap-4 w-full items-center">
         <div className="flex w-full  gap-4">
           <div className="relative flex-grow">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-6 w-6" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search"
-              className="pl-10"
+              className="pl-10 text-md"
             />
           </div>
           <Link href="/DoBox/new">
