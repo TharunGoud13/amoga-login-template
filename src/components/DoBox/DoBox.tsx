@@ -71,7 +71,7 @@ const DoBox = () => {
   return (
     <div>
       <h1 className="text-muted-foreground text-md flex items-center gap-2">
-        <CircleCheck className="h-4 w-4 text-muted-foreground" />
+        <CircleCheck className="h-6 w-6 text-muted-foreground" />
         {pathname.split("/").pop()}
       </h1>
       <div className="flex flex-col gap-4 w-full items-center">
