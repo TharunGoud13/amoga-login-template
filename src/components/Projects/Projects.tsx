@@ -25,6 +25,7 @@ import {
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Session } from "../doc-template/DocTemplate";
+import { Progress } from "../ui/progress";
 
 const Projects = () => {
   const [search, setSearch] = useState("");
@@ -135,9 +136,13 @@ const Projects = () => {
                     </p>
 
                     <div className="flex justify-between items-center">
-                      <p className="text-md flex items-center gap-2">
+                      <p className="text-md flex w-full items-center gap-2">
                         <LuChartPie className="h-5 w-5 text-muted-foreground stroke-[1.5]" />
-                        <span>{item.plan_progress_track}</span>
+                        {/* <span>{item.progress_percentage}</span> */}
+                        <Progress
+                          className="w-1/2 h-2.5"
+                          value={item.progress_percent}
+                        />
                       </p>
                       <div className="flex gap-1.5 md:gap-2 space-x-2">
                         <Link href={`/Projects/Docs/${item.plan_id}`}>

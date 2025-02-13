@@ -31,6 +31,7 @@ import {
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Session } from "@/components/doc-template/DocTemplate";
+import { Progress } from "@/components/ui/progress";
 
 const Task = ({ id }: { id?: string }) => {
   const [search, setSearch] = useState("");
@@ -162,9 +163,13 @@ const Task = ({ id }: { id?: string }) => {
                   </p>
 
                   <div className="flex justify-between items-center">
-                    <p className="text-md flex items-center gap-2">
+                    <p className="text-md flex items-center w-full gap-2">
                       <LuChartPie className="h-5 w-5 text-muted-foreground stroke-[1.5]" />
-                      <span>{item.task_progress_track}</span>
+                      {/* <span>{item.task_progress_track}</span> */}
+                      <Progress
+                        className="w-1/2 h-2.5"
+                        value={item.progress_percent}
+                      />
                     </p>
                     <div className="flex gap-1.5 md:gap-2 space-x-2">
                       <File className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
@@ -246,9 +251,13 @@ const Task = ({ id }: { id?: string }) => {
                   </p>
 
                   <div className="flex justify-between items-center">
-                    <p className="text-md flex items-center gap-2">
+                    <p className="text-md flex items-center w-full gap-2">
                       <LuChartPie className="h-5 w-5 text-muted-foreground stroke-[1.5]" />
-                      <span>{item.task_progress_track}</span>
+                      {/* <span>{item.task_progress_track}</span> */}
+                      <Progress
+                        className="w-1/2 h-2.5"
+                        value={item.progress_percent}
+                      />
                     </p>
                     <div className="flex gap-1.5 md:gap-2 space-x-2">
                       <File className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
