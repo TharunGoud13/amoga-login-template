@@ -57,7 +57,7 @@ module.exports = {
         },
       },
       fontSize: {
-        md: "18px",
+        md: "16px",
       },
       borderRadius: {
         lg: "var(--radius)",
