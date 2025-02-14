@@ -5,19 +5,23 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
 
+# Ensure static files work
 [[redirects]]
   from = "/_next/static/*"
   to = "/_next/static/:splat"
   status = 200
   force = true
 
+# Ensure Next.js image optimization works
 [[redirects]]
   from = "/_next/image*"
   to = "/_next/image"
   status = 200
   force = true
 
+# Forward all dynamic routes to Next.js
 [[redirects]]
   from = "/*"
   to = "/.netlify/functions/next"
   status = 200
+  force = true
