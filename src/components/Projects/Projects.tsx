@@ -21,6 +21,7 @@ import {
   LuChartPie,
   LuChartNoAxesGantt,
   LuMessageCircleMore,
+  LuChartGantt,
 } from "react-icons/lu";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -105,7 +106,14 @@ const Projects = () => {
               .map((item: any) => (
                 <Card key={item.plan_id} className="py-2 px-2">
                   <CardContent className="space-y-[10px] px-2 py-2">
-                    <h2 className="font-semibold text-md">{item.plan_name}</h2>
+                    <div className="flex items-center justify-between">
+                      <h2 className="font-semibold text-md">
+                        {item.plan_name}
+                      </h2>
+                      <Link href={`/Projects/Gantt/${item.plan_id}`}>
+                        <LuChartGantt className="h-5 w-5 text-muted-foreground" />
+                      </Link>
+                    </div>
                     <p className="text-md text-muted-foreground">
                       {item.plan_group}
                     </p>
