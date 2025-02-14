@@ -102,7 +102,7 @@ export default function GanttChart({ data }: any) {
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-6">
+      <div className="grid grid-cols-[150px_1fr] md:grid-cols-[300px_1fr] gap-6">
         <div className="overflow-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead>
