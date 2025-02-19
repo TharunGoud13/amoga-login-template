@@ -8,6 +8,7 @@ import {
   ClipboardCheck,
   Edit,
   Eye,
+  EyeIcon,
   File,
   Loader,
   Plus,
@@ -233,8 +234,20 @@ const PlanPhase = ({ id }: { id: string }) => {
                     <span>Version No: {item.version_no}</span>
                   </p>
                   <p className="flex items-center gap-2 text-md">
+                    <span className="flex items-center gap-2">
+                      File Name: {item?.doc_file_two}{" "}
+                      <Link
+                        href={`/Projects/Docs/${id}/ViewFile/${item.mydoc_list_id}`}
+                      >
+                        <EyeIcon className="h-5 w-5 text-muted-foreground" />
+                      </Link>
+                    </span>
+                  </p>
+                  <p className="flex items-center gap-2 text-md">
                     <Calendar className="h-5 w-5 text-muted-foreground" />
-                    <span>Date: {item.created_date}</span>
+                    <span>
+                      Date: {new Date(item.created_date).toLocaleDateString()}
+                    </span>
                   </p>
 
                   <div className="flex justify-between items-center">

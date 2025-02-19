@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ADD_DOC_FIELDS,
   DOC_GROUP_API,
@@ -68,12 +68,14 @@ const NewProjectDocs = ({
   isView?: boolean;
   id?: string;
 }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [myDocTemplates, setMyDocTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(
     null
   );
   const [componentsData, setComponentsData] = useState<ComponentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [fileLoading, setFileLoading] = useState(false);
   const { data: sessionData } = useSession();
   const session: Session | null = sessionData
     ? (sessionData as unknown as Session)
@@ -88,6 +90,8 @@ const NewProjectDocs = ({
     docName: "",
     description: "",
     status: "",
+    fileName: "",
+    file: null,
   });
 
   useEffect(() => {
@@ -128,6 +132,8 @@ const NewProjectDocs = ({
           docName: data.doc_name || "",
           description: data.doc_description || "",
           status: data.status || "",
+          fileName: data.doc_file_two || "",
+          file: data.doc_file_url || null,
         });
 
         // Parse and set template data
@@ -310,13 +316,10 @@ const NewProjectDocs = ({
   const validateForm = () => {
     let newErrors: Record<string, string> = {};
 
-    const fields = ["docGroup", "docName", "description", "status", "template"];
+    const fields = ["docGroup", "docName", "description", "status"];
 
     fields.forEach((field) => {
-      if (
-        !formData[field as keyof typeof formData] ||
-        formData[field as keyof typeof formData].trim() === ""
-      ) {
+      if (!formData[field as keyof typeof formData]) {
         newErrors[field] = "Required";
       }
     });
@@ -349,34 +352,72 @@ const NewProjectDocs = ({
     }));
   };
 
-  const handleSave = async () => {
-    if (!validateForm()) return;
-    if (!selectedTemplate) {
-      toast({
-        description: "No template selected",
+  const handleFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: string
+  ) => {
+    setFileLoading(true);
+    const selectedFile: any = e.target.files?.[0];
+    setFormData((prev) => ({ ...prev, ["fileName"]: selectedFile.name }));
+    if (!selectedFile) return;
+    const formData = new FormData();
+    formData.append("file", selectedFile);
 
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) {
+        toast({
+          description: "Failed to upload file",
+          variant: "destructive",
+        });
+        setFileLoading(false);
+        return;
+      }
+      const data = await response.json();
+      setFileLoading(false);
+      console.log("data----", data);
+      setFormData((prev) => ({ ...prev, [field]: data.url }));
+    } catch (error) {
+      setFileLoading(false);
+      console.error("Upload error:", error);
+      toast({
+        description: "Failed to upload file",
         variant: "destructive",
       });
-      return;
     }
+  };
+
+  const handleSave = async () => {
+    if (!validateForm()) return;
+    // if (!selectedTemplate) {
+    //   toast({
+    //     description: "No template selected",
+
+    //     variant: "destructive",
+    //   });
+    //   return;
+    // }
     setIsLoading(true);
 
     // Check if any component has content
     const hasContent = componentsData.some(
       (comp) => comp.content.trim() !== ""
     );
-    if (!hasContent) {
-      toast({
-        description: "Please enter content in at least one component",
-        variant: "destructive",
-      });
-      return;
-    }
+    // if (!hasContent) {
+    //   toast({
+    //     description: "Please enter content in at least one component",
+    //     variant: "destructive",
+    //   });
+    //   return;
+    // }
 
     // Create formatted output
     const output = {
-      template_id: selectedTemplate.mydoc_id,
-      template_name: selectedTemplate.template_name,
+      template_id: selectedTemplate?.mydoc_id,
+      template_name: selectedTemplate?.template_name,
       components: componentsData.map((comp) => ({
         type: comp.type,
         content: comp.content,
@@ -389,7 +430,7 @@ const NewProjectDocs = ({
 
     const share_url = uuidv4();
     const payload = {
-      mydoc_id: selectedTemplate.mydoc_id,
+      mydoc_id: selectedTemplate?.mydoc_id,
       created_user_id: session?.user?.id,
       created_user_name: session?.user?.name,
       business_number: session?.user?.business_number,
@@ -399,6 +440,8 @@ const NewProjectDocs = ({
       doc_group: formData.docGroup,
       doc_no: 1,
       version_no: 1,
+      doc_file_two: formData.fileName,
+      doc_file_url: formData.file,
       doc_description: formData.description,
       status: formData.status,
       doc_json: JSON.stringify(output),
@@ -471,6 +514,8 @@ const NewProjectDocs = ({
       docName: "",
       description: "",
       status: "",
+      fileName: "",
+      file: null,
     });
     setIsLoading(false);
   };
@@ -607,12 +652,53 @@ const NewProjectDocs = ({
               </Select>
             </div>
             <div>
+              <div>
+                <Label htmlFor="file-upload">File Upload</Label>
+              </div>
+              <div>
+                <div className="border relative flex items-center justify-between rounded-md">
+                  <Input
+                    type="file"
+                    ref={fileInputRef}
+                    disabled={isView}
+                    accept=".doc,.docx,.xls,.xlsx,.csv,.pdf,.ppt,.pptx"
+                    id="file-upload"
+                    onChange={(e) => handleFileChange(e, "file")}
+                    className="cursor-pointer hidden border-none"
+                  />
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Upload File
+                    </Button>
+                    <p className="text-sm text-gray-500">
+                      {formData.fileName || "Choose a file..."}
+                    </p>
+                  </div>
+                  {/* {formData.file && (
+                    <div className="absolute right-2">
+                      <X
+                        className="text-muted-foreground cursor-pointer w-5 h-5"
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            file: null,
+                            fileName: "",
+                          }))
+                        }
+                      />
+                    </div>
+                  )} */}
+                </div>
+              </div>
+            </div>
+            <div>
               <div className="mb-4">
                 <div>
                   <div className="flex justify-between">
-                    <Label htmlFor="country">
-                      Template <span className="text-red-500">*</span>
-                    </Label>
+                    <Label htmlFor="country">Template</Label>
                     {errors.template && (
                       <p className="text-red-500 text-sm">{errors.template}</p>
                     )}
@@ -675,7 +761,11 @@ const NewProjectDocs = ({
                 <Link href={`/Projects/Docs/${id}`}>
                   <Button variant="outline">Cancel</Button>
                 </Link>
-                <Button className="" onClick={handleSave} disabled={isLoading}>
+                <Button
+                  className=""
+                  onClick={handleSave}
+                  disabled={isLoading || fileLoading}
+                >
                   {isLoading ? "Saving..." : "Save"}
                 </Button>
               </div>

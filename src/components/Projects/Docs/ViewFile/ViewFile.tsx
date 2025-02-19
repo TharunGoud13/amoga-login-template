@@ -38,7 +38,13 @@ import { useSession } from "next-auth/react";
 import { Session } from "@/components/doc-template/DocTemplate";
 import FilePreview from "./FilePreview";
 
-const ViewFile = ({ id }: { id: string }) => {
+const ViewFile = ({
+  id,
+  mydoc_list_id,
+}: {
+  id: string;
+  mydoc_list_id: string;
+}) => {
   const [search, setSearch] = useState("");
   const [data, setData] = useState([]);
   const [docsData, setDocsData] = useState<any[]>([]);
@@ -55,14 +61,17 @@ const ViewFile = ({ id }: { id: string }) => {
   useEffect(() => {
     const fetchDocs = async () => {
       setIsLoading(true);
-      const response = await fetch(`${MY_DOC_LIST}?mydoc_list_id=eq.${id}`, {
-        method: "GET",
+      const response = await fetch(
+        `${MY_DOC_LIST}?mydoc_list_id=eq.${mydoc_list_id}`,
+        {
+          method: "GET",
 
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-        },
-      });
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+          },
+        }
+      );
       const data = await response.json();
       const filteredData = data.filter(
         (item: any) => item.business_number === session?.user?.business_number
@@ -78,7 +87,7 @@ const ViewFile = ({ id }: { id: string }) => {
       setIsLoading(false);
     };
     fetchDocs();
-  }, [session, id]);
+  }, [session, mydoc_list_id]);
 
   return (
     <div>
@@ -89,8 +98,11 @@ const ViewFile = ({ id }: { id: string }) => {
           <ArrowRight className="h-5 w-5 text-muted-foreground" />
           <File className="h-5 w-5 text-muted-foreground" />
           {pathname.split("/").at(2)}
+          <ArrowRight className="h-5 w-5 text-muted-foreground" />
+          <EyeIcon className="h-5 w-5 text-muted-foreground" />
+          {pathname.split("/").at(4)}
         </h1>
-        <Link href={`/Docs`}>
+        <Link href={`/Projects/Docs/${id}`}>
           <Button className="border-0" variant={"outline"}>
             Back to Docs
           </Button>
@@ -149,12 +161,12 @@ const ViewFile = ({ id }: { id: string }) => {
                         <File className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         <ClipboardCheck className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         <Link
-                          href={`/Docs/ViewFile/${id}/edit/${item.mydoc_list_id}`}
+                          href={`/Projects/Docs/${id}/edit/${item.mydoc_list_id}`}
                         >
                           <Edit className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
                         <Link
-                          href={`/Docs/ViewFile/${id}/view/${item.mydoc_list_id}`}
+                          href={`/Projects/Docs/${id}/view/${item.mydoc_list_id}`}
                         >
                           <Eye className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
