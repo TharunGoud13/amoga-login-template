@@ -10,6 +10,7 @@ import {
   ClipboardCheck,
   Edit,
   Eye,
+  EyeIcon,
   File,
   Loader,
   Plus,
@@ -120,8 +121,18 @@ const ViewFile = ({ id }: { id: string }) => {
                       <span>Version No: {item.version_no}</span>
                     </p>
                     <p className="flex items-center gap-2 text-md">
-                      <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span>Date: {item.created_date}</span>
+                      <span className="flex items-center gap-2">
+                        File Name: {item?.doc_file_two}{" "}
+                        {/* <Link href={`/Docs/ViewFile/${item.mydoc_list_id}`}>
+                          <EyeIcon className="h-5 w-5 text-muted-foreground" />
+                        </Link> */}
+                      </span>
+                    </p>
+                    <p className="flex items-center gap-2 text-md">
+                      <Calendar className="h-5 w-5 text-muted-foreground" />
+                      <span>
+                        Date: {new Date(item.created_date).toLocaleDateString()}
+                      </span>
                     </p>
 
                     <div className="flex justify-between items-center">

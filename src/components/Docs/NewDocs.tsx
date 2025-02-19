@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import {
   ADD_DOC_FIELDS,
@@ -65,12 +65,14 @@ const NewDocs = ({
   isEdit?: boolean;
   isView?: boolean;
 }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [myDocTemplates, setMyDocTemplates] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(
     null
   );
   const [componentsData, setComponentsData] = useState<ComponentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [fileLoading, setFileLoading] = useState(false);
   const { data: sessionData } = useSession();
   const session: Session | null = sessionData
     ? (sessionData as unknown as Session)
@@ -328,6 +330,7 @@ const NewDocs = ({
     e: React.ChangeEvent<HTMLInputElement>,
     field: string
   ) => {
+    setFileLoading(true);
     const selectedFile: any = e.target.files?.[0];
     setFormData((prev) => ({ ...prev, ["fileName"]: selectedFile.name }));
     if (!selectedFile) return;
@@ -344,12 +347,15 @@ const NewDocs = ({
           description: "Failed to upload file",
           variant: "destructive",
         });
+        setFileLoading(false);
         return;
       }
       const data = await response.json();
+      setFileLoading(false);
       console.log("data----", data);
       setFormData((prev) => ({ ...prev, [field]: data.url }));
     } catch (error) {
+      setFileLoading(false);
       console.error("Upload error:", error);
       toast({
         description: "Failed to upload file",
@@ -625,12 +631,24 @@ const NewDocs = ({
                 <div className="border relative flex items-center justify-between rounded-md">
                   <Input
                     type="file"
+                    ref={fileInputRef}
                     disabled={isView}
-                    accept=".doc,.docx,.xls,.xlsx,.csv,.pdf"
+                    accept=".doc,.docx,.xls,.xlsx,.csv,.pdf,.ppt,.pptx"
                     id="file-upload"
                     onChange={(e) => handleFileChange(e, "file")}
-                    className="cursor-pointer border-none"
+                    className="cursor-pointer hidden border-none"
                   />
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      Upload File
+                    </Button>
+                    <p className="text-sm text-gray-500">
+                      {formData.fileName || "Choose a file..."}
+                    </p>
+                  </div>
                   {/* {formData.file && (
                     <div className="absolute right-2">
                       <X
@@ -715,7 +733,11 @@ const NewDocs = ({
                 <Link href="/Docs">
                   <Button variant="outline">Cancel</Button>
                 </Link>
-                <Button className="" onClick={handleSave} disabled={isLoading}>
+                <Button
+                  className=""
+                  onClick={handleSave}
+                  disabled={isLoading || fileLoading}
+                >
                   {isLoading ? "Saving..." : "Save"}
                 </Button>
               </div>
