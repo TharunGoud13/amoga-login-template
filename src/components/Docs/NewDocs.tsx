@@ -20,7 +20,7 @@ import {
 } from "../ui/select";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { Save } from "lucide-react";
+import { Save, X } from "lucide-react";
 import HeadingTemplate from "../myDocs/HeadingTemplate";
 import RichTextTemplate from "../myDocs/RichTextTemplate";
 import TableTemplate from "../myDocs/TableTemplate";
@@ -84,18 +84,23 @@ const NewDocs = ({
     docName: "",
     description: "",
     status: "",
+    file: null,
+    fileName: "",
   });
+  console.log("data----", data);
 
   useEffect(() => {
     if (data) {
       try {
         // Set form data
         setFormData({
-          template: data.mydoc_id?.toString() || "",
+          template: data?.mydoc_id?.toString() || "",
           docGroup: data.doc_group || "",
           docName: data.doc_name || "",
           description: data.doc_description || "",
           status: data.status || "",
+          file: data?.doc_file_url || "",
+          fileName: data?.doc_file_two || "",
         });
 
         // Parse and set template data
@@ -278,13 +283,15 @@ const NewDocs = ({
   const validateForm = () => {
     let newErrors: Record<string, string> = {};
 
-    const fields = ["docGroup", "docName", "description", "status", "template"];
+    const fields = ["docGroup", "docName", "description", "status"];
 
     fields.forEach((field) => {
-      if (
-        !formData[field as keyof typeof formData] ||
-        formData[field as keyof typeof formData].trim() === ""
-      ) {
+      if (!formData[field as keyof typeof formData]) {
+        newErrors[field] = "Required";
+        return;
+      }
+
+      if (formData[field as keyof typeof formData]?.trim() === "") {
         newErrors[field] = "Required";
       }
     });
@@ -317,34 +324,68 @@ const NewDocs = ({
     }));
   };
 
-  const handleSave = async () => {
-    if (!validateForm()) return;
-    if (!selectedTemplate) {
-      toast({
-        description: "No template selected",
+  const handleFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: string
+  ) => {
+    const selectedFile: any = e.target.files?.[0];
+    setFormData((prev) => ({ ...prev, ["fileName"]: selectedFile.name }));
+    if (!selectedFile) return;
+    const formData = new FormData();
+    formData.append("file", selectedFile);
 
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (!response.ok) {
+        toast({
+          description: "Failed to upload file",
+          variant: "destructive",
+        });
+        return;
+      }
+      const data = await response.json();
+      console.log("data----", data);
+      setFormData((prev) => ({ ...prev, [field]: data.url }));
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast({
+        description: "Failed to upload file",
         variant: "destructive",
       });
-      return;
     }
+  };
+
+  const handleSave = async () => {
+    if (!validateForm()) return;
+    // if (!selectedTemplate) {
+    //   toast({
+    //     description: "No template selected",
+
+    //     variant: "destructive",
+    //   });
+    //   return;
+    // }
     setIsLoading(true);
 
     // Check if any component has content
     const hasContent = componentsData.some(
       (comp) => comp.content.trim() !== ""
     );
-    if (!hasContent) {
-      toast({
-        description: "Please enter content in at least one component",
-        variant: "destructive",
-      });
-      return;
-    }
+    // if (!hasContent) {
+    //   toast({
+    //     description: "Please enter content in at least one component",
+    //     variant: "destructive",
+    //   });
+    //   return;
+    // }
 
     // Create formatted output
     const output = {
-      template_id: selectedTemplate.mydoc_id,
-      template_name: selectedTemplate.template_name,
+      template_id: selectedTemplate?.mydoc_id,
+      template_name: selectedTemplate?.template_name,
       components: componentsData.map((comp) => ({
         type: comp.type,
         content: comp.content,
@@ -357,7 +398,7 @@ const NewDocs = ({
 
     const share_url = uuidv4();
     const payload = {
-      mydoc_id: selectedTemplate.mydoc_id,
+      mydoc_id: selectedTemplate?.mydoc_id,
 
       created_user_id: session?.user?.id,
       created_user_name: session?.user?.name,
@@ -366,6 +407,8 @@ const NewDocs = ({
       created_date: new Date().toISOString(),
       doc_name: formData.docName,
       doc_group: formData.docGroup,
+      doc_file_two: formData.fileName,
+      doc_file_url: formData.file,
       doc_no: 1,
       version_no: 1,
       doc_description: formData.description,
@@ -438,6 +481,8 @@ const NewDocs = ({
       docName: "",
       description: "",
       status: "",
+      file: null,
+      fileName: "",
     });
     setIsLoading(false);
   };
@@ -573,12 +618,41 @@ const NewDocs = ({
               </Select>
             </div>
             <div>
+              <div>
+                <Label htmlFor="file-upload">File Upload</Label>
+              </div>
+              <div>
+                <div className="border relative flex items-center justify-between rounded-md">
+                  <Input
+                    type="file"
+                    disabled={isView}
+                    accept=".doc,.docx,.xls,.xlsx,.csv,.pdf"
+                    id="file-upload"
+                    onChange={(e) => handleFileChange(e, "file")}
+                    className="cursor-pointer border-none"
+                  />
+                  {/* {formData.file && (
+                    <div className="absolute right-2">
+                      <X
+                        className="text-muted-foreground cursor-pointer w-5 h-5"
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            file: null,
+                            fileName: "",
+                          }))
+                        }
+                      />
+                    </div>
+                  )} */}
+                </div>
+              </div>
+            </div>
+            <div>
               <div className="mb-4">
                 <div>
                   <div className="flex justify-between">
-                    <Label htmlFor="country">
-                      Template <span className="text-red-500">*</span>
-                    </Label>
+                    <Label htmlFor="country">Template</Label>
                     {errors.template && (
                       <p className="text-red-500 text-sm">{errors.template}</p>
                     )}
