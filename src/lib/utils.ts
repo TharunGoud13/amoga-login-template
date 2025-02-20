@@ -4,12 +4,11 @@ import type {
   CoreToolMessage,
   Message,
   ToolInvocation,
-} from 'ai';
+} from "ai";
 
-import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-import { js_beautify } from 'js-beautify';
-import type { Message as DBMessage, Document } from '@/lib/db/schema';
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+import { js_beautify } from "js-beautify";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -29,7 +28,7 @@ export const isNotEmpty = (value: string | undefined) =>
 export function formatJSXCode(code: string): string {
   return js_beautify(code, {
     indent_size: 2,
-    indent_char: ' ',
+    indent_char: " ",
     max_preserve_newlines: 2,
     preserve_newlines: true,
     keep_array_indentation: false,
@@ -55,7 +54,7 @@ export const fetcher = async (url: string) => {
 
   if (!res.ok) {
     const error = new Error(
-      'An error occurred while fetching the data.',
+      "An error occurred while fetching the data."
     ) as ApplicationError;
 
     error.info = await res.json();
@@ -68,16 +67,16 @@ export const fetcher = async (url: string) => {
 };
 
 export function getLocalStorage(key: string) {
-  if (typeof window !== 'undefined') {
-    return JSON.parse(localStorage.getItem(key) || '[]');
+  if (typeof window !== "undefined") {
+    return JSON.parse(localStorage.getItem(key) || "[]");
   }
   return [];
 }
 
 export function generateUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0;
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }
@@ -93,21 +92,24 @@ function addToolMessageToChat({
     if (message.toolInvocations) {
       return {
         ...message,
-        toolInvocations: message.toolInvocations.map((toolInvocation: { toolCallId: any; }) => {
-          const toolResult = toolMessage.content.find(
-            (tool: { toolCallId: any; }) => tool.toolCallId === toolInvocation.toolCallId,
-          );
+        toolInvocations: message.toolInvocations.map(
+          (toolInvocation: { toolCallId: any }) => {
+            const toolResult = toolMessage.content.find(
+              (tool: { toolCallId: any }) =>
+                tool.toolCallId === toolInvocation.toolCallId
+            );
 
-          if (toolResult) {
-            return {
-              ...toolInvocation,
-              state: 'result',
-              result: toolResult.result,
-            };
+            if (toolResult) {
+              return {
+                ...toolInvocation,
+                state: "result",
+                result: toolResult.result,
+              };
+            }
+
+            return toolInvocation;
           }
-
-          return toolInvocation;
-        }),
+        ),
       };
     }
 
@@ -115,105 +117,66 @@ function addToolMessageToChat({
   });
 }
 
-export function convertToUIMessages(
-  messages: Array<DBMessage>,
-): Array<Message> {
-  return messages.reduce((chatMessages: Array<Message>, message) => {
-    if (message.role === 'tool') {
-      return addToolMessageToChat({
-        toolMessage: message as CoreToolMessage,
-        messages: chatMessages,
-      });
-    }
-
-    let textContent = '';
-    const toolInvocations: Array<ToolInvocation> = [];
-
-    if (typeof message.content === 'string') {
-      textContent = message.content;
-    } else if (Array.isArray(message.content)) {
-      for (const content of message.content) {
-        if (content.type === 'text') {
-          textContent += content.text;
-        } else if (content.type === 'tool-call') {
-          toolInvocations.push({
-            state: 'call',
-            toolCallId: content.toolCallId,
-            toolName: content.toolName,
-            args: content.args,
-          });
-        }
-      }
-    }
-
-    chatMessages.push({
-      id: message.id,
-      role: message.role as Message['role'],
-      content: textContent,
-      toolInvocations,
-    });
-
-    return chatMessages;
-  }, []);
-}
-
 export function sanitizeResponseMessages(
-  messages: any,
+  messages: any
 ): Array<CoreToolMessage | CoreAssistantMessage> {
   const toolResultIds: Array<string> = [];
 
   for (const message of messages) {
-    if (message.role === 'tool') {
+    if (message.role === "tool") {
       for (const content of message.content) {
-        if (content.type === 'tool-result') {
+        if (content.type === "tool-result") {
           toolResultIds.push(content.toolCallId);
         }
       }
     }
   }
 
-  const messagesBySanitizedContent = messages.map((message: { role: string; content: any[]; }) => {
-    if (message.role !== 'assistant') return message;
+  const messagesBySanitizedContent = messages.map(
+    (message: { role: string; content: any[] }) => {
+      if (message.role !== "assistant") return message;
 
-    if (typeof message.content === 'string') return message;
+      if (typeof message.content === "string") return message;
 
-    const sanitizedContent:any = message.content.filter((content: { type: string; toolCallId: string; text: string | any[]; }) =>
-      content.type === 'tool-call'
-        ? toolResultIds.includes(content.toolCallId)
-        : content.type === 'text'
-        ? content.text.length > 0
-        : true,
-    );
+      const sanitizedContent: any = message.content.filter(
+        (content: { type: string; toolCallId: string; text: string | any[] }) =>
+          content.type === "tool-call"
+            ? toolResultIds.includes(content.toolCallId)
+            : content.type === "text"
+            ? content.text.length > 0
+            : true
+      );
 
-    return {
-      ...message,
-      content: sanitizedContent,
-    };
-  });
+      return {
+        ...message,
+        content: sanitizedContent,
+      };
+    }
+  );
 
   return messagesBySanitizedContent.filter(
-    (message: { content: string | any[]; }) => message.content.length > 0,
+    (message: { content: string | any[] }) => message.content.length > 0
   );
 }
 
 export function sanitizeUIMessages(messages: Array<Message>): Array<Message> {
   const messagesBySanitizedToolInvocations = messages.map((message) => {
-    if (message.role !== 'assistant') return message;
+    if (message.role !== "assistant") return message;
 
     if (!message.toolInvocations) return message;
 
     const toolResultIds: Array<string> = [];
 
     for (const toolInvocation of message.toolInvocations) {
-      if (toolInvocation.state === 'result') {
+      if (toolInvocation.state === "result") {
         toolResultIds.push(toolInvocation.toolCallId);
       }
     }
 
     const sanitizedToolInvocations = message.toolInvocations.filter(
-      (toolInvocation: { state: string; toolCallId: string; }) =>
-        toolInvocation.state === 'result' ||
-        toolResultIds.includes(toolInvocation.toolCallId),
+      (toolInvocation: { state: string; toolCallId: string }) =>
+        toolInvocation.state === "result" ||
+        toolResultIds.includes(toolInvocation.toolCallId)
     );
 
     return {
@@ -225,30 +188,6 @@ export function sanitizeUIMessages(messages: Array<Message>): Array<Message> {
   return messagesBySanitizedToolInvocations.filter(
     (message) =>
       message.content.length > 0 ||
-      (message.toolInvocations && message.toolInvocations.length > 0),
+      (message.toolInvocations && message.toolInvocations.length > 0)
   );
-}
-
-export function getMostRecentUserMessage(messages: Array<CoreMessage>) {
-  const userMessages = messages.filter((message) => message.role === 'user');
-  return userMessages.at(-1);
-}
-
-export function getDocumentTimestampByIndex(
-  documents: Array<Document>,
-  index: number,
-) {
-  if (!documents) return new Date();
-  if (index > documents.length) return new Date();
-
-  return documents[index].createdAt;
-}
-
-export function getMessageIdFromAnnotations(message: Message) {
-  if (!message.annotations) return message.id;
-
-  const [annotation]:any = message.annotations;
-  if (!annotation) return message.id;
-
-  return annotation.messageIdFromServer;
 }
