@@ -24,6 +24,9 @@ const nextConfig = {
       },
     ],
   },
+  env: {
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+  },
   reactStrictMode: false,
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
