@@ -25,10 +25,10 @@ import {
   ThumbsUp,
 } from "lucide-react";
 import { Input } from "../ui/input";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
-import SideBar from "./SideBar";
+import SideBar from "./SideBar/History";
 import { ScrollArea } from "../ui/scroll-area";
 import { useSession } from "next-auth/react";
 import { toast } from "../ui/use-toast";
@@ -36,6 +36,12 @@ import { generateObject } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { generateAIResponse } from "./actions";
+import { v4 as uuidv4 } from "uuid";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import HistoryBar from "./SideBar/History";
+import MenuBar from "./SideBar/Menu";
+import BookmarkBar from "./SideBar/Bookmark";
 
 const favoritePrompts = [
   { id: 1, text: "Explain quantum computing in simple terms" },
@@ -43,22 +49,6 @@ const favoritePrompts = [
   { id: 3, text: "Describe the process of photosynthesis" },
   { id: 4, text: "Compare and contrast renewable energy sources" },
   { id: 5, text: "Outline the major events of World War II" },
-];
-
-const promptHistory = [
-  { id: 1, text: "What are the benefits of meditation?", date: "2023-04-01" },
-  { id: 2, text: "How does blockchain technology work?", date: "2023-04-02" },
-  { id: 3, text: "Explain the theory of relativity", date: "2023-04-03" },
-  {
-    id: 4,
-    text: "What are the main causes of climate change?",
-    date: "2023-04-04",
-  },
-  {
-    id: 5,
-    text: "Describe the process of machine learning",
-    date: "2023-04-05",
-  },
 ];
 
 const chatAgents = [
@@ -69,23 +59,204 @@ const chatAgents = [
   { id: 5, text: "Image Creator", icon: Image },
 ];
 
-const AgentEditor = () => {
+const AgentEditor = ({ chatId }: { chatId?: string }) => {
   const suggestions = ["Chat with Data", "Chat with Doc"];
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [openHistory, setOpenHistory] = useState<boolean>(false);
   const [openFavorites, setOpenFavorites] = useState<boolean>(false);
   const [openMenu, setOpenMenu] = useState<boolean>(false);
   const [prompt, setPrompt] = useState<string>("");
+  const [history, setHistory] = useState<any[]>([]);
+  const [likes, setLikes] = useState<any[]>([]);
+  const [bookmarks, setBookmarks] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { data: session } = useSession();
+  const [deleteHistory, setDeleteHistory] = useState<boolean>(false);
+  const [like, setLike] = useState<boolean>(false);
+  const [bookmark, setBookmark] = useState<boolean>(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      const response = await fetch("https://amogaagents.morr.biz/Chat", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+        },
+      });
+      if (!response.ok) {
+        toast({
+          description: "Failed to fetch history",
+          variant: "destructive",
+        });
+        return;
+      }
+      const data = await response.json();
+      setHistory(data);
+    };
+    fetchHistory();
+  }, [openHistory, deleteHistory]);
+
+  useEffect(() => {
+    const fetchLikes = async () => {
+      const response = await fetch(
+        "https://amogaagents.morr.biz/Message?isLike=eq.true",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        toast({
+          description: "Failed to fetch history",
+          variant: "destructive",
+        });
+        return;
+      }
+      const data = await response.json();
+      setLikes(data);
+    };
+    fetchLikes();
+  }, [openFavorites]);
+
+  console.log("likes----", likes);
+
+  useEffect(() => {
+    const fetchBookmarks = async () => {
+      const response = await fetch(
+        "https://amogaagents.morr.biz/Message?bookmark=eq.true",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+          },
+        }
+      );
+      if (!response.ok) {
+        toast({
+          description: "Failed to fetch history",
+          variant: "destructive",
+        });
+        return;
+      }
+      const data = await response.json();
+      setLikes(data);
+    };
+    fetchBookmarks();
+  }, [openFavorites]);
+
+  useEffect(() => {
+    if (chatId) {
+      const fetchMessages = async () => {
+        const response = await fetch(
+          `https://amogaagents.morr.biz/Message?chatId=eq.${chatId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+            },
+          }
+        );
+        if (!response.ok) {
+          toast({
+            description: "Failed to fetch messages",
+            variant: "destructive",
+          });
+          return;
+        }
+        const data = await response.json();
+        console.log("data----", data);
+        setMessages(
+          data.map((msg: any) => ({
+            id: msg.id,
+            chatId: msg.chatId,
+            createdAt: msg.createdAt,
+            bookmark: msg.bookmark,
+            isLike: msg.isLike,
+            text: msg.content,
+            role: msg.role,
+          }))
+        );
+      };
+      fetchMessages();
+    }
+  }, [chatId]);
+  console.log("messages----", messages);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!prompt) return;
     setIsLoading(true);
+    let uuid = uuidv4();
+
+    let currentChatId = chatId;
+    const payload = {
+      createdAt: new Date().toISOString(),
+      user_id: session?.user?.id,
+      title: prompt,
+      id: uuid,
+    };
+
+    if (!currentChatId) {
+      const chatResponse = await fetch("https://amogaagents.morr.biz/Chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!chatResponse.ok) {
+        toast({
+          description: "Failed to create chat",
+          variant: "destructive",
+        });
+        return;
+      }
+      const chat = await fetch(
+        `https://amogaagents.morr.biz/Chat?id=eq.${uuid}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+          },
+        }
+      );
+      if (!chat.ok) {
+        toast({
+          description: "Failed to fetch chat",
+          variant: "destructive",
+        });
+      }
+      const chatData = await chat.json();
+      currentChatId = uuid;
+      router.push(`/Agent/${currentChatId}`);
+    }
 
     setMessages((prev) => [...prev, { text: prompt, role: "user" }]);
+    await fetch("https://amogaagents.morr.biz/Message", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+      },
+      body: JSON.stringify({
+        id: uuidv4(),
+        chatId: currentChatId,
+        content: prompt,
+        role: "user",
+        createdAt: new Date().toISOString(),
+        user_id: session?.user?.id,
+      }),
+    });
 
     try {
       const response = await fetch("/api/generate", {
@@ -107,6 +278,8 @@ const AgentEditor = () => {
       let buffer = "";
       // it is used to store the final response
       let aiResponse = "";
+
+      setMessages((prev) => [...prev, { text: "", role: "assistant" }]);
 
       // it is used to read the stream chunk by chunk.
       while (!done) {
@@ -163,6 +336,24 @@ const AgentEditor = () => {
         // Keep the last partial line (could be incomplete) in the buffer.
         buffer = lines[lines.length - 1];
       }
+      console.log("aiResponse----", aiResponse);
+      if (aiResponse.trim()) {
+        await fetch("https://amogaagents.morr.biz/Message", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+          },
+          body: JSON.stringify({
+            id: uuidv4(),
+            chatId: currentChatId,
+            content: aiResponse,
+            role: "assistant",
+            createdAt: new Date().toISOString(),
+            user_id: session?.user?.id,
+          }),
+        });
+      }
 
       // Clear the prompt input when done.
       setPrompt("");
@@ -174,13 +365,71 @@ const AgentEditor = () => {
     }
   };
 
+  const handleBookmark = async (message: any) => {
+    console.log("message----", message);
+    const response = await fetch(
+      `https://amogaagents.morr.biz/Message?id=eq.${message.id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+        },
+        body: JSON.stringify({
+          bookmark: !message.bookmark,
+        }),
+      }
+    );
+    if (!response.ok) {
+      toast({
+        description: "Failed to bookmark message",
+        variant: "destructive",
+      });
+      return;
+    }
+    setBookmark(!bookmark);
+    toast({
+      description: "Message bookmarked",
+    });
+  };
+
+  const handleLike = async (message: any) => {
+    console.log("message----", message);
+    const response = await fetch(
+      `https://amogaagents.morr.biz/Message?id=eq.${message.id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+        },
+        body: JSON.stringify({
+          isLike: !message.isLike,
+        }),
+      }
+    );
+    if (!response.ok) {
+      toast({
+        description: "Failed to bookmark message",
+        variant: "destructive",
+      });
+      return;
+    }
+    setLike(!like);
+    toast({
+      description: "Message bookmarked",
+    });
+  };
+
   return (
     <div className="w-full h-full">
       <div className="flex items-center justify-between">
-        <h1 className="flex text-xl font-semibold items-center gap-2">
-          <Bot className="w-5 h-5 text-muted-foreground" />
-          General Assistant
-        </h1>
+        <Link href="/Agent">
+          <h1 className="flex text-xl font-semibold items-center gap-2">
+            <Bot className="w-5 h-5 text-muted-foreground" />
+            General Assistant
+          </h1>
+        </Link>
         <div className="flex items-center justify-end gap-5">
           <span
             className="text-muted-foreground cursor-pointer"
@@ -202,22 +451,25 @@ const AgentEditor = () => {
           </span>
         </div>
       </div>
-      <SideBar
+      <HistoryBar
         open={openHistory}
         setOpen={setOpenHistory}
-        data={promptHistory}
+        data={history}
+        setDeleteHistory={setDeleteHistory}
         title="History"
       />
-      <SideBar
+      <BookmarkBar
         open={openFavorites}
         setOpen={setOpenFavorites}
-        data={favoritePrompts}
+        data={likes}
+        setDeleteHistory={setDeleteHistory}
         title="Favorites"
       />
-      <SideBar
+      <MenuBar
         open={openMenu}
         setOpen={setOpenMenu}
         data={chatAgents}
+        setDeleteHistory={setDeleteHistory}
         title="Menu"
       />
       <div className="mt-4">
@@ -250,11 +502,23 @@ const AgentEditor = () => {
                       <div className="flex  md:ml-3 items-center gap-5">
                         <div className="flex items-center gap-5">
                           <Eye className="w-5 h-5 cursor-pointer text-muted-foreground" />
-                          <Star className="w-5 h-5 cursor-pointer text-muted-foreground" />
+                          <Star
+                            onClick={() => handleLike(message)}
+                            className={`w-5 h-5 cursor-pointer text-muted-foreground ${
+                              message.isLike
+                                ? "text-yellow-500 fill-yellow-500 "
+                                : ""
+                            }`}
+                          />
                           <Copy className="w-5 h-5 cursor-pointer text-muted-foreground" />
                           <RefreshCw className="w-5 h-5 cursor-pointer text-muted-foreground" />
                           <Share2 className="w-5 h-5 cursor-pointer text-muted-foreground" />
-                          <Bookmark className="w-5 h-5 cursor-pointer text-muted-foreground" />
+                          <Bookmark
+                            className={`w-5 h-5 cursor-pointer text-muted-foreground ${
+                              message.bookmark ? "text-yellow-500" : ""
+                            }`}
+                            onClick={() => handleBookmark(message)}
+                          />
                           <Edit className="w-5 h-5 cursor-pointer text-muted-foreground" />
                         </div>
                         <div className="flex items-center  gap-5 justify-end w-full">

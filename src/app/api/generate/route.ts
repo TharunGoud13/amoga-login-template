@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
   try {
     // Parse the incoming JSON request to extract the prompt.pp\
-    const { prompt } = await request.json();
+    const { prompt, chat_id } = await request.json();
 
     // Call OpenAI’s Chat Completions API with stream enabled.
     const openaiResponse = await fetch(
