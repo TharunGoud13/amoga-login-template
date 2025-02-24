@@ -143,11 +143,15 @@ const AgentEditor = () => {
 
                 // Update the assistant message incrementally.
                 setMessages((prev) => {
-                  // Remove any previous assistant message.
-                  const filtered = prev.filter(
-                    (msg) => msg.role !== "assistant"
-                  );
-                  return [...filtered, { text: aiResponse, role: "assistant" }];
+                  // Keep all previous messages except the last one if it's from assistant
+                  const messages = [...prev];
+                  if (
+                    messages.length > 0 &&
+                    messages[messages.length - 1].role === "assistant"
+                  ) {
+                    messages.pop(); // Remove last assistant message
+                  }
+                  return [...messages, { text: aiResponse, role: "assistant" }];
                 });
               }
             } catch (err) {
