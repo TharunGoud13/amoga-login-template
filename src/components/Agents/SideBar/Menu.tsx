@@ -14,7 +14,6 @@ interface Props {
 }
 
 const MenuBar = ({ open, setOpen, data, title, setDeleteHistory }: Props) => {
-  console.log("data----", data);
   const router = useRouter();
   const handleClick = (id: string) => {
     router.push(`/Agent/${id}`);
@@ -63,7 +62,7 @@ const MenuBar = ({ open, setOpen, data, title, setDeleteHistory }: Props) => {
                 />
               </div>
             </SheetHeader>
-            <div className="flex flex-col gap-2.5 mt-2.5">
+            {/* <div className="flex flex-col gap-2.5 mt-2.5">
               {data.map((prompt: any) => (
                 <div
                   key={prompt.chatId}
@@ -81,7 +80,7 @@ const MenuBar = ({ open, setOpen, data, title, setDeleteHistory }: Props) => {
                   </div>
                 </div>
               ))}
-            </div>
+            </div> */}
           </SheetContent>
         </Sheet>
       </div>

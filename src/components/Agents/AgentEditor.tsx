@@ -3,6 +3,7 @@ import {
   ArrowUp,
   Bookmark,
   Bot,
+  Check,
   Code,
   Copy,
   Edit,
@@ -23,6 +24,7 @@ import {
   Star,
   ThumbsDown,
   ThumbsUp,
+  X,
 } from "lucide-react";
 import { Input } from "../ui/input";
 import { useEffect, useRef, useState } from "react";
@@ -42,6 +44,7 @@ import Link from "next/link";
 import HistoryBar from "./SideBar/History";
 import MenuBar from "./SideBar/Menu";
 import BookmarkBar from "./SideBar/Bookmark";
+import { Session } from "../doc-template/DocTemplate";
 
 const favoritePrompts = [
   { id: 1, text: "Explain quantum computing in simple terms" },
@@ -68,88 +71,216 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
   const [prompt, setPrompt] = useState<string>("");
   const [history, setHistory] = useState<any[]>([]);
   const [likes, setLikes] = useState<any[]>([]);
-  const [bookmarks, setBookmarks] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { data: session } = useSession();
+  const { data: sessionData } = useSession();
+  const session: Session | null = sessionData
+    ? (sessionData as unknown as Session)
+    : null;
   const [deleteHistory, setDeleteHistory] = useState<boolean>(false);
   const [like, setLike] = useState<boolean>(false);
+  const [favorite, setFavorite] = useState<boolean>(false);
   const [bookmark, setBookmark] = useState<boolean>(false);
   const router = useRouter();
+  const [userChatSession, setUserChatSession] = useState<any>({});
+  const [chatData, setChatData] = useState<any>(null);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState("");
+  const [bookmarks, setBookmarks] = useState<any[]>([]);
+  const [favorites, setFavorites] = useState<any[]>([]);
+  const [refreshBookmarkState, setRefreshBookmarkState] = useState(false);
 
   useEffect(() => {
-    const fetchHistory = async () => {
-      const response = await fetch("https://amogaagents.morr.biz/Chat", {
+    const fetchUsers = async () => {
+      const response = await fetch("https://amogaagents.morr.biz/User", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
         },
       });
-      if (!response.ok) {
-        toast({
-          description: "Failed to fetch history",
-          variant: "destructive",
-        });
-        return;
-      }
       const data = await response.json();
-      setHistory(data);
+      if (data.length > 0) {
+        const existingUser = data.find(
+          (user: any) => user?.email === session?.user?.email
+        );
+
+        setUserChatSession(existingUser);
+        if (!existingUser) {
+          const newUser = await fetch("https://amogaagents.morr.biz/User", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+            },
+            body: JSON.stringify({
+              email: session?.user?.email,
+              mobile: session?.user?.mobile,
+            }),
+          });
+          const newUserData = await newUser.json();
+          setUserChatSession(newUserData);
+        }
+      }
     };
-    fetchHistory();
-  }, [openHistory, deleteHistory]);
+    fetchUsers();
+  }, [session]);
+
+  const fetchHistory = async (userChatSession: any, setHistory: any) => {
+    const response = await fetch("https://amogaagents.morr.biz/Chat", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+      },
+    });
+    if (!response.ok) {
+      toast({
+        description: "Failed to fetch history",
+        variant: "destructive",
+      });
+      return;
+    }
+    const data = await response.json();
+    const filteredData = data.filter(
+      (item: any) => item.user_id == userChatSession?.id
+    );
+    setHistory(filteredData);
+  };
 
   useEffect(() => {
-    const fetchLikes = async () => {
-      const response = await fetch(
-        "https://amogaagents.morr.biz/Message?isLike=eq.true",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-          },
-        }
-      );
-      if (!response.ok) {
-        toast({
-          description: "Failed to fetch history",
-          variant: "destructive",
-        });
-        return;
-      }
-      const data = await response.json();
-      setLikes(data);
-    };
-    fetchLikes();
-  }, [openFavorites]);
+    if (userChatSession) {
+      fetchHistory(userChatSession, setHistory);
+    }
+  }, [userChatSession, openHistory]);
 
-  console.log("likes----", likes);
+  // useEffect(() => {
+  //   const fetchLikes = async () => {
+  //     const response = await fetch(
+  //       "https://amogaagents.morr.biz/Message?isLike=eq.true",
+  //       {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+  //         },
+  //       }
+  //     );
+  //     if (!response.ok) {
+  //       toast({
+  //         description: "Failed to fetch history",
+  //         variant: "destructive",
+  //       });
+  //       return;
+  //     }
+  //     const data = await response.json();
+  //     const filteredData = data.filter(
+  //       (item: any) => item.user_id === userChatSession?.id
+  //     );
+  //     setLikes(filteredData);
+  //   };
+  //   fetchLikes();
+  // }, [openFavorites, userChatSession]);
 
   useEffect(() => {
     const fetchBookmarks = async () => {
-      const response = await fetch(
-        "https://amogaagents.morr.biz/Message?bookmark=eq.true",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-          },
+      if (!userChatSession?.id) return;
+
+      try {
+        console.log("Fetching bookmarks for user:", userChatSession.id);
+        const response = await fetch(
+          "https://amogaagents.morr.biz/Message?bookmark=eq.true",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          console.error("Failed to fetch bookmarks, status:", response.status);
+          toast({
+            description: "Failed to fetch bookmarks",
+            variant: "destructive",
+          });
+          return;
         }
-      );
-      if (!response.ok) {
+
+        const data = await response.json();
+        console.log("Raw bookmark data:", data);
+
+        const filteredData = data.filter(
+          (item: any) => item.user_id == userChatSession.id
+        );
+
+        console.log("Filtered bookmarks:", filteredData);
+        setBookmarks(filteredData);
+      } catch (error) {
+        console.error("Error fetching bookmarks:", error);
         toast({
-          description: "Failed to fetch history",
+          description: "Failed to fetch bookmarks",
           variant: "destructive",
         });
-        return;
       }
-      const data = await response.json();
-      setLikes(data);
     };
-    fetchBookmarks();
-  }, [openFavorites]);
+
+    if (userChatSession?.id) {
+      fetchBookmarks();
+    }
+  }, [openFavorites, userChatSession, refreshBookmarkState]);
+
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      if (!userChatSession?.id) return;
+
+      try {
+        console.log("Fetching favorites for user:", userChatSession.id);
+        const response = await fetch(
+          "https://amogaagents.morr.biz/Message?favorite=eq.true",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          console.error("Failed to fetch favorites, status:", response.status);
+          toast({
+            description: "Failed to fetch favorites",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const data = await response.json();
+        console.log("Raw favorite data:", data);
+
+        const filteredData = data.filter(
+          (item: any) => item.user_id == userChatSession.id
+        );
+
+        console.log("Filtered favorites:", filteredData);
+        setFavorites(filteredData);
+      } catch (error) {
+        console.error("Error fetching favorites:", error);
+        toast({
+          description: "Failed to fetch favorites",
+          variant: "destructive",
+        });
+      }
+    };
+
+    if (userChatSession?.id) {
+      fetchFavorites();
+    }
+  }, [openFavorites, userChatSession, refreshBookmarkState]);
+
+  console.log("bookmarks----", bookmarks);
 
   useEffect(() => {
     if (chatId) {
@@ -172,7 +303,6 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
           return;
         }
         const data = await response.json();
-        console.log("data----", data);
         setMessages(
           data.map((msg: any) => ({
             id: msg.id,
@@ -180,6 +310,7 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
             createdAt: msg.createdAt,
             bookmark: msg.bookmark,
             isLike: msg.isLike,
+            favorite: msg.favorite,
             text: msg.content,
             role: msg.role,
           }))
@@ -188,40 +319,12 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
       fetchMessages();
     }
   }, [chatId]);
-  console.log("messages----", messages);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!prompt) return;
-    setIsLoading(true);
-    let uuid = uuidv4();
-
-    let currentChatId = chatId;
-    const payload = {
-      createdAt: new Date().toISOString(),
-      user_id: session?.user?.id,
-      title: prompt,
-      id: uuid,
-    };
-
-    if (!currentChatId) {
-      const chatResponse = await fetch("https://amogaagents.morr.biz/Chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-        },
-        body: JSON.stringify(payload),
-      });
-      if (!chatResponse.ok) {
-        toast({
-          description: "Failed to create chat",
-          variant: "destructive",
-        });
-        return;
-      }
-      const chat = await fetch(
-        `https://amogaagents.morr.biz/Chat?id=eq.${uuid}`,
+  useEffect(() => {
+    const getChatData = async () => {
+      if (!chatId) return;
+      const response = await fetch(
+        `https://amogaagents.morr.biz/Chat?id=eq.${chatId}`,
         {
           method: "GET",
           headers: {
@@ -230,18 +333,71 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
           },
         }
       );
-      if (!chat.ok) {
+      const data = await response.json();
+      console.log("data----", data);
+      setChatData(data);
+    };
+    getChatData();
+  }, [chatId]);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!prompt) return;
+    setIsLoading(true);
+
+    // Generate a UUID for the new chat
+    const newChatUuid = uuidv4();
+    // Use existing chatId or the new one
+    const currentChatId = chatId || newChatUuid;
+
+    // Create a message ID for the user message
+    const userMessageId = uuidv4();
+
+    if (!chatId) {
+      // Create a new chat
+      const chatResponse = await fetch("https://amogaagents.morr.biz/Chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+        },
+        body: JSON.stringify({
+          createdAt: new Date().toISOString(),
+          user_id: userChatSession?.id,
+          title: `Draft ${newChatUuid}`,
+          id: newChatUuid,
+          status: "active",
+        }),
+      });
+
+      if (!chatResponse.ok) {
         toast({
-          description: "Failed to fetch chat",
+          description: "Failed to create chat",
           variant: "destructive",
         });
+        setIsLoading(false);
+        return;
       }
-      const chatData = await chat.json();
-      currentChatId = uuid;
-      router.push(`/Agent/${currentChatId}`);
     }
 
-    setMessages((prev) => [...prev, { text: prompt, role: "user" }]);
+    // Create a complete user message object
+    const userMessage = {
+      id: userMessageId,
+      chatId: currentChatId,
+      content: prompt,
+      text: prompt,
+      role: "user",
+      createdAt: new Date().toISOString(),
+      user_id: userChatSession?.id,
+      bookmark: null,
+      isLike: null,
+      favorite: null,
+    };
+
+    // Add user message to local state with complete data
+    setMessages((prev) => [...prev, userMessage]);
+
+    // Save user message to database
     await fetch("https://amogaagents.morr.biz/Message", {
       method: "POST",
       headers: {
@@ -249,82 +405,86 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
         Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
       },
       body: JSON.stringify({
-        id: uuidv4(),
+        id: userMessageId,
         chatId: currentChatId,
         content: prompt,
         role: "user",
         createdAt: new Date().toISOString(),
-        user_id: session?.user?.id,
+        user_id: userChatSession?.id,
       }),
     });
 
+    // Create a placeholder for assistant message
+    const assistantMessageId = uuidv4();
+    const assistantMessage = {
+      id: assistantMessageId,
+      chatId: currentChatId,
+      content: "",
+      text: "",
+      role: "assistant",
+      createdAt: new Date().toISOString(),
+      user_id: userChatSession?.id,
+      bookmark: null,
+      isLike: null,
+      favorite: null,
+    };
+
+    // Add empty assistant message to show loading state
+    setMessages((prev) => [...prev, assistantMessage]);
+
     try {
+      // Get AI response
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
       });
-      // here we will get streaming response from response.body and it will be in chunks
+
       if (!response.body) throw new Error("No response body");
 
-      // it is used to read the stream of data in chunks
       const reader = response.body.getReader();
-      // it is used to convert the binary format data to string
       const decoder = new TextDecoder("utf-8");
 
-      // it is used to check if the stream is done
       let done = false;
-      // it is used to store the stream of data texts
       let buffer = "";
-      // it is used to store the final response
       let aiResponse = "";
 
-      setMessages((prev) => [...prev, { text: "", role: "assistant" }]);
-
-      // it is used to read the stream chunk by chunk.
+      // Process streaming response
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
 
-        // Append the newly received chunk (decoded to string) to our buffer.
         buffer += decoder.decode(value, { stream: true });
 
-        // Split the buffer by newline to process each line.
         const lines = buffer.split("\n");
-        // Process each complete line except the last (could be incomplete).
         for (let i = 0; i < lines.length - 1; i++) {
           const line = lines[i].trim();
 
-          // Only process lines that start with "data:".
           if (line.startsWith("data:")) {
             const dataStr = line.replace(/^data:\s*/, "");
 
-            // Check if the stream signals the end.
             if (dataStr === "[DONE]") {
               done = true;
               break;
             }
 
             try {
-              // Parse the JSON data.
               const parsed = JSON.parse(dataStr);
-
-              // Extract the 'content' from the delta if available.
               const delta = parsed.choices?.[0]?.delta;
               if (delta && delta.content) {
                 aiResponse += delta.content;
 
-                // Update the assistant message incrementally.
+                // Update the assistant message incrementally
                 setMessages((prev) => {
-                  // Keep all previous messages except the last one if it's from assistant
                   const messages = [...prev];
                   if (
                     messages.length > 0 &&
                     messages[messages.length - 1].role === "assistant"
                   ) {
-                    messages.pop(); // Remove last assistant message
+                    messages[messages.length - 1].text = aiResponse;
+                    messages[messages.length - 1].content = aiResponse; // Update both fields
                   }
-                  return [...messages, { text: aiResponse, role: "assistant" }];
+                  return messages;
                 });
               }
             } catch (err) {
@@ -333,10 +493,10 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
           }
         }
 
-        // Keep the last partial line (could be incomplete) in the buffer.
         buffer = lines[lines.length - 1];
       }
-      console.log("aiResponse----", aiResponse);
+
+      // Save AI response to database
       if (aiResponse.trim()) {
         await fetch("https://amogaagents.morr.biz/Message", {
           method: "POST",
@@ -345,17 +505,21 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
             Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
           },
           body: JSON.stringify({
-            id: uuidv4(),
+            id: assistantMessageId,
             chatId: currentChatId,
             content: aiResponse,
             role: "assistant",
             createdAt: new Date().toISOString(),
-            user_id: session?.user?.id,
+            user_id: userChatSession?.id,
           }),
         });
       }
 
-      // Clear the prompt input when done.
+      // If this was a new chat, redirect to the chat page with the new chatId
+      if (!chatId) {
+        router.push(`/Agent/${currentChatId}`);
+      }
+
       setPrompt("");
       setIsLoading(false);
     } catch (error) {
@@ -365,62 +529,267 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
     }
   };
 
+  // Add this function to handle title updates
+  const handleUpdateTitle = async () => {
+    if (!chatId || !editedTitle.trim()) return;
+
+    try {
+      const response = await fetch(
+        `https://amogaagents.morr.biz/Chat?id=eq.${chatId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+          },
+          body: JSON.stringify({
+            title: editedTitle,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update chat title");
+      }
+
+      // Update local state to reflect the change
+      if (chatData && chatData.length > 0) {
+        setChatData([{ ...chatData[0], title: editedTitle }]);
+      }
+
+      toast({
+        description: "Chat title updated successfully",
+      });
+
+      // Exit edit mode
+      setIsEditingTitle(false);
+    } catch (error) {
+      console.error("Error updating chat title:", error);
+      toast({
+        description: "Failed to update chat title",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleBookmark = async (message: any) => {
-    console.log("message----", message);
-    const response = await fetch(
-      `https://amogaagents.morr.biz/Message?id=eq.${message.id}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-        },
-        body: JSON.stringify({
-          bookmark: !message.bookmark,
-        }),
+    try {
+      const newBookmarkStatus = !message.bookmark;
+
+      // Update the message in the local state first for immediate UI feedback
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === message.id ? { ...msg, bookmark: newBookmarkStatus } : msg
+        )
+      );
+
+      const response = await fetch(
+        `https://amogaagents.morr.biz/Message?id=eq.${message.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Prefer: "return=representation",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+          },
+          body: JSON.stringify({
+            bookmark: newBookmarkStatus,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        toast({
+          description: "Failed to update bookmark status",
+          variant: "destructive",
+        });
+        return;
       }
-    );
-    if (!response.ok) {
+
+      // Trigger a refresh of the bookmarks list
+      setRefreshBookmarkState((prev) => !prev);
+
       toast({
-        description: "Failed to bookmark message",
+        description: newBookmarkStatus
+          ? "Message bookmarked"
+          : "Bookmark removed",
+      });
+    } catch (error) {
+      console.error("Error updating bookmark:", error);
+      toast({
+        description: "Failed to update bookmark",
         variant: "destructive",
       });
-      return;
     }
-    setBookmark(!bookmark);
-    toast({
-      description: "Message bookmarked",
-    });
   };
 
-  const handleLike = async (message: any) => {
-    console.log("message----", message);
-    const response = await fetch(
-      `https://amogaagents.morr.biz/Message?id=eq.${message.id}`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-        },
-        body: JSON.stringify({
-          isLike: !message.isLike,
-        }),
+  const handleFavorite = async (message: any) => {
+    try {
+      const newFavoriteStatus = !message.favorite;
+
+      // Update the message in the local state first for immediate UI feedback
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === message.id ? { ...msg, favorite: newFavoriteStatus } : msg
+        )
+      );
+
+      const response = await fetch(
+        `https://amogaagents.morr.biz/Message?id=eq.${message.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Prefer: "return=representation",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+          },
+          body: JSON.stringify({
+            favorite: newFavoriteStatus,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === message.id
+              ? { ...msg, favorite: !newFavoriteStatus }
+              : msg
+          )
+        );
+        toast({
+          description: "Failed to update favorite status",
+          variant: "destructive",
+        });
+        return;
       }
-    );
-    if (!response.ok) {
+
+      // Trigger a refresh of the favorites list
+      setRefreshBookmarkState((prev) => !prev);
+
       toast({
-        description: "Failed to bookmark message",
+        description: newFavoriteStatus
+          ? "Message favorited"
+          : "Favorite removed",
+      });
+    } catch (error) {
+      console.error("Error updating favorite:", error);
+      toast({
+        description: "Failed to update favorite",
         variant: "destructive",
       });
-      return;
     }
-    setLike(!like);
-    toast({
-      description: "Message bookmarked",
-    });
   };
 
+  // const handleLike = async (message: any) => {
+  //   const response = await fetch(
+  //     `https://amogaagents.morr.biz/Message?id=eq.${message.id}`,
+  //     {
+  //       method: "PATCH",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+  //       },
+  //       body: JSON.stringify({
+  //         isLike: !message.isLike,
+  //       }),
+  //     }
+  //   );
+  //   if (!response.ok) {
+  //     toast({
+  //       description: "Failed to bookmark message",
+  //       variant: "destructive",
+  //     });
+  //     return;
+  //   }
+  //   setLike(!like);
+  //   toast({
+  //     description: "Message bookmarked",
+  //   });
+  // };
+
+  useEffect(() => {
+    if (chatData && chatData.length > 0 && chatData[0]?.title) {
+      setEditedTitle(chatData[0].title);
+    }
+  }, [chatData]);
+
+  // Add this effect to update messages when favorites are changed
+  useEffect(() => {
+    // Update the messages state to reflect changes in favorite status
+    if (messages.length > 0) {
+      setMessages((prevMessages) => {
+        return prevMessages.map((message) => {
+          // Check if this message is in the favorites list
+          const isFavorite = favorites.some((fav) => fav.id === message.id);
+
+          // Update the favorite status based on the favorites list
+          if (isFavorite !== message.favorite) {
+            return { ...message, favorite: isFavorite };
+          }
+          return message;
+        });
+      });
+    }
+  }, [favorites, refreshBookmarkState, messages.length]);
+
+  const handleChatBookmark = async () => {
+    if (!chatId) return;
+
+    try {
+      const newBookmarkStatus = !(chatData?.[0]?.bookmark || false);
+
+      // Update local state for immediate UI feedback
+      if (chatData && chatData.length > 0) {
+        const updatedChatData = [...chatData];
+        updatedChatData[0] = {
+          ...updatedChatData[0],
+          bookmark: newBookmarkStatus,
+        };
+        setChatData(updatedChatData);
+      }
+
+      const response = await fetch(
+        `https://amogaagents.morr.biz/Chat?id=eq.${chatId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Prefer: "return=representation",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+          },
+          body: JSON.stringify({
+            bookmark: newBookmarkStatus,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        toast({
+          description: "Failed to update chat bookmark status",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Refresh history to show updated bookmark status
+      fetchHistory(userChatSession, setHistory);
+
+      toast({
+        description: newBookmarkStatus
+          ? "Chat bookmarked"
+          : "Chat bookmark removed",
+      });
+    } catch (error) {
+      console.error("Error updating chat bookmark:", error);
+      toast({
+        description: "Failed to update chat bookmark",
+        variant: "destructive",
+      });
+    }
+  };
+
+  console.log("chatData----", chatData);
   return (
     <div className="w-full h-full">
       <div className="flex items-center justify-between">
@@ -431,6 +800,11 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
           </h1>
         </Link>
         <div className="flex items-center justify-end gap-5">
+          <Link href="/Agent">
+            <span className="text-muted-foreground cursor-pointer">
+              <Plus className="w-5 h-5" />
+            </span>
+          </Link>
           <span
             className="text-muted-foreground cursor-pointer"
             onClick={() => setOpenHistory(true)}
@@ -451,18 +825,68 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
           </span>
         </div>
       </div>
+      {chatId && (
+        <div className="flex items-center gap-2 mt-2">
+          <Input
+            type="text"
+            value={isEditingTitle ? editedTitle : chatData?.[0]?.title}
+            className={`border-0 w-fit max-w-[50% ] ${
+              isEditingTitle ? "border border-primary" : ""
+            }`}
+            readOnly={!isEditingTitle}
+            onChange={(e) => setEditedTitle(e.target.value)}
+            onFocus={() => {
+              if (isEditingTitle && !editedTitle && chatData?.[0]?.title) {
+                setEditedTitle(chatData[0].title);
+              }
+            }}
+          />
+          {isEditingTitle ? (
+            <div className="flex items-center gap-2">
+              <Check
+                className="w-5 h-5 cursor-pointer"
+                onClick={handleUpdateTitle}
+              />
+              <X
+                className="w-5 h-5 cursor-pointer"
+                onClick={() => {
+                  setIsEditingTitle(false);
+                  setEditedTitle("");
+                }}
+              />
+            </div>
+          ) : (
+            <Edit
+              className="w-5 h-5 cursor-pointer text-muted-foreground hover:text-primary"
+              onClick={() => {
+                setIsEditingTitle(true);
+                setEditedTitle(chatData?.[0]?.title || "");
+              }}
+            />
+          )}
+          <Bookmark
+            className={`w-5 h-5 cursor-pointer text-muted-foreground hover:text-primary ${
+              chatData?.[0]?.bookmark ? "fill-primary" : ""
+            }`}
+            onClick={handleChatBookmark}
+          />
+        </div>
+      )}
+
       <HistoryBar
         open={openHistory}
         setOpen={setOpenHistory}
         data={history}
         setDeleteHistory={setDeleteHistory}
         title="History"
+        refreshHistory={() => fetchHistory(userChatSession, setHistory)}
       />
       <BookmarkBar
         open={openFavorites}
         setOpen={setOpenFavorites}
-        data={likes}
-        setDeleteHistory={setDeleteHistory}
+        // bookmarks={bookmarks}
+        favorites={favorites}
+        setRefreshState={setRefreshBookmarkState}
         title="Favorites"
       />
       <MenuBar
@@ -503,22 +927,22 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
                         <div className="flex items-center gap-5">
                           <Eye className="w-5 h-5 cursor-pointer text-muted-foreground" />
                           <Star
-                            onClick={() => handleLike(message)}
+                            onClick={() => handleFavorite(message)}
                             className={`w-5 h-5 cursor-pointer text-muted-foreground ${
-                              message.isLike
-                                ? "text-yellow-500 fill-yellow-500 "
-                                : ""
+                              message.favorite ? "fill-primary " : ""
                             }`}
                           />
                           <Copy className="w-5 h-5 cursor-pointer text-muted-foreground" />
                           <RefreshCw className="w-5 h-5 cursor-pointer text-muted-foreground" />
                           <Share2 className="w-5 h-5 cursor-pointer text-muted-foreground" />
-                          <Bookmark
+                          {/* <Bookmark
                             className={`w-5 h-5 cursor-pointer text-muted-foreground ${
-                              message.bookmark ? "text-yellow-500" : ""
+                              message.bookmark
+                                ? "fill-primary border-primary"
+                                : ""
                             }`}
                             onClick={() => handleBookmark(message)}
-                          />
+                          /> */}
                           <Edit className="w-5 h-5 cursor-pointer text-muted-foreground" />
                         </div>
                         <div className="flex items-center  gap-5 justify-end w-full">
@@ -573,7 +997,7 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
               </div>
             </div>
           </div>
-          <div className="mt-4">
+          {/* <div className="mt-4">
             <div className="flex items-center gap-2">
               {suggestions.map((suggestion: string, index: number) => (
                 <div key={index}>
@@ -583,7 +1007,7 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
         </form>
       </div>
     </div>

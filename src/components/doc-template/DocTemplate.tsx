@@ -37,6 +37,7 @@ export interface Session {
     name: string;
     email: string;
     id: string | number;
+    mobile: string | number;
     business_number: string | number;
     business_name: string;
     first_name: string;

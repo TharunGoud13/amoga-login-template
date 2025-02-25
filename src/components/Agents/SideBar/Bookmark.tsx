@@ -1,107 +1,204 @@
 "use client";
-import { Bookmark, Search, Star, Trash } from "lucide-react";
+import { Bookmark, Search, Star, Trash, MessageSquare } from "lucide-react";
 import { Input } from "../../ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../../ui/sheet";
 import { useRouter } from "next/navigation";
 import { toast } from "../../ui/use-toast";
+import { useState, useEffect } from "react";
 
 interface Props {
   open: boolean;
   setOpen: (open: boolean) => void;
-  data: any;
+  // bookmarks: any[];
+  favorites: any[];
+  setRefreshState: (value: React.SetStateAction<boolean>) => void;
   title: string;
-  setDeleteHistory: (deleteHistory: boolean) => void;
 }
 
 const BookmarkBar = ({
   open,
   setOpen,
-  data,
+  // bookmarks,
+  favorites,
+  setRefreshState,
   title,
-  setDeleteHistory,
 }: Props) => {
   const router = useRouter();
-  console.log("book----", data);
-  const handleClick = (id: string) => {
-    router.push(`/Agent/${id}`);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [combinedItems, setCombinedItems] = useState<any[]>([]);
+
+  // Process and combine bookmarks and favorites whenever they change
+  useEffect(() => {
+    // console.log("BookmarkBar received bookmarks:", bookmarks);
+    console.log("BookmarkBar received favorites:", favorites);
+
+    // Combine and deduplicate items
+    const combined = [...favorites].filter(
+      (item, index, self) => index === self.findIndex((t) => t.id === item.id)
+    );
+
+    console.log("Combined items in BookmarkBar:", combined);
+    setCombinedItems(combined);
+  }, [favorites]);
+
+  const handleClick = (chatId: string) => {
+    router.push(`/Agents/${chatId}`);
+    setOpen(false);
   };
 
-  const handleDelete = async (id: string) => {
-    console.log("id----", id);
-    const response = await fetch(
-      `https://amogaagents.morr.biz/Chat?id=eq.${id}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-        },
+  const handleRemoveBookmark = async (messageId: string) => {
+    try {
+      const response = await fetch(
+        `https://amogaagents.morr.biz/Message?id=eq.${messageId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Prefer: "return=representation",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+          },
+          body: JSON.stringify({
+            bookmark: false,
+            favorite: false,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        toast({
+          description: "Failed to remove bookmark",
+          variant: "destructive",
+        });
+        return;
       }
-    );
-    if (response.ok) {
-      setDeleteHistory(true);
+
+      // Trigger refresh in parent component
+      setRefreshState((prev) => !prev);
+
       toast({
-        description: "Chat deleted successfully",
+        description: "Bookmark removed successfully",
       });
-    } else {
+    } catch (error) {
+      console.error("Error removing bookmark:", error);
       toast({
-        description: "Failed to delete chat",
+        description: "Failed to remove bookmark",
         variant: "destructive",
       });
     }
   };
+
+  const handleRemoveFavorite = async (messageId: string) => {
+    try {
+      const response = await fetch(
+        `https://amogaagents.morr.biz/Message?id=eq.${messageId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Prefer: "return=representation",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+          },
+          body: JSON.stringify({
+            favorite: false,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        toast({
+          description: "Failed to remove favorite",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Trigger refresh in parent component
+      setCombinedItems((prevItems) =>
+        prevItems.filter((item) => item.id !== messageId)
+      );
+      setRefreshState((prev) => !prev);
+
+      toast({
+        description: "Favorite removed successfully",
+      });
+    } catch (error) {
+      console.error("Error removing favorite:", error);
+      toast({
+        description: "Failed to remove favorite",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Filter items based on search term
+  const filteredItems = combinedItems.filter((item) =>
+    item.content?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  console.log("Filtered items in BookmarkBar:", filteredItems);
+
   return (
     <div>
-      <div>
-        <Sheet
-          open={open}
-          onOpenChange={(open) => setOpen(open ? true : false)}
-        >
-          <SheetContent>
-            <SheetHeader>
-              <SheetTitle>{title}</SheetTitle>
-              <div className="flex items-center pl-2 gap-2 border rounded-md ">
-                <Search className="h-5 w-5 text-muted-foreground" />
-                <Input
-                  className="border-none"
-                  placeholder={`Search ${title}...`}
-                />
+      <Sheet open={open} onOpenChange={(open) => setOpen(open ? true : false)}>
+        <SheetContent className="overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="mb-4">{title}</SheetTitle>
+            <div className="relative mb-4">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search saved items..."
+                className="pl-8"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </SheetHeader>
+
+          <div className="mt-4">
+            {filteredItems.length === 0 ? (
+              <div className="text-center text-muted-foreground py-4">
+                {searchTerm
+                  ? "No matching items found"
+                  : combinedItems.length === 0
+                  ? "No saved messages found"
+                  : "No items to display"}
               </div>
-            </SheetHeader>
-            <div className="flex flex-col gap-2.5 mt-2.5">
-              {data.map((prompt: any) => (
-                <div
-                  key={prompt.chatId}
-                  className="hover:bg-secondary cursor-pointer p-2.5 rounded-md"
-                >
-                  <div className="flex justify-between items-center gap-2">
-                    <div>
-                      {prompt.isLike && (
-                        <Star className="h-5 w-5 fill-yellow-500" />
-                      )}
-                    </div>
-                    <div>
-                      {prompt.bookmark && (
-                        <Bookmark className="h-5 w-5 fill-yellow-500" />
-                      )}
+            ) : (
+              <div className="space-y-4">
+                {filteredItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="rounded-lg border p-3 hover:bg-accent"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {item.favorite && (
+                          <Star className="h-4 w-4 fill-primary" />
+                        )}
+                        {/* {item.bookmark && (
+                          <Bookmark className="h-4 w-4 fill-primary text-primary" />
+                        )} */}
+                      </div>
+                      <Trash
+                        className="h-4 w-4 text-muted-foreground hover:text-red-500 cursor-pointer"
+                        onClick={() =>
+                          item.favorite && handleRemoveFavorite(item.id)
+                        }
+                      />
                     </div>
                     <p
-                      className="line-clamp-1"
-                      onClick={() => handleClick(prompt.id)}
+                      className="mt-2 line-clamp-3 text-sm cursor-pointer"
+                      onClick={() => handleClick(item.chatId)}
                     >
-                      {prompt.content}
+                      {item.content}
                     </p>
-                    <Trash
-                      className="h-5 w-5 text-muted-foreground"
-                      onClick={() => handleDelete(prompt.id)}
-                    />
                   </div>
-                </div>
-              ))}
-            </div>
-          </SheetContent>
-        </Sheet>
-      </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
