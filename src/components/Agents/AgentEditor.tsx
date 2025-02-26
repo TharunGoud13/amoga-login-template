@@ -45,6 +45,7 @@ import HistoryBar from "./SideBar/History";
 import MenuBar from "./SideBar/Menu";
 import BookmarkBar from "./SideBar/Bookmark";
 import { Session } from "../doc-template/DocTemplate";
+import ReactMarkdown from "react-markdown";
 
 const favoritePrompts = [
   { id: 1, text: "Explain quantum computing in simple terms" },
@@ -65,6 +66,7 @@ const chatAgents = [
 const AgentEditor = ({ chatId }: { chatId?: string }) => {
   const suggestions = ["Chat with Data", "Chat with Doc"];
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
   const [openHistory, setOpenHistory] = useState<boolean>(false);
   const [openFavorites, setOpenFavorites] = useState<boolean>(false);
   const [openMenu, setOpenMenu] = useState<boolean>(false);
@@ -78,9 +80,6 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
     ? (sessionData as unknown as Session)
     : null;
   const [deleteHistory, setDeleteHistory] = useState<boolean>(false);
-  const [like, setLike] = useState<boolean>(false);
-  const [favorite, setFavorite] = useState<boolean>(false);
-  const [bookmark, setBookmark] = useState<boolean>(false);
   const router = useRouter();
   const [userChatSession, setUserChatSession] = useState<any>({});
   const [chatData, setChatData] = useState<any>(null);
@@ -187,7 +186,6 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
       if (!userChatSession?.id) return;
 
       try {
-        console.log("Fetching bookmarks for user:", userChatSession.id);
         const response = await fetch(
           "https://amogaagents.morr.biz/Message?bookmark=eq.true",
           {
@@ -200,7 +198,6 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
         );
 
         if (!response.ok) {
-          console.error("Failed to fetch bookmarks, status:", response.status);
           toast({
             description: "Failed to fetch bookmarks",
             variant: "destructive",
@@ -209,16 +206,13 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
         }
 
         const data = await response.json();
-        console.log("Raw bookmark data:", data);
 
         const filteredData = data.filter(
           (item: any) => item.user_id == userChatSession.id
         );
 
-        console.log("Filtered bookmarks:", filteredData);
         setBookmarks(filteredData);
       } catch (error) {
-        console.error("Error fetching bookmarks:", error);
         toast({
           description: "Failed to fetch bookmarks",
           variant: "destructive",
@@ -236,7 +230,6 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
       if (!userChatSession?.id) return;
 
       try {
-        console.log("Fetching favorites for user:", userChatSession.id);
         const response = await fetch(
           "https://amogaagents.morr.biz/Message?favorite=eq.true",
           {
@@ -249,7 +242,6 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
         );
 
         if (!response.ok) {
-          console.error("Failed to fetch favorites, status:", response.status);
           toast({
             description: "Failed to fetch favorites",
             variant: "destructive",
@@ -258,16 +250,13 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
         }
 
         const data = await response.json();
-        console.log("Raw favorite data:", data);
 
         const filteredData = data.filter(
           (item: any) => item.user_id == userChatSession.id
         );
 
-        console.log("Filtered favorites:", filteredData);
         setFavorites(filteredData);
       } catch (error) {
-        console.error("Error fetching favorites:", error);
         toast({
           description: "Failed to fetch favorites",
           variant: "destructive",
@@ -279,8 +268,6 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
       fetchFavorites();
     }
   }, [openFavorites, userChatSession, refreshBookmarkState]);
-
-  console.log("bookmarks----", bookmarks);
 
   useEffect(() => {
     if (chatId) {
@@ -303,8 +290,13 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
           return;
         }
         const data = await response.json();
+        const sortedData = data.sort((a: any, b: any) => {
+          return (
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+        });
         setMessages(
-          data.map((msg: any) => ({
+          sortedData.map((msg: any) => ({
             id: msg.id,
             chatId: msg.chatId,
             createdAt: msg.createdAt,
@@ -321,6 +313,34 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
   }, [chatId]);
 
   useEffect(() => {
+    if (messages.length > 0) {
+      // Sort messages by createdAt timestamp (note: your data uses createdAt, not created_at)
+      const sortedMessages = [...messages].sort((a, b) => {
+        // If createdAt is available, use it for sorting
+        if (a.createdAt && b.createdAt) {
+          return (
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+        }
+        // Fallback to id if available
+        if (a.id && b.id) {
+          return a.id - b.id;
+        }
+        // If no reliable sorting field is available, maintain current order
+        return 0;
+      });
+
+      // Only update if the order has changed
+      if (
+        JSON.stringify(sortedMessages.map((m) => m.id)) !==
+        JSON.stringify(messages.map((m) => m.id))
+      ) {
+        setMessages(sortedMessages);
+      }
+    }
+  }, [messages]);
+
+  useEffect(() => {
     const getChatData = async () => {
       if (!chatId) return;
       const response = await fetch(
@@ -334,7 +354,6 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
         }
       );
       const data = await response.json();
-      console.log("data----", data);
       setChatData(data);
     };
     getChatData();
@@ -364,8 +383,8 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
         body: JSON.stringify({
           createdAt: new Date().toISOString(),
           user_id: userChatSession?.id,
-          title: `Draft ${newChatUuid}`,
           id: newChatUuid,
+          title: `New Chat`,
           status: "active",
         }),
       });
@@ -380,6 +399,36 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
       }
     }
 
+    const fetchChatResponse = await fetch(
+      `https://amogaagents.morr.biz/Chat?id=eq.${newChatUuid}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+        },
+      }
+    );
+
+    if (fetchChatResponse.ok) {
+      const chatData = await fetchChatResponse.json();
+      if (chatData.length > 0 && chatData[0].chatId) {
+        // Update the chat with a title that includes the chatId
+        await fetch(`https://amogaagents.morr.biz/Chat?id=eq.${newChatUuid}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+          },
+          body: JSON.stringify({
+            title: `Draft ${chatData[0].chatId}`,
+          }),
+        });
+      }
+    }
+
+    const currentTimeStamp = new Date().toISOString();
+
     // Create a complete user message object
     const userMessage = {
       id: userMessageId,
@@ -387,7 +436,7 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
       content: prompt,
       text: prompt,
       role: "user",
-      createdAt: new Date().toISOString(),
+      createdAt: currentTimeStamp,
       user_id: userChatSession?.id,
       bookmark: null,
       isLike: null,
@@ -409,20 +458,23 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
         chatId: currentChatId,
         content: prompt,
         role: "user",
-        createdAt: new Date().toISOString(),
+        createdAt: currentTimeStamp,
         user_id: userChatSession?.id,
       }),
     });
 
     // Create a placeholder for assistant message
     const assistantMessageId = uuidv4();
+    const assistantTimestamp = new Date(
+      new Date(currentTimeStamp).getTime() + 1000
+    ).toISOString();
     const assistantMessage = {
       id: assistantMessageId,
       chatId: currentChatId,
       content: "",
       text: "",
       role: "assistant",
-      createdAt: new Date().toISOString(),
+      createdAt: assistantTimestamp,
       user_id: userChatSession?.id,
       bookmark: null,
       isLike: null,
@@ -509,7 +561,7 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
             chatId: currentChatId,
             content: aiResponse,
             role: "assistant",
-            createdAt: new Date().toISOString(),
+            createdAt: assistantTimestamp,
             user_id: userChatSession?.id,
           }),
         });
@@ -523,7 +575,6 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
       setPrompt("");
       setIsLoading(false);
     } catch (error) {
-      console.error("Error during streaming:", error);
       toast({ description: "Error fetching response", variant: "destructive" });
       setIsLoading(false);
     }
@@ -681,33 +732,6 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
     }
   };
 
-  // const handleLike = async (message: any) => {
-  //   const response = await fetch(
-  //     `https://amogaagents.morr.biz/Message?id=eq.${message.id}`,
-  //     {
-  //       method: "PATCH",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-  //       },
-  //       body: JSON.stringify({
-  //         isLike: !message.isLike,
-  //       }),
-  //     }
-  //   );
-  //   if (!response.ok) {
-  //     toast({
-  //       description: "Failed to bookmark message",
-  //       variant: "destructive",
-  //     });
-  //     return;
-  //   }
-  //   setLike(!like);
-  //   toast({
-  //     description: "Message bookmarked",
-  //   });
-  // };
-
   useEffect(() => {
     if (chatData && chatData.length > 0 && chatData[0]?.title) {
       setEditedTitle(chatData[0].title);
@@ -789,7 +813,66 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
     }
   };
 
-  console.log("chatData----", chatData);
+  const handleLike = async (message: any, type: string) => {
+    console.log("feedback-----", message, type);
+    try {
+      let feedback;
+      if (type === "like") {
+        feedback = message.isLike === true ? null : true;
+      } else {
+        feedback = message.isLike === false ? null : false;
+      }
+
+      // Update the message in the local state first for immediate UI feedback
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === message.id ? { ...msg, isLike: feedback } : msg
+        )
+      );
+
+      const response = await fetch(
+        `https://amogaagents.morr.biz/Message?id=eq.${message.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Prefer: "return=representation",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+          },
+          body: JSON.stringify({
+            isLike: feedback,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === message.id ? { ...msg, isLike: !feedback } : msg
+          )
+        );
+        toast({
+          description: "Failed to update feedback status",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Trigger a refresh of the favorites list
+      setRefreshBookmarkState((prev) => !prev);
+
+      toast({
+        description: feedback ? "Message liked" : "Message disliked",
+      });
+    } catch (error) {
+      console.error("Error updating favorite:", error);
+      toast({
+        description: "Failed to update feedback",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="w-full h-full">
       <div className="flex items-center justify-between">
@@ -866,7 +949,7 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
           )}
           <Bookmark
             className={`w-5 h-5 cursor-pointer text-muted-foreground hover:text-primary ${
-              chatData?.[0]?.bookmark ? "fill-primary" : ""
+              chatData?.[0]?.bookmark ? "fill-primary text-primary" : ""
             }`}
             onClick={handleChatBookmark}
           />
@@ -919,7 +1002,9 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
                       message.role === "user" ? "bg-muted" : "bg-muted"
                     }`}
                   >
-                    {message.text}
+                    <ReactMarkdown className="prose">
+                      {message.text}
+                    </ReactMarkdown>
                   </div>
                   <div>
                     {message.role === "assistant" && (
@@ -929,7 +1014,9 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
                           <Star
                             onClick={() => handleFavorite(message)}
                             className={`w-5 h-5 cursor-pointer text-muted-foreground ${
-                              message.favorite ? "fill-primary " : ""
+                              message.favorite
+                                ? "fill-primary text-primary"
+                                : ""
                             }`}
                           />
                           <Copy className="w-5 h-5 cursor-pointer text-muted-foreground" />
@@ -946,8 +1033,20 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
                           <Edit className="w-5 h-5 cursor-pointer text-muted-foreground" />
                         </div>
                         <div className="flex items-center  gap-5 justify-end w-full">
-                          <ThumbsUp className="w-5 h-5 cursor-pointer text-muted-foreground" />
-                          <ThumbsDown className="w-5 h-5 cursor-pointer text-muted-foreground" />
+                          <ThumbsUp
+                            onClick={() => handleLike(message, "like")}
+                            className={`w-5 h-5 ${
+                              message.isLike === true &&
+                              "fill-primary text-primary"
+                            } cursor-pointer text-muted-foreground`}
+                          />
+                          <ThumbsDown
+                            onClick={() => handleLike(message, "dislike")}
+                            className={`w-5 h-5 ${
+                              message.isLike === false &&
+                              "fill-primary text-primary"
+                            } cursor-pointer text-muted-foreground`}
+                          />
                         </div>
                       </div>
                     )}
@@ -972,7 +1071,16 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
             <div className=" justify-between flex items-center gap-2 ml-2">
               <div className="flex items-center gap-5 mr-3">
                 <span className="text-muted-foreground cursor-pointer">
-                  <Mic className="w-5 h-5" />
+                  <Mic
+                    className="w-5 h-5"
+                    onClick={() => audioInputRef.current?.click()}
+                  />
+                  <input
+                    type="file"
+                    accept=".mp3"
+                    className="hidden"
+                    ref={audioInputRef}
+                  />
                 </span>
                 <span className="text-muted-foreground cursor-pointer">
                   <FileUp

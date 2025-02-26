@@ -29,20 +29,18 @@ const BookmarkBar = ({
 
   // Process and combine bookmarks and favorites whenever they change
   useEffect(() => {
-    // console.log("BookmarkBar received bookmarks:", bookmarks);
-    console.log("BookmarkBar received favorites:", favorites);
+    // console.log("BookmarkBar received bookmarks:", bookmark
 
     // Combine and deduplicate items
     const combined = [...favorites].filter(
       (item, index, self) => index === self.findIndex((t) => t.id === item.id)
     );
 
-    console.log("Combined items in BookmarkBar:", combined);
     setCombinedItems(combined);
   }, [favorites]);
 
   const handleClick = (chatId: string) => {
-    router.push(`/Agents/${chatId}`);
+    router.push(`/Agent/${chatId}`);
     setOpen(false);
   };
 
@@ -134,8 +132,6 @@ const BookmarkBar = ({
   const filteredItems = combinedItems.filter((item) =>
     item.content?.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  console.log("Filtered items in BookmarkBar:", filteredItems);
 
   return (
     <div>
