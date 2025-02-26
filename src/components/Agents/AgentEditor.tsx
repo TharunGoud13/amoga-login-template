@@ -15,7 +15,6 @@ import {
   Loader2,
   Menu,
   Mic,
-  Paperclip,
   Pencil,
   Plus,
   RefreshCcw,
@@ -88,6 +87,12 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
   const [bookmarks, setBookmarks] = useState<any[]>([]);
   const [favorites, setFavorites] = useState<any[]>([]);
   const [refreshBookmarkState, setRefreshBookmarkState] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -152,34 +157,6 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
       fetchHistory(userChatSession, setHistory);
     }
   }, [userChatSession, openHistory]);
-
-  // useEffect(() => {
-  //   const fetchLikes = async () => {
-  //     const response = await fetch(
-  //       "https://amogaagents.morr.biz/Message?isLike=eq.true",
-  //       {
-  //         method: "GET",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-  //         },
-  //       }
-  //     );
-  //     if (!response.ok) {
-  //       toast({
-  //         description: "Failed to fetch history",
-  //         variant: "destructive",
-  //       });
-  //       return;
-  //     }
-  //     const data = await response.json();
-  //     const filteredData = data.filter(
-  //       (item: any) => item.user_id === userChatSession?.id
-  //     );
-  //     setLikes(filteredData);
-  //   };
-  //   fetchLikes();
-  // }, [openFavorites, userChatSession]);
 
   useEffect(() => {
     const fetchBookmarks = async () => {
@@ -359,9 +336,82 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
     getChatData();
   }, [chatId]);
 
+  const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+
+    const file = e.target.files[0];
+    setAudioFile(file);
+
+    // Upload to Vercel Blob via the same API endpoint
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Upload failed");
+      }
+
+      const data = await response.json();
+      setAudioUrl(data.url);
+    } catch (error) {
+      console.error("Error uploading audio:", error);
+      toast({
+        description: "Failed to upload audio file",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Add this function to remove the audio file
+  const removeAudio = () => {
+    setAudioFile(null);
+    setAudioUrl(null);
+    if (audioInputRef.current) {
+      audioInputRef.current.value = "";
+    }
+  };
+
+  // Add this function to save audio document
+  const saveAudioDocument = async (chatId: string, messageId: string) => {
+    if (!audioUrl || !audioFile) return;
+
+    const documentId = uuidv4();
+
+    try {
+      await fetch("https://amogaagents.morr.biz/Document", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+        },
+        body: JSON.stringify({
+          id: documentId,
+          chatId: chatId,
+          agentMsgId: messageId,
+          content: audioUrl,
+          title: audioFile.name,
+          kind: "audio",
+          createdAt: new Date().toISOString(),
+          user_id: userChatSession?.id,
+        }),
+      });
+    } catch (error) {
+      console.error("Error saving audio document:", error);
+      toast({
+        description: "Failed to save audio details",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!prompt) return;
+    if (!prompt && !fileUrl && !audioUrl) return;
     setIsLoading(true);
 
     // Generate a UUID for the new chat
@@ -429,12 +479,29 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
 
     const currentTimeStamp = new Date().toISOString();
 
+    let userContent = prompt;
+    if (fileUrl && uploadedFile) {
+      if (prompt) {
+        userContent = `${prompt}\n\nFile: ${uploadedFile.name} `;
+      } else {
+        userContent = `File: ${uploadedFile.name} `;
+      }
+    }
+
+    if (audioUrl && audioFile) {
+      if (userContent) {
+        userContent = `${userContent}\n\nAudio: ${audioFile.name}`;
+      } else {
+        userContent = `Audio: ${audioFile.name} `;
+      }
+    }
+
     // Create a complete user message object
     const userMessage = {
       id: userMessageId,
       chatId: currentChatId,
-      content: prompt,
-      text: prompt,
+      content: userContent,
+      text: userContent,
       role: "user",
       createdAt: currentTimeStamp,
       user_id: userChatSession?.id,
@@ -456,12 +523,20 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
       body: JSON.stringify({
         id: userMessageId,
         chatId: currentChatId,
-        content: prompt,
+        content: userContent,
         role: "user",
         createdAt: currentTimeStamp,
         user_id: userChatSession?.id,
       }),
     });
+
+    if (fileUrl && uploadedFile) {
+      await saveDocument(currentChatId, userMessageId);
+    }
+
+    if (audioUrl && audioFile) {
+      await saveAudioDocument(currentChatId, userMessageId);
+    }
 
     // Create a placeholder for assistant message
     const assistantMessageId = uuidv4();
@@ -489,7 +564,12 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({
+          prompt,
+          fileUrl: fileUrl || null,
+          audioUrl: audioUrl || null,
+          chat_id: currentChatId,
+        }),
       });
 
       if (!response.body) throw new Error("No response body");
@@ -573,7 +653,17 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
       }
 
       setPrompt("");
+      setFileUrl(null);
+      setAudioUrl(null);
+      setAudioFile(null);
+      setUploadedFile(null);
       setIsLoading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      if (audioInputRef.current) {
+        audioInputRef.current.value = "";
+      }
     } catch (error) {
       toast({ description: "Error fetching response", variant: "destructive" });
       setIsLoading(false);
@@ -623,56 +713,134 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
     }
   };
 
-  const handleBookmark = async (message: any) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+
+    const file = e.target.files[0];
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+    if (file.size > MAX_FILE_SIZE) {
+      setUploadError("File size exceeds 5MB limit");
+      return;
+    }
+
+    setUploadedFile(file);
+    setUploadError(null);
+    setIsUploading(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
     try {
-      const newBookmarkStatus = !message.bookmark;
-
-      // Update the message in the local state first for immediate UI feedback
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === message.id ? { ...msg, bookmark: newBookmarkStatus } : msg
-        )
-      );
-
-      const response = await fetch(
-        `https://amogaagents.morr.biz/Message?id=eq.${message.id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Prefer: "return=representation",
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-          },
-          body: JSON.stringify({
-            bookmark: newBookmarkStatus,
-          }),
-        }
-      );
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
 
       if (!response.ok) {
-        toast({
-          description: "Failed to update bookmark status",
-          variant: "destructive",
-        });
-        return;
+        throw new Error("Upload failed");
       }
 
-      // Trigger a refresh of the bookmarks list
-      setRefreshBookmarkState((prev) => !prev);
+      const data = await response.json();
+      setFileUrl(data.url);
+      setIsUploading(false);
+    } catch (error) {
+      console.error("Upload error:", error);
+      setUploadError("Failed to upload file. Please try again.");
+      setIsUploading(false);
+    }
+  };
 
-      toast({
-        description: newBookmarkStatus
-          ? "Message bookmarked"
-          : "Bookmark removed",
+  const removeFile = () => {
+    setUploadedFile(null);
+    setFileUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const saveDocument = async (chatId: string, messageId: string) => {
+    if (!fileUrl || !uploadedFile) return;
+
+    const documentId = uuidv4();
+
+    try {
+      await fetch("https://amogaagents.morr.biz/Document", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+        },
+        body: JSON.stringify({
+          id: documentId,
+          chatId: chatId,
+          agentMsgId: messageId,
+          content: fileUrl,
+          kind: "file",
+          title: uploadedFile.name,
+          createdAt: new Date().toISOString(),
+          user_id: userChatSession?.id,
+        }),
       });
     } catch (error) {
-      console.error("Error updating bookmark:", error);
+      console.error("Error saving document:", error);
       toast({
-        description: "Failed to update bookmark",
+        description: "Failed to save document details",
         variant: "destructive",
       });
     }
   };
+
+  // const handleBookmark = async (message: any) => {
+  //   try {
+  //     const newBookmarkStatus = !message.bookmark;
+
+  //     // Update the message in the local state first for immediate UI feedback
+  //     setMessages((prev) =>
+  //       prev.map((msg) =>
+  //         msg.id === message.id ? { ...msg, bookmark: newBookmarkStatus } : msg
+  //       )
+  //     );
+
+  //     const response = await fetch(
+  //       `https://amogaagents.morr.biz/Message?id=eq.${message.id}`,
+  //       {
+  //         method: "PATCH",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           Prefer: "return=representation",
+  //           Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+  //         },
+  //         body: JSON.stringify({
+  //           bookmark: newBookmarkStatus,
+  //         }),
+  //       }
+  //     );
+
+  //     if (!response.ok) {
+  //       toast({
+  //         description: "Failed to update bookmark status",
+  //         variant: "destructive",
+  //       });
+  //       return;
+  //     }
+
+  //     // Trigger a refresh of the bookmarks list
+  //     setRefreshBookmarkState((prev) => !prev);
+
+  //     toast({
+  //       description: newBookmarkStatus
+  //         ? "Message bookmarked"
+  //         : "Bookmark removed",
+  //     });
+  //   } catch (error) {
+  //     console.error("Error updating bookmark:", error);
+  //     toast({
+  //       description: "Failed to update bookmark",
+  //       variant: "destructive",
+  //     });
+  //   }
+  // };
 
   const handleFavorite = async (message: any) => {
     try {
@@ -1080,19 +1248,77 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
                     accept=".mp3"
                     className="hidden"
                     ref={audioInputRef}
+                    onChange={handleAudioUpload}
                   />
                 </span>
-                <span className="text-muted-foreground cursor-pointer">
-                  <FileUp
+                {audioFile && (
+                  <div className="flex items-center gap-2 p-2 border rounded-md mt-2">
+                    <div className="flex-1 truncate">
+                      <span className="text-sm font-medium">
+                        {audioFile.name}
+                      </span>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={removeAudio}
+                      className="h-6 w-6 p-0"
+                    >
+                      <X className="h-4 w-4" />
+                      <span className="sr-only">Remove audio</span>
+                    </Button>
+                  </div>
+                )}
+                {/* <FileUp
                     onClick={() => fileInputRef.current?.click()}
                     className="w-5 h-5"
-                  />
-                  <input type="file" className="hidden" ref={fileInputRef} />
-                </span>
+                  /> */}
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  ref={fileInputRef}
+                />
+
+                {!uploadedFile ? (
+                  <span
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center cursor-pointer border-none gap-2"
+                  >
+                    <FileUp className="h-5 w-5 text-muted-foreground" />
+                  </span>
+                ) : (
+                  <div className="flex items-center gap-2 p-2 border rounded-md">
+                    <div className="flex-1 truncate">
+                      <span className="text-sm font-medium">
+                        {uploadedFile.name}
+                      </span>
+                    </div>
+                    {isUploading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={removeFile}
+                        className="h-6 w-6 p-0"
+                      >
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Remove file</span>
+                      </Button>
+                    )}
+                  </div>
+                )}
+
+                {uploadError && (
+                  <p className="text-sm text-red-500 mt-1">{uploadError}</p>
+                )}
               </div>
               <div>
                 <Button
-                  disabled={!prompt || isLoading}
+                  disabled={(!prompt && !fileUrl && !audioUrl) || isLoading}
                   size="icon"
                   className="rounded-full"
                 >
