@@ -1245,7 +1245,7 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
                   />
                   <input
                     type="file"
-                    accept=".mp3"
+                    accept=".mp3,.mp4,.mov,.wmv,.avi"
                     className="hidden"
                     ref={audioInputRef}
                     onChange={handleAudioUpload}
