@@ -901,6 +901,13 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
     }
   };
 
+  const handleCopy = (message: any) => {
+    navigator.clipboard.writeText(message.text);
+    toast({
+      description: "Copied to clipboard",
+    });
+  };
+
   useEffect(() => {
     if (chatData && chatData.length > 0 && chatData[0]?.title) {
       setEditedTitle(chatData[0].title);
@@ -1191,7 +1198,10 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
                                 : ""
                             }`}
                           />
-                          <Copy className="w-5 h-5 cursor-pointer text-muted-foreground" />
+                          <Copy
+                            onClick={() => handleCopy(message)}
+                            className="w-5 h-5 cursor-pointer text-muted-foreground"
+                          />
                           <RefreshCw className="w-5 h-5 cursor-pointer text-muted-foreground" />
                           <Share2 className="w-5 h-5 cursor-pointer text-muted-foreground" />
                           {/* <Bookmark
