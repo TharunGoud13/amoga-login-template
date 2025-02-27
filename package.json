@@ -135,7 +135,7 @@
     "react-phone-number-input": "^3.4.9",
     "reactjs-tiptap-editor": "^0.1.14",
     "recharts": "^2.13.3",
-    "remark-gfm": "^4.0.0",
+    "remark-gfm": "^4.0.1",
     "server-only": "^0.0.1",
     "sonner": "^1.7.0",
     "swr": "^2.2.5",

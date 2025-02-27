@@ -45,6 +45,7 @@ import MenuBar from "./SideBar/Menu";
 import BookmarkBar from "./SideBar/Bookmark";
 import { Session } from "../doc-template/DocTemplate";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const favoritePrompts = [
   { id: 1, text: "Explain quantum computing in simple terms" },
@@ -1170,7 +1171,10 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
                       message.role === "user" ? "bg-muted" : "bg-muted"
                     }`}
                   >
-                    <ReactMarkdown className="prose">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      className="prose prose-td:border prose-td:border-gray-300 prose-td:pl-2"
+                    >
                       {message.text}
                     </ReactMarkdown>
                   </div>
