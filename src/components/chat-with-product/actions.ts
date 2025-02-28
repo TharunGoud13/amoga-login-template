@@ -1,6 +1,6 @@
 "use server";
 
-import { Config, configSchema, Result } from "@/lib/types";
+import { Config, configSchema, Result } from "@/lib/chat-with-product-type";
 import { openai } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { Client } from "pg";
