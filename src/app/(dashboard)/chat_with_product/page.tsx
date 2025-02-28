@@ -6,9 +6,9 @@ import {
   generateChartConfig,
   generateQuery,
   runGenerateSQLQuery,
-} from "@/components/chat-with-db/actions";
+} from "@/components/chat-with-product/actions";
 // import { Config, Result } from "@/lib/types";
-import { Config, Result } from "@/lib/types";
+import { Config, Result } from "@/lib/chat-with-product-type";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Results } from "@/components/chat-with-product/results";

@@ -40,6 +40,35 @@ export const SuggestedQueries = ({
       desktop: "Show plans by business",
       mobile: "By business",
     },
+    {
+      desktop: "List phases by completion status",
+      mobile: "Phase status",
+    },
+    {
+      desktop: "Show average duration of phases",
+      mobile: "Phase duration",
+    },
+    {
+      desktop: "Phases with highest progress percentage",
+      mobile: "Top phases",
+    },
+    // New task related queries
+    {
+      desktop: "Show tasks grouped by status",
+      mobile: "Task status",
+    },
+    {
+      desktop: "List overdue tasks",
+      mobile: "Overdue tasks",
+    },
+    {
+      desktop: "Show tasks by assignee",
+      mobile: "Task assignees",
+    },
+    {
+      desktop: "Compare task planned vs actual days",
+      mobile: "Task timelines",
+    },
   ];
 
   return (

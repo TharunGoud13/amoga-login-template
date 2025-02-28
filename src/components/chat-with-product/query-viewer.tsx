@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 // import { QueryWithTooltips } from "@/components/chat-with-product/query-with-tooltips";
 // import { explainQuery } from "@/components/chat-with-product/actions";
-import { QueryExplanation } from "@/lib/types";
+import { QueryExplanation } from "@/lib/chat-with-product-type";
 import { CircleHelp, Loader2 } from "lucide-react";
 
 export const QueryViewer = ({

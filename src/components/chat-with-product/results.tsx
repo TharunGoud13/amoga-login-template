@@ -1,4 +1,4 @@
-import { Config, Result, Unicorn } from "@/lib/types";
+import { Config, Result, Unicorn } from "@/lib/chat-with-product-type";
 import { DynamicChart } from "./dynamic-chart";
 import { SkeletonCard } from "./skeleton-card";
 import {
