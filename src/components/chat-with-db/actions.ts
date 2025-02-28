@@ -25,97 +25,32 @@ export const generateQuery = async (
         user_mobile VARCHAR(255) NOT NULL UNIQUE
       );
 
-      plan (
-        content_json JSON,
-        doc_json JSON,
-        visits INTEGER,
-        submissions INTEGER,
-        plan_start_date DATE,
-        plan_end_date DATE,
-        actual_start_date DATE,
-        actual_end_date DATE,
-        plan_days INTEGER,
-        actual_days INTEGER,
-        chat_form BOOLEAN,
-        tab_number INTEGER,
-        tab_order INTEGER,
-        tab_field_order JSON,
-        plan_fields_json JSON,
-        plan_fields_script JSON,
-        version_no INTEGER,
-        version_date TIMESTAMP WITHOUT TIME ZONE,
-        updated_date TIMESTAMP WITHOUT TIME ZONE,
-        plan_rasci JSON,
-        plan_plancost JSON,
-        plan_actualcost JSON,
-        plan_workflow JSON,
-        plan_phases JSON,
-        plan_progress_track JSON,
-        plan_gantt JSON,
-        docs_list JSON,
-        for_user_id INTEGER,
-        plan_publish_date TIMESTAMP WITHOUT TIME ZONE,
-        custom_no_one INTEGER,
-        custom_no_two INTEGER,
-        custom_json_one JSON,
-        custom_json_two JSON,
-        custom_json_three JSON,
-        plan_form BOOLEAN,
-        template BOOLEAN,
-        created_date TIMESTAMP WITHOUT TIME ZONE,
-        progress_percent INTEGER,
-        plan_id INTEGER,
-        shorturl VARCHAR,
-        chatformshorturl VARCHAR,
-        plan_iframe_code TEXT,
-        chatform_iframe_code TEXT,
-        no_of_tabs VARCHAR,
-        tab_name VARCHAR,
-        plan_api TEXT,
-        custom_one VARCHAR,
-        custom_two VARCHAR,
-        plan_no TEXT,
-        ref_plan TEXT,
-        ref_plan_no TEXT,
-        progress_note TEXT,
-        status VARCHAR,
-        progress_status VARCHAR,
-        created_user_id VARCHAR,
-        created_user_name VARCHAR,
-        ref_user_id VARCHAR,
-        ref_user_name VARCHAR,
-        data_source_name VARCHAR,
-        for_business_code VARCHAR,
-        for_business_name VARCHAR,
-        for_business_number VARCHAR,
-        for_user_name VARCHAR,
-        business_code VARCHAR,
-        business_name VARCHAR,
-        business_number VARCHAR,
-        plan_group VARCHAR,
-        plan_category VARCHAR,
-        plan_name VARCHAR,
-        plan_code VARCHAR,
-        plan_description VARCHAR,
-        template_name VARCHAR,
-        chatform_name VARCHAR,
-        chatform_url TEXT,
-        app_name VARCHAR,
-        app_code VARCHAR,
-        page_name VARCHAR,
-        database_name VARCHAR,
-        data_table_name VARCHAR,
-        data_api_name VARCHAR,
-        data_api_url VARCHAR,
-        data_api_key VARCHAR,
-        plan_entries_table VARCHAR,
-        plan_entries_table_api VARCHAR,
-        plan_entries_api VARCHAR,
-        publish_status VARCHAR,
-        plan_publish_url VARCHAR,
-        content TEXT,
-        content_html TEXT,
-        shareurl VARCHAR
+      order_sample (
+        order_id INTEGER,
+        created_date TIMESTAMP,
+        product_id INTEGER,
+        product_name VARCHAR(255),
+        sku VARCHAR(50),
+        product_quantity INTEGER,
+        product_base_price VARCHAR(50),
+        product_total VARCHAR(50),
+        partial_refund_amount TEXT,
+        transaction_id TEXT,
+        customer_id INTEGER,
+        order_paid_date TIMESTAMP,
+        order_notes TEXT,
+        order_status VARCHAR(50),
+        currency VARCHAR(3),
+        tax_total VARCHAR(50),
+        order_total VARCHAR(50),
+        payment_method VARCHAR(100),
+        billing_postcode VARCHAR(20),
+        shipping_country VARCHAR(2),
+        shipping_company VARCHAR(255),
+        email VARCHAR(255),
+        phone VARCHAR(50),
+        customer VARCHAR(255),
+        user_name VARCHAR(255)
       );
 
       The queries should be dynamic and retrieve data based on the user's request and user session details. Here are the session details:
@@ -128,21 +63,22 @@ export const generateQuery = async (
       - First Name: ${session.user.first_name}
       - Last Name: ${session.user.last_name}
 
-      When querying for plan-related data, filter results based on the dataFilter value:
+      When querying for order-related data, filter results based on the dataFilter value:
       - If the dataFilter is 'get-all', return all data with no filtering.
-      - If the dataFilter is 'get-business-data', filter the results by the session's business_name (mapped to the "business_name" field in plan).
-      - If the dataFilter is 'get-user-data', filter the results by the session's user_email and compare with the created_user_name field in the plan table.
+      - If the dataFilter is 'get-business-data', filter the results by the session's business_name (mapped to the "customer" field in order_sample).
+      - If the dataFilter is 'get-user-data', filter the results by the session's user_email and compare with the user_name field in the order_sample table.
 
       Ensure all queries are meaningful, error-free, and suitable for chart visualization.
 
-      When querying numeric fields, use appropriate casting.
+      When querying numeric fields like 'product_total' and 'order_total', clean them using REGEXP_REPLACE and cast to DECIMAL:
+      Example: CAST(NULLIF(REGEXP_REPLACE(product_total, '[^0-9.]+', '', 'g'), '') AS DECIMAL).
 
-      When querying by string fields (like created_user_name or plan_name), use LOWER() with ILIKE for case-insensitive search.
+      When querying by string fields (like user_name or product_name), use LOWER() with ILIKE for case-insensitive search.
 
       Example Queries:
-      - get-all: SELECT * FROM plan;
-      - get-business-data: SELECT * FROM plan WHERE LOWER(business_name) = LOWER('${session.user.business_name}');
-      - get-user-data: SELECT * FROM plan WHERE LOWER(created_user_name) = LOWER('${session.user.email}');`,
+      - get-all: SELECT * FROM order_sample;
+      - get-business-data: SELECT * FROM order_sample WHERE LOWER(customer) = LOWER('${session.user.business_name}');
+      - get-user-data: SELECT * FROM order_sample WHERE LOWER(user_name) = LOWER('${session.user.email}');`,
       prompt: `Generate the query necessary to retrieve the data the user wants: ${input} based on the dataFilter: ${dataFilter}`,
       schema: z.object({
         query: z.string(),
@@ -161,20 +97,20 @@ export const generateQuery = async (
       if (query.toUpperCase().includes("WHERE")) {
         query = query.replace(
           "WHERE",
-          `WHERE LOWER(business_name) = LOWER('${session.user.business_name}') AND`
+          `WHERE LOWER(customer) = LOWER('${session.user.business_name}') AND`
         );
       } else {
-        query += ` WHERE LOWER(business_name) = LOWER('${session.user.business_name}')`;
+        query += ` WHERE LOWER(customer) = LOWER('${session.user.business_name}')`;
       }
     } else if (dataFilter === "get-user-data") {
-      // Filter by user_email matching created_user_name
+      // Filter by user_email matching user_name
       if (query.toUpperCase().includes("WHERE")) {
         query = query.replace(
           "WHERE",
-          `WHERE LOWER(created_user_name) = LOWER('${session.user.email}') AND`
+          `WHERE LOWER(user_name) = LOWER('${session.user.email}') AND`
         );
       } else {
-        query += ` WHERE LOWER(created_user_name) = LOWER('${session.user.email}')`;
+        query += ` WHERE LOWER(user_name) = LOWER('${session.user.email}')`;
       }
     }
 
@@ -229,13 +165,7 @@ export const runGenerateSQLQuery = async (query: string) => {
     let processedQuery = query;
     if (
       sanitizedQuery.includes("created_date") ||
-      sanitizedQuery.includes("plan_start_date") ||
-      sanitizedQuery.includes("plan_end_date") ||
-      sanitizedQuery.includes("actual_start_date") ||
-      sanitizedQuery.includes("actual_end_date") ||
-      sanitizedQuery.includes("version_date") ||
-      sanitizedQuery.includes("updated_date") ||
-      sanitizedQuery.includes("plan_publish_date")
+      sanitizedQuery.includes("order_paid_date")
     ) {
       console.log("Date-based query detected");
 
@@ -243,7 +173,7 @@ export const runGenerateSQLQuery = async (query: string) => {
       try {
         if (sanitizedQuery.includes("to_char")) {
           processedQuery = query.replace(
-            /TO_CHAR\(\s*(created_date|plan_start_date|plan_end_date|actual_start_date|actual_end_date|version_date|updated_date|plan_publish_date)\s*,\s*'YYYY'\s*\)\s*=\s*'(\d{4})'/gi,
+            /TO_CHAR\(\s*(created_date|order_paid_date)\s*,\s*'YYYY'\s*\)\s*=\s*'(\d{4})'/gi,
             "EXTRACT(YEAR FROM $1)::INTEGER = $2"
           );
         }
@@ -260,7 +190,7 @@ export const runGenerateSQLQuery = async (query: string) => {
     await client.end();
   } catch (e: any) {
     console.error("Database error:", e.message);
-    if (e.message.includes('relation "plan" does not exist')) {
+    if (e.message.includes('relation "order_sample" does not exist')) {
       throw new Error("Table does not exist");
     }
     throw new Error(`Database error: ${e.message}`);
@@ -274,37 +204,30 @@ export const generateChartConfig = async (
   userQuery: string
 ) => {
   "use server";
-  const system = `You are a data visualization expert specializing in creating effective chart configurations for various data types.`;
+  const system = `You are a data visualization expert.`;
 
   try {
     const { object: config } = await generateObject({
       model: openai("gpt-4o"),
       system,
       prompt: `Given the following data from a SQL query result, generate the chart config that best visualizes the data and answers the user's query.
-      
-      Choose the most appropriate chart type based on the data characteristics:
-      - Bar charts: For comparing values across categories
-      - Line charts: For showing trends over time or continuous data
-      - Horizontal bar charts: For comparing values with long labels or many categories
-      - Pie charts: For showing proportion of a whole (use sparingly, only when there are few categories)
-      - Area charts: For showing volume over time
-      - Scatter plots: For showing correlation between two variables
-      
-      Always include a chart type in your response!
+      Use appropriate chart types such as bar, line, bar horizontal, or pie or "Data Card Text",
+    "Data Card Line Chart",
+    "Data Card Bar Chart",
+    "Data Card Bar Chart Horizontal",
+    "Data Card Donut Chart", depending on the data.
 
       Here is an example complete config:
-      {
-        xKey: "category_name",
-        yKeys: ["total_sales", "profit_margin"],
+      export const chartConfig = {
+       
+        xKey: "country",
+        yKeys: ["user_count"],
         colors: {
-          total_sales: "#4CAF50",
-          profit_margin: "#2196F3"
+          user_count: "#4CAF50"
         },
-        type: "bar",
+        
         legend: true
       }
-
-      The chart type field is REQUIRED and should be one of: "bar", "line", "bar-horizontal", "pie", "area", or "scatter".
 
       User Query:
       ${userQuery}
@@ -319,16 +242,7 @@ export const generateChartConfig = async (
       colors[key] = `hsl(var(--chart-${index + 1}))`;
     });
 
-    // Ensure chart type is defined, default to bar if missing
-    const chartType = config.type || "bar";
-
-    const updatedConfig: Config = {
-      ...config,
-      type: chartType,
-      colors: config.colors || colors,
-    };
-
-    console.log("Generated chart config:", updatedConfig);
+    const updatedConfig: Config = { ...config };
     return { config: updatedConfig };
   } catch (e) {
     console.error((e as Error).message);
