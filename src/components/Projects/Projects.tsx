@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import {
+  Bot,
   Calendar,
   ClipboardCheck,
   Edit,
@@ -110,9 +111,14 @@ const Projects = () => {
                       <h2 className="font-semibold text-md">
                         {item.plan_name}
                       </h2>
-                      <Link href={`/Projects/Gantt/${item.plan_id}`}>
-                        <LuChartGantt className="h-5 w-5 text-muted-foreground" />
-                      </Link>
+                      <div className="flex items-center gap-5">
+                        <Link href={`/Projects/Assistant/${item.plan_id}`}>
+                          <Bot className="h-5 w-5 text-muted-foreground" />
+                        </Link>
+                        <Link href={`/Projects/Gantt/${item.plan_id}`}>
+                          <LuChartGantt className="h-5 w-5 text-muted-foreground" />
+                        </Link>
+                      </div>
                     </div>
                     <p className="text-md text-muted-foreground">
                       {item.plan_group}
