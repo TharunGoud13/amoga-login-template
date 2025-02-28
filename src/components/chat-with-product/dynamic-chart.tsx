@@ -46,14 +46,12 @@ export function DynamicChart({
   chartData,
   chartConfig,
 }: {
-  chartData: Result[];
-  chartConfig: Config;
+  chartData: any;
+  chartConfig: any;
 }) {
-  console.log("chartData----", chartData);
-  console.log("chartConfig----", chartConfig);
   const renderChart = () => {
     if (!chartData || !chartConfig) return <div>No chart data</div>;
-    const parsedChartData = chartData.map((item) => {
+    const parsedChartData = chartData.map((item: any) => {
       const parsedItem: { [key: string]: any } = {};
       for (const [key, value] of Object.entries(item)) {
         parsedItem[key] = isNaN(Number(value)) ? value : Number(value);
@@ -76,7 +74,7 @@ export function DynamicChart({
     };
 
     chartData = processChartData(chartData, chartConfig.type);
-    // console.log({ chartData, chartConfig });
+    console.log({ chartData, chartConfig });
 
     switch (chartConfig.type) {
       case "bar":
@@ -99,7 +97,7 @@ export function DynamicChart({
             </YAxis>
             <ChartTooltip content={<ChartTooltipContent />} />
             {chartConfig.legend && <Legend />}
-            {chartConfig.yKeys.map((key, index) => (
+            {chartConfig.yKeys.map((key: any, index: any) => (
               <Bar
                 key={key}
                 dataKey={key}
@@ -151,7 +149,7 @@ export function DynamicChart({
                     stroke={colors[index % colors.length]}
                   />
                 ))
-              : chartConfig.yKeys.map((key, index) => (
+              : chartConfig.yKeys.map((key: any, index: any) => (
                   <Line
                     key={key}
                     type="monotone"
@@ -169,7 +167,7 @@ export function DynamicChart({
             <YAxis />
             <ChartTooltip content={<ChartTooltipContent />} />
             {chartConfig.legend && <Legend />}
-            {chartConfig.yKeys.map((key, index) => (
+            {chartConfig.yKeys.map((key: any, index: any) => (
               <Area
                 key={key}
                 type="monotone"
@@ -191,7 +189,7 @@ export function DynamicChart({
               cy="50%"
               outerRadius={120}
             >
-              {chartData.map((_, index) => (
+              {chartData.map((_: any, index: any) => (
                 <Cell
                   key={`cell-${index}`}
                   fill={colors[index % colors.length]}
@@ -212,7 +210,7 @@ export function DynamicChart({
       <h2 className="text-lg font-bold mb-2">{chartConfig.title}</h2>
       {chartConfig && chartData.length > 0 && (
         <ChartContainer
-          config={chartConfig.yKeys.reduce((acc, key, index) => {
+          config={chartConfig.yKeys.reduce((acc: any, key: any, index: any) => {
             acc[key] = {
               label: key,
               color: colors[index % colors.length],
