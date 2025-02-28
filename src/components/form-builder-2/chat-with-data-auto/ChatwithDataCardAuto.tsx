@@ -267,7 +267,7 @@ const ChatwithDataCardAuto = ({
         <DynamicChart
           chartData={data}
           chartConfig={activeConfig}
-          componentName={chartType}
+          // componentName={chartType}
         />
       );
     }
