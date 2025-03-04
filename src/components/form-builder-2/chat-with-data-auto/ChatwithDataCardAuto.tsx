@@ -36,6 +36,7 @@ import ExtractMetrics, {
 } from "../field-components/ExtractMetrics";
 import NarrativeTemplate from "../field-components/NarrativeTemplate";
 import PugStoryTemplate from "./PugStoryTemplate";
+import GanttChart from "./GanttChart";
 
 function Actionables() {
   return (
@@ -302,6 +303,7 @@ const ChatwithDataCardAuto = ({
             <TabsTrigger value="pug-story">Pug Story</TabsTrigger>
             <TabsTrigger value="narrative">Narrative</TabsTrigger>
             <TabsTrigger value="chart">Chart</TabsTrigger>
+            <TabsTrigger value="gantt">Gantt Chart</TabsTrigger>
             <TabsTrigger value="actionables">Actionables</TabsTrigger>
           </TabsList>
           <TabsContent value="json">
@@ -409,6 +411,9 @@ const ChatwithDataCardAuto = ({
           </TabsContent>
           <TabsContent value="chart">
             <div className="mt-4">{renderChart()}</div>
+          </TabsContent>
+          <TabsContent value="gantt">
+            <GanttChart data={data} />
           </TabsContent>
           <TabsContent value="actionables">
             <Actionables />

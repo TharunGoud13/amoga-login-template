@@ -49,6 +49,7 @@ const NewTask = ({
     taskTitle: "",
     taskGroup: "",
     planName: "",
+    planId: "",
     description: "",
     start: "",
     end: "",
@@ -63,6 +64,7 @@ const NewTask = ({
       setFormData({
         taskTitle: data.task_title,
         taskGroup: data.task_group,
+        planId: data.plan_id,
         planName: data.plan_name,
         description: data.task_description,
         start: data.plan_start_date,
@@ -172,6 +174,7 @@ const NewTask = ({
       task_title: formData.taskTitle,
       task_group: formData.taskGroup,
       plan_name: formData.planName,
+      plan_id: formData.planId,
       task_description: formData.description,
       plan_start_date: formData.start,
       plan_end_date: formData.end,
@@ -209,6 +212,7 @@ const NewTask = ({
         taskTitle: "",
         taskGroup: "",
         planName: "",
+        planId: "",
         description: "",
         start: "",
         end: "",
@@ -280,7 +284,18 @@ const NewTask = ({
               <Select
                 disabled={isView}
                 value={formData.planName}
-                onValueChange={(value) => handleSelectChange(value, "planName")}
+                onValueChange={(value) => {
+                  const selectedPlan = planName.find(
+                    (item: any) => item.plan_name === value
+                  );
+                  handleSelectChange(value, "planName");
+                  if (selectedPlan) {
+                    handleSelectChange(
+                      selectedPlan.plan_id.toString(),
+                      "planId"
+                    );
+                  }
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select Plan Name" />

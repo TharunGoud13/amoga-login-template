@@ -565,7 +565,7 @@ const ChatwithData = ({
         chatId: currentChatId,
         role: "assistant",
         // text: "Here are the results for your query:",
-        content: "Here are the results for your query:",
+        content: `Here are the results for your query: ${prompt}`,
         response_data_json: data,
         columns: columns,
         chartconfig: generation.config,
