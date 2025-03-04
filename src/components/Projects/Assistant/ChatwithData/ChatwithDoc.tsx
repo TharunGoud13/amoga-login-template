@@ -514,7 +514,7 @@ const ChatwithData = ({
         id: userMessageId,
         chatId: currentChatId,
         role: "user",
-        // text: prompt,
+        text: prompt,
         content: prompt,
         createdAt: new Date().toISOString(),
         user_id: userChatSession?.id,
