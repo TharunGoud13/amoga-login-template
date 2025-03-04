@@ -16,6 +16,7 @@ interface Props {
   setOpen: (open: boolean) => void;
   // bookmarks: any[];
   favorites: any[];
+  planId: string;
   setRefreshState: (value: React.SetStateAction<boolean>) => void;
   title: string;
 }
@@ -26,6 +27,7 @@ const BookmarkBar = ({
   // bookmarks,
   favorites,
   setRefreshState,
+  planId,
   title,
 }: Props) => {
   const router = useRouter();
@@ -45,7 +47,7 @@ const BookmarkBar = ({
   }, [favorites]);
 
   const handleClick = (chatId: string) => {
-    router.push(`/Agent/${chatId}`);
+    router.push(`/Projects/Assistant/${planId}/${chatId}`);
     setOpen(false);
   };
 

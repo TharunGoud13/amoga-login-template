@@ -39,6 +39,14 @@ import HistoryBar from "./SideBar/History";
 import MenuBar from "./SideBar/Menu";
 import BookmarkBar from "./SideBar/Bookmarks";
 import { Session } from "@/components/doc-template/DocTemplate";
+import { Config, Result } from "@/lib/chat-with-product-type";
+import {
+  generateChartConfig,
+  generateQuery,
+  runGenerateSQLQuery,
+} from "../components/actions";
+import { QueryViewer } from "../components/query-viewer";
+import { Results } from "../components/results";
 
 const chatAgents = [
   { id: 1, text: "General Assistant", icon: Bot },
@@ -112,7 +120,15 @@ const suggestionQueries = [
   },
 ];
 
-const ChatwithData = ({ chatId, id }: { chatId?: string; id?: string }) => {
+const ChatwithData = ({
+  chatId,
+  id,
+  projectData,
+}: {
+  chatId?: string;
+  id?: string;
+  projectData?: any;
+}) => {
   //   const fileInputRef = useRef<HTMLInputElement>(null);
   //   const audioInputRef = useRef<HTMLInputElement>(null);
   const [openHistory, setOpenHistory] = useState<boolean>(false);
@@ -141,6 +157,14 @@ const ChatwithData = ({ chatId, id }: { chatId?: string; id?: string }) => {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [results, setResults] = useState<Result[]>([]);
+  const [columns, setColumns] = useState<string[]>([]);
+  const [chartConfig, setChartConfig] = useState<Config | null>(null);
+  const [activeQuery, setActiveQuery] = useState("");
+
+  console.log("results----", results);
+
+  console.log("projectData----", projectData);
 
   useEffect(() => {
     if (messages?.length === 0) {
@@ -196,13 +220,16 @@ const ChatwithData = ({ chatId, id }: { chatId?: string; id?: string }) => {
   }, [session]);
 
   const fetchHistory = async (userChatSession: any, setHistory: any) => {
-    const response = await fetch("https://amogaagents.morr.biz/Chat", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-      },
-    });
+    const response = await fetch(
+      `https://amogaagents.morr.biz/Chat?plan_id=eq.${projectData[0]?.plan_id}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+        },
+      }
+    );
     if (!response.ok) {
       toast({
         description: "Failed to fetch history",
@@ -221,6 +248,7 @@ const ChatwithData = ({ chatId, id }: { chatId?: string; id?: string }) => {
     if (userChatSession) {
       fetchHistory(userChatSession, setHistory);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userChatSession, openHistory]);
 
   useEffect(() => {
@@ -273,7 +301,7 @@ const ChatwithData = ({ chatId, id }: { chatId?: string; id?: string }) => {
 
       try {
         const response = await fetch(
-          "https://amogaagents.morr.biz/Message?favorite=eq.true",
+          `https://amogaagents.morr.biz/Message?favorite=eq.true&plan_id=eq.${projectData[0]?.plan_id}`,
           {
             method: "GET",
             headers: {
@@ -347,6 +375,9 @@ const ChatwithData = ({ chatId, id }: { chatId?: string; id?: string }) => {
             favorite: msg.favorite,
             text: msg.content,
             role: msg.role,
+            response_data_json: msg.response_data_json,
+            chartconfig: msg.chartconfig,
+            columns: msg.columns,
           }))
         );
       };
@@ -401,342 +432,182 @@ const ChatwithData = ({ chatId, id }: { chatId?: string; id?: string }) => {
     getChatData();
   }, [chatId]);
 
-  //   const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  //     if (!e.target.files || e.target.files.length === 0) return;
-
-  //     const file = e.target.files[0];
-  //     setAudioFile(file);
-
-  //     // Upload to Vercel Blob via the same API endpoint
-  //     const formData = new FormData();
-  //     formData.append("file", file);
-
-  //     try {
-  //       const response = await fetch("/api/upload", {
-  //         method: "POST",
-  //         body: formData,
-  //       });
-
-  //       if (!response.ok) {
-  //         throw new Error("Upload failed");
-  //       }
-
-  //       const data = await response.json();
-  //       setAudioUrl(data.url);
-  //     } catch (error) {
-  //       console.error("Error uploading audio:", error);
-  //       toast({
-  //         description: "Failed to upload audio file",
-  //         variant: "destructive",
-  //       });
-  //     }
-  //   };
-
-  //   // Add this function to remove the audio file
-  //   const removeAudio = () => {
-  //     setAudioFile(null);
-  //     setAudioUrl(null);
-  //     if (audioInputRef.current) {
-  //       audioInputRef.current.value = "";
-  //     }
-  //   };
-
-  //   // Add this function to save audio document
-  //   const saveAudioDocument = async (chatId: string, messageId: string) => {
-  //     if (!audioUrl || !audioFile) return;
-
-  //     const documentId = uuidv4();
-
-  //     try {
-  //       await fetch("https://amogaagents.morr.biz/Document", {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-  //         },
-  //         body: JSON.stringify({
-  //           id: documentId,
-  //           chatId: chatId,
-  //           agentMsgId: messageId,
-  //           content: audioUrl,
-  //           title: audioFile.name,
-  //           kind: "audio",
-  //           createdAt: new Date().toISOString(),
-  //           user_id: userChatSession?.id,
-  //         }),
-  //       });
-  //     } catch (error) {
-  //       console.error("Error saving audio document:", error);
-  //       toast({
-  //         description: "Failed to save audio details",
-  //         variant: "destructive",
-  //       });
-  //     }
-  //   };
-
   const handleSuggestionClick = (suggestion: string) => {
     setPrompt(suggestion);
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!prompt && !fileUrl && !audioUrl) return;
+  const handleSubmit = async (e?: React.FormEvent<HTMLFormElement>) => {
+    e?.preventDefault();
+    if (!prompt) return;
     setIsLoading(true);
+    clearExistingData();
 
     // Generate a UUID for the new chat
     const newChatUuid = uuidv4();
     // Use existing chatId or the new one
     const currentChatId = chatId || newChatUuid;
 
-    // Create a message ID for the user message
-    const userMessageId = uuidv4();
-
-    if (!chatId) {
-      // Create a new chat
-      const chatResponse = await fetch("https://amogaagents.morr.biz/Chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-        },
-        body: JSON.stringify({
-          createdAt: new Date().toISOString(),
-          user_id: userChatSession?.id,
-          id: newChatUuid,
-          title: `New Chat`,
-          status: "active",
-        }),
-      });
-
-      if (!chatResponse.ok) {
-        toast({
-          description: "Failed to create chat",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-    }
-
-    const fetchChatResponse = await fetch(
-      `https://amogaagents.morr.biz/Chat?id=eq.${newChatUuid}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-        },
-      }
-    );
-
-    if (fetchChatResponse.ok) {
-      const chatData = await fetchChatResponse.json();
-      if (chatData.length > 0 && chatData[0].chatId) {
-        // Update the chat with a title that includes the chatId
-        await fetch(`https://amogaagents.morr.biz/Chat?id=eq.${newChatUuid}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-          },
-          body: JSON.stringify({
-            title: `Draft ${chatData[0].chatId}`,
-          }),
-        });
-      }
-    }
-
-    const currentTimeStamp = new Date().toISOString();
-
-    let userContent = prompt;
-    if (fileUrl && uploadedFile) {
-      if (prompt) {
-        userContent = `${prompt}\n\nFile: ${uploadedFile.name} `;
-      } else {
-        userContent = `File: ${uploadedFile.name} `;
-      }
-    }
-
-    if (audioUrl && audioFile) {
-      if (userContent) {
-        userContent = `${userContent}\n\nAudio: ${audioFile.name}`;
-      } else {
-        userContent = `Audio: ${audioFile.name} `;
-      }
-    }
-
-    // Create a complete user message object
-    const userMessage = {
-      id: userMessageId,
-      chatId: currentChatId,
-      content: userContent,
-      text: userContent,
-      role: "user",
-      createdAt: currentTimeStamp,
-      user_id: userChatSession?.id,
-      bookmark: null,
-      isLike: null,
-      favorite: null,
-    };
-
-    // Add user message to local state with complete data
-    setMessages((prev) => [...prev, userMessage]);
-
-    // Save user message to database
-    await fetch("https://amogaagents.morr.biz/Message", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-      },
-      body: JSON.stringify({
-        id: userMessageId,
-        chatId: currentChatId,
-        content: userContent,
-        role: "user",
-        createdAt: currentTimeStamp,
-        user_id: userChatSession?.id,
-      }),
-    });
-
-    // if (fileUrl && uploadedFile) {
-    //   await saveDocument(currentChatId, userMessageId);
-    // }
-
-    // if (audioUrl && audioFile) {
-    //   await saveAudioDocument(currentChatId, userMessageId);
-    // }
-
-    // Create a placeholder for assistant message
-    const assistantMessageId = uuidv4();
-    const assistantTimestamp = new Date(
-      new Date(currentTimeStamp).getTime() + 1000
-    ).toISOString();
-    const assistantMessage = {
-      id: assistantMessageId,
-      chatId: currentChatId,
-      content: "",
-      text: "",
-      role: "assistant",
-      createdAt: assistantTimestamp,
-      user_id: userChatSession?.id,
-      bookmark: null,
-      isLike: null,
-      favorite: null,
-    };
-
-    // Add empty assistant message to show loading state
-    setMessages((prev) => [...prev, assistantMessage]);
-
     try {
-      // Get AI response
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          prompt,
-          fileUrl: fileUrl || null,
-          audioUrl: audioUrl || null,
-          chat_id: currentChatId,
-        }),
-      });
-
-      if (!response.body) throw new Error("No response body");
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder("utf-8");
-
-      let done = false;
-      let buffer = "";
-      let aiResponse = "";
-
-      // Process streaming response
-      while (!done) {
-        const { value, done: doneReading } = await reader.read();
-        done = doneReading;
-
-        buffer += decoder.decode(value, { stream: true });
-
-        const lines = buffer.split("\n");
-        for (let i = 0; i < lines.length - 1; i++) {
-          const line = lines[i].trim();
-
-          if (line.startsWith("data:")) {
-            const dataStr = line.replace(/^data:\s*/, "");
-
-            if (dataStr === "[DONE]") {
-              done = true;
-              break;
-            }
-
-            try {
-              const parsed = JSON.parse(dataStr);
-              const delta = parsed.choices?.[0]?.delta;
-              if (delta && delta.content) {
-                aiResponse += delta.content;
-
-                // Update the assistant message incrementally
-                setMessages((prev) => {
-                  const messages = [...prev];
-                  if (
-                    messages.length > 0 &&
-                    messages[messages.length - 1].role === "assistant"
-                  ) {
-                    messages[messages.length - 1].text = aiResponse;
-                    messages[messages.length - 1].content = aiResponse; // Update both fields
-                  }
-                  return messages;
-                });
-              }
-            } catch (err) {
-              console.error("Error parsing SSE data:", err);
-            }
-          }
-        }
-
-        buffer = lines[lines.length - 1];
-      }
-
-      // Save AI response to database
-      if (aiResponse.trim()) {
-        await fetch("https://amogaagents.morr.biz/Message", {
+      if (!chatId) {
+        // Create a new chat
+        const chatResponse = await fetch("https://amogaagents.morr.biz/Chat", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
           },
           body: JSON.stringify({
-            id: assistantMessageId,
-            chatId: currentChatId,
-            content: aiResponse,
-            role: "assistant",
-            createdAt: assistantTimestamp,
+            createdAt: new Date().toISOString(),
             user_id: userChatSession?.id,
+            id: newChatUuid,
+            title: `New Chat`,
+            status: "active",
+            plan_id: projectData[0]?.plan_id,
           }),
         });
+
+        if (!chatResponse.ok) {
+          toast({
+            description: "Failed to create chat",
+            variant: "destructive",
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        // Fetch chat details to update title
+        const fetchChatResponse = await fetch(
+          `https://amogaagents.morr.biz/Chat?id=eq.${newChatUuid}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+            },
+          }
+        );
+
+        if (fetchChatResponse.ok) {
+          const chatData = await fetchChatResponse.json();
+          if (chatData.length > 0 && chatData[0].chatId) {
+            // Update the chat with a title that includes the chatId
+            await fetch(
+              `https://amogaagents.morr.biz/Chat?id=eq.${newChatUuid}`,
+              {
+                method: "PATCH",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+                },
+                body: JSON.stringify({
+                  title: `Draft ${chatData[0].chatId}`,
+                }),
+              }
+            );
+          }
+        }
       }
 
-      // If this was a new chat, redirect to the chat page with the new chatId
+      // Create user message
+      const userMessageId = uuidv4();
+      const userMessage = {
+        id: userMessageId,
+        chatId: currentChatId,
+        role: "user",
+        // text: prompt,
+        content: prompt,
+        createdAt: new Date().toISOString(),
+        user_id: userChatSession?.id,
+      };
+
+      // Save user message to database
+      await fetch("https://amogaagents.morr.biz/Message", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+        },
+        body: JSON.stringify(userMessage),
+      });
+
+      setMessages((prev) => [...prev, userMessage]);
+
+      // Generate and process data
+      let dataFilter = "";
+      const query = await generateQuery(
+        prompt,
+        session,
+        dataFilter,
+        projectData[0]
+      );
+      if (query === undefined) {
+        toast({
+          description: "An error occurred. Please try again.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+      setActiveQuery(query);
+
+      const data = await runGenerateSQLQuery(query);
+      const columns = data.length > 0 ? Object.keys(data[0]) : [];
+      setResults(data);
+      setColumns(columns);
+
+      const generation = await generateChartConfig(data, prompt);
+      setChartConfig(generation.config);
+
+      // Create assistant message with results
+      const assistantMessageId = uuidv4();
+      const assistantMessage = {
+        id: assistantMessageId,
+        chatId: currentChatId,
+        role: "assistant",
+        // text: "Here are the results for your query:",
+        content: "Here are the results for your query:",
+        response_data_json: data,
+        columns: columns,
+        chartconfig: generation.config,
+        // activeQuery: query,
+        // prompt: prompt,
+        createdAt: new Date().toISOString(),
+        user_id: userChatSession?.id,
+      };
+
+      // Save assistant message to database
+      await fetch("https://amogaagents.morr.biz/Message", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+        },
+        body: JSON.stringify(assistantMessage),
+      });
+
+      setMessages((prev) => [...prev, assistantMessage]);
+
       if (!chatId) {
         router.push(`/Projects/Assistant/${id}/${currentChatId}`);
       }
 
       setPrompt("");
-      setFileUrl(null);
-      setAudioUrl(null);
-      setAudioFile(null);
-      setUploadedFile(null);
       setIsLoading(false);
-      //   if (fileInputRef.current) {
-      //     fileInputRef.current.value = "";
-      //   }
-      //   if (audioInputRef.current) {
-      //     audioInputRef.current.value = "";
-      //   }
-    } catch (error) {
-      toast({ description: "Error fetching response", variant: "destructive" });
+    } catch (e) {
+      console.error("Error in handleSubmit:", e);
+      toast({
+        description: "An error occurred. Please try again.",
+        variant: "destructive",
+      });
       setIsLoading(false);
     }
+  };
+
+  const clearExistingData = () => {
+    setPrompt("");
+    setResults([]);
+    setColumns([]);
+    setChartConfig(null);
   };
 
   // Add this function to handle title updates
@@ -782,91 +653,20 @@ const ChatwithData = ({ chatId, id }: { chatId?: string; id?: string }) => {
     }
   };
 
-  //   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  //     if (!e.target.files || e.target.files.length === 0) return;
-
-  //     const file = e.target.files[0];
-  //     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-
-  //     if (file.size > MAX_FILE_SIZE) {
-  //       setUploadError("File size exceeds 5MB limit");
-  //       return;
-  //     }
-
-  //     setUploadedFile(file);
-  //     setUploadError(null);
-  //     setIsUploading(true);
-
-  //     const formData = new FormData();
-  //     formData.append("file", file);
-
-  //     try {
-  //       const response = await fetch("/api/upload", {
-  //         method: "POST",
-  //         body: formData,
-  //       });
-
-  //       if (!response.ok) {
-  //         throw new Error("Upload failed");
-  //       }
-
-  //       const data = await response.json();
-  //       setFileUrl(data.url);
-  //       setIsUploading(false);
-  //     } catch (error) {
-  //       console.error("Upload error:", error);
-  //       setUploadError("Failed to upload file. Please try again.");
-  //       setIsUploading(false);
-  //     }
-  //   };
-
-  //   const removeFile = () => {
-  //     setUploadedFile(null);
-  //     setFileUrl(null);
-  //     if (fileInputRef.current) {
-  //       fileInputRef.current.value = "";
-  //     }
-  //   };
-
-  //   const saveDocument = async (chatId: string, messageId: string) => {
-  //     if (!fileUrl || !uploadedFile) return;
-
-  //     const documentId = uuidv4();
-
-  //     try {
-  //       await fetch("https://amogaagents.morr.biz/Document", {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-  //         },
-  //         body: JSON.stringify({
-  //           id: documentId,
-  //           chatId: chatId,
-  //           agentMsgId: messageId,
-  //           content: fileUrl,
-  //           kind: "file",
-  //           title: uploadedFile.name,
-  //           createdAt: new Date().toISOString(),
-  //           user_id: userChatSession?.id,
-  //         }),
-  //       });
-  //     } catch (error) {
-  //       console.error("Error saving document:", error);
-  //       toast({
-  //         description: "Failed to save document details",
-  //         variant: "destructive",
-  //       });
-  //     }
-  //   };
   const handleFavorite = async (message: any) => {
+    console.log("like----", message);
     try {
       const newFavoriteStatus = !message.favorite;
 
       // Update the message in the local state first for immediate UI feedback
       setMessages((prev) =>
         prev.map((msg) =>
-          msg.id === message.id ? { ...msg, favorite: newFavoriteStatus } : msg
+          msg.id === message.id
+            ? {
+                ...msg,
+                favorite: newFavoriteStatus,
+              }
+            : msg
         )
       );
 
@@ -881,6 +681,7 @@ const ChatwithData = ({ chatId, id }: { chatId?: string; id?: string }) => {
           },
           body: JSON.stringify({
             favorite: newFavoriteStatus,
+            plan_id: projectData[0]?.plan_id,
           }),
         }
       );
@@ -1065,6 +866,16 @@ const ChatwithData = ({ chatId, id }: { chatId?: string; id?: string }) => {
     }
   };
 
+  const safeJSONParse = (data: any) => {
+    if (!data) return null;
+    if (typeof data === "object") return data;
+    try {
+      return JSON.parse(data);
+    } catch (e) {
+      return data;
+    }
+  };
+
   return (
     <div className="w-full h-full">
       <div className="flex items-center justify-between">
@@ -1152,6 +963,7 @@ const ChatwithData = ({ chatId, id }: { chatId?: string; id?: string }) => {
         open={openHistory}
         setOpen={setOpenHistory}
         data={history}
+        planId={projectData[0]?.plan_id}
         setDeleteHistory={setDeleteHistory}
         title="History"
         refreshHistory={() => fetchHistory(userChatSession, setHistory)}
@@ -1159,6 +971,7 @@ const ChatwithData = ({ chatId, id }: { chatId?: string; id?: string }) => {
       <BookmarkBar
         open={openFavorites}
         setOpen={setOpenFavorites}
+        planId={projectData[0]?.plan_id}
         // bookmarks={bookmarks}
         favorites={favorites}
         setRefreshState={setRefreshBookmarkState}
@@ -1194,12 +1007,29 @@ const ChatwithData = ({ chatId, id }: { chatId?: string; id?: string }) => {
                       message.role === "user" ? "bg-muted" : "bg-muted"
                     }`}
                   >
-                    {message.text}
+                    {message.role === "assistant" &&
+                    message.response_data_json ? (
+                      <div className="w-full">
+                        {message.activeQuery && (
+                          <QueryViewer
+                            activeQuery={message.activeQuery}
+                            inputValue={message.prompt}
+                          />
+                        )}
+                        {console.log("message----", message)}
+                        <Results
+                          results={message?.response_data_json}
+                          chartConfig={safeJSONParse(message?.chartconfig)}
+                          columns={safeJSONParse(message?.columns)}
+                        />
+                      </div>
+                    ) : (
+                      message.text
+                    )}
                   </div>
                   <div>
                     {message.role === "assistant" &&
-                      message.text ===
-                        "Hello! How can I help you today? Here are some options:" && (
+                      !message.response_data_json && (
                         <div className="flex flex-wrap gap-2">
                           {suggestionQueries.map((suggestion, index) => (
                             <Button
@@ -1223,25 +1053,26 @@ const ChatwithData = ({ chatId, id }: { chatId?: string; id?: string }) => {
                           ))}
                         </div>
                       )}
-                    {message.role === "assistant" && message.length > 0 && (
-                      <div className="flex  md:ml-3 items-center gap-5">
-                        <div className="flex items-center gap-5">
-                          <Eye className="w-5 h-5 cursor-pointer text-muted-foreground" />
-                          <Star
-                            onClick={() => handleFavorite(message)}
-                            className={`w-5 h-5 cursor-pointer text-muted-foreground ${
-                              message.favorite
-                                ? "fill-primary text-primary"
-                                : ""
-                            }`}
-                          />
-                          <Copy
-                            onClick={() => handleCopy(message)}
-                            className="w-5 h-5 cursor-pointer text-muted-foreground"
-                          />
-                          <RefreshCw className="w-5 h-5 cursor-pointer text-muted-foreground" />
-                          <Share2 className="w-5 h-5 cursor-pointer text-muted-foreground" />
-                          {/* <Bookmark
+                    {message.role === "assistant" &&
+                      message.response_data_json && (
+                        <div className="flex  md:ml-3 items-center gap-5">
+                          <div className="flex items-center gap-5">
+                            <Eye className="w-5 h-5 cursor-pointer text-muted-foreground" />
+                            <Star
+                              onClick={() => handleFavorite(message)}
+                              className={`w-5 h-5 cursor-pointer text-muted-foreground ${
+                                message.favorite
+                                  ? "fill-primary text-primary"
+                                  : ""
+                              }`}
+                            />
+                            <Copy
+                              onClick={() => handleCopy(message)}
+                              className="w-5 h-5 cursor-pointer text-muted-foreground"
+                            />
+                            <RefreshCw className="w-5 h-5 cursor-pointer text-muted-foreground" />
+                            <Share2 className="w-5 h-5 cursor-pointer text-muted-foreground" />
+                            {/* <Bookmark
                             className={`w-5 h-5 cursor-pointer text-muted-foreground ${
                               message.bookmark
                                 ? "fill-primary border-primary"
@@ -1249,26 +1080,26 @@ const ChatwithData = ({ chatId, id }: { chatId?: string; id?: string }) => {
                             }`}
                             onClick={() => handleBookmark(message)}
                           /> */}
-                          <Edit className="w-5 h-5 cursor-pointer text-muted-foreground" />
+                            <Edit className="w-5 h-5 cursor-pointer text-muted-foreground" />
+                          </div>
+                          <div className="flex items-center  gap-5 justify-end w-full">
+                            <ThumbsUp
+                              onClick={() => handleLike(message, "like")}
+                              className={`w-5 h-5 ${
+                                message.isLike === true &&
+                                "fill-primary text-primary"
+                              } cursor-pointer text-muted-foreground`}
+                            />
+                            <ThumbsDown
+                              onClick={() => handleLike(message, "dislike")}
+                              className={`w-5 h-5 ${
+                                message.isLike === false &&
+                                "fill-primary text-primary"
+                              } cursor-pointer text-muted-foreground`}
+                            />
+                          </div>
                         </div>
-                        <div className="flex items-center  gap-5 justify-end w-full">
-                          <ThumbsUp
-                            onClick={() => handleLike(message, "like")}
-                            className={`w-5 h-5 ${
-                              message.isLike === true &&
-                              "fill-primary text-primary"
-                            } cursor-pointer text-muted-foreground`}
-                          />
-                          <ThumbsDown
-                            onClick={() => handleLike(message, "dislike")}
-                            className={`w-5 h-5 ${
-                              message.isLike === false &&
-                              "fill-primary text-primary"
-                            } cursor-pointer text-muted-foreground`}
-                          />
-                        </div>
-                      </div>
-                    )}
+                      )}
                   </div>
                 </div>
               </div>

@@ -197,7 +197,7 @@ const AssistantPage = ({ id, chatId }: { id: string; chatId?: string }) => {
         )}
       </div>
       <div className="w-full mt-4">
-        <ChatwithData id={id} chatId={chatId} />
+        <ChatwithData id={id} chatId={chatId} projectData={data} />
       </div>
     </div>
   );

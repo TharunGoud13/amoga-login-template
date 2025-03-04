@@ -15,6 +15,7 @@ interface Props {
   open: boolean;
   setOpen: (open: boolean) => void;
   data: any;
+  planId: string;
   title: string;
   setDeleteHistory: (deleteHistory: boolean) => void;
   refreshHistory: () => Promise<void>;
@@ -27,12 +28,13 @@ const HistoryBar = ({
   title,
   setDeleteHistory,
   refreshHistory,
+  planId,
 }: Props) => {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleClick = (id: string) => {
-    router.push(`/Agent/${id}`);
+    router.push(`/Projects/Assistant/${planId}/${id}`);
   };
 
   const handleDelete = async (id: string) => {
