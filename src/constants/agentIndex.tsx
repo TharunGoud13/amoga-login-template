@@ -36,7 +36,7 @@ export const fieldTypes: FieldType[] = [
   //   { name: "Send Pdf", isNew: false },
   //   { name: "Send Rating", isNew: false },
   //   { name: "Send Review", isNew: false },
-  //   //   { name: "Send Media Card", isNew: false },
+  { name: "Send Media Card", isNew: false },
   //   { name: "Analytic Card", isNew: false },
   { name: "Chat with Data", isNew: false },
   { name: "Chat with Data Auto", isNew: false },

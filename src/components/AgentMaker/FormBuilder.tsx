@@ -286,6 +286,7 @@ export default function AgentBuilder() {
       form_name: formInput,
       form_json: activeFormFields,
       version_no: 1,
+      form_group: "Agents",
       data_api_url: apiEndpoint,
       content: contentData,
       form_success_url: redirectUrl,

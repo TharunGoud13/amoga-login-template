@@ -43,7 +43,7 @@ function FormsDataTable() {
   useEffect(() => {
     const fetchApiData = async () => {
       try {
-        const response = await fetch(SAVE_FORM_DATA, {
+        const response = await fetch(`${SAVE_FORM_DATA}?form_group=eq.Agents`, {
           headers: {
             Authorization: `Bearer ${NEXT_PUBLIC_API_KEY}`,
           },
