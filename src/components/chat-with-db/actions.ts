@@ -493,7 +493,7 @@ export const generateChartConfig = async (
       model: openai("gpt-4o"),
       system,
       prompt: `Given the following data from a SQL query result, generate the chart config that best visualizes the data and answers the user's query.
-      Use appropriate chart types such as bar, line, bar horizontal, or pie or "Data Card Text",
+      Use appropriate chart types such as bar, line, bar horizontal, or pie or
     "Data Card Line Chart",
     "Data Card Bar Chart",
     "Data Card Bar Chart Horizontal",
