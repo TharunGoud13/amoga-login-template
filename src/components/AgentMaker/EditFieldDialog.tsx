@@ -883,7 +883,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                   onChange={(e) =>
                     setEditedField({
                       ...editedField,
-                      variant_code: e.target.value,
+                      validation_message: e.target.value,
                     })
                   }
                 />
@@ -2116,19 +2116,22 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                     <Label htmlFor="card-json">Card JSON</Label>
                     <Textarea
                       onChange={(e) => {
-                        const parsedData = new Function(
-                          `return ${e.target.value}`
-                        )();
-                        setEditedField({
-                          ...editedField,
-                          media_card_data: {
-                            ...editedField.media_card_data,
-                            card_json: parsedData,
-                          },
-                        });
+                        try {
+                          const parsedData = JSON.parse(e.target.value);
+                          setEditedField({
+                            ...editedField,
+                            media_card_data: {
+                              ...editedField.media_card_data,
+                              card_json: parsedData,
+                            },
+                          });
+                        } catch (error) {
+                          console.error("Invalid JSON:", error);
+                          // Optionally show error to user via toast/alert
+                        }
                       }}
                       id="card-json"
-                      placeholder="Enter Card JSON here"
+                      placeholder="Enter valid JSON here"
                       className="min-h-[100px] text-sm"
                     />
                   </div>

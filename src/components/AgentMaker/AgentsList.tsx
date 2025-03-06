@@ -13,6 +13,8 @@ import {
   Calendar,
   Activity,
   CheckCircle2,
+  File,
+  ClipboardCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { Loader } from "lucide-react";
@@ -20,6 +22,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { SAVE_FORM_DATA } from "@/constants/envConfig";
 import { Session } from "../doc-template/DocTemplate";
 import { Badge } from "@/components/ui/badge";
+import { LuChartNoAxesGantt, LuMessageCircleMore } from "react-icons/lu";
 
 const AgentsList = () => {
   const [search, setSearch] = useState("");
@@ -99,7 +102,7 @@ const AgentsList = () => {
             className="pl-10 text-md"
           />
         </div>
-        <Link href="/AgentMaker/new">
+        <Link href="/AgentMaker">
           <Button size={"icon"}>
             <Plus className="h-5 w-5" />
           </Button>
@@ -124,10 +127,12 @@ const AgentsList = () => {
                     {/* Content Section */}
                     <div className="flex flex-col gap-4">
                       {/* Name */}
-                      <div className="flex items-center gap-2">
+
+                      <div className="flex items-center justify-between">
                         <h2 className="font-semibold text-xl">
                           {item.form_name}
                         </h2>
+                        <Bot className="h-5 w-5 text-muted-foreground" />
                       </div>
 
                       {/* Code */}
@@ -159,33 +164,22 @@ const AgentsList = () => {
                         </div>
 
                         {/* Actions */}
-                        <div className="flex gap-3">
+                        <div className="flex items-center gap-3">
                           <Link href={`/AgentMaker`}>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                            >
-                              <Bot className="h-5 w-5 text-muted-foreground hover:text-foreground" />
-                            </Button>
+                            <File className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                           </Link>
+                          <ClipboardCheck className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                           <Link href={`/AgentMaker/edit/${item.form_id}`}>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                            >
-                              <Edit className="h-5 w-5 text-muted-foreground hover:text-foreground" />
-                            </Button>
+                            <Edit className="h-5 w-5 text-muted-foreground hover:text-foreground" />
                           </Link>
-                          <Link href={`/AgentMaker/view/${item.form_id}`}>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                            >
-                              <Eye className="h-5 w-5 text-muted-foreground hover:text-foreground" />
-                            </Button>
+                          <Link href={`/AgentMaker`}>
+                            <Eye className="h-5 w-5 text-muted-foreground hover:text-foreground" />
+                          </Link>
+                          {/* <Link href={`/AgentMaker`}>
+                            <LuChartNoAxesGantt className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                          </Link> */}
+                          <Link href={`/AgentMaker`}>
+                            <LuMessageCircleMore className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                           </Link>
                         </div>
                       </div>

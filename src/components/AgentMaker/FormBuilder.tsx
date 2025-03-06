@@ -345,9 +345,59 @@ export default function AgentBuilder() {
         form_code: formCode,
         field_name: activeFormFields.map((field: any) => field.name),
         label: activeFormFields.map((field: any) => field.label),
-        // options: activeFormFields.map((field: any) => field.options),
-        placeholder: activeFormFields.map((field: any) => field.placeholder),
-        // is_required: activeFormFields.map((field: any) => field.required),
+        variant: activeFormFields.map((field: any) => field.variant_code),
+        description: activeFormFields.map((field: any) => field.description),
+        // String values
+        upload_placeholder:
+          activeFormFields.length > 0
+            ? activeFormFields[0].placeholder_file_upload_url || ""
+            : "",
+        link:
+          activeFormFields.length > 0
+            ? activeFormFields[0].placeholder_file_url || ""
+            : "",
+        file_url:
+          activeFormFields.length > 0 ? activeFormFields[0].file_url || "" : "",
+        classname:
+          activeFormFields.length > 0
+            ? activeFormFields[0].classNname || ""
+            : "",
+        upload_file_path:
+          activeFormFields.length > 0
+            ? activeFormFields[0].use_file_path || ""
+            : "",
+
+        // Boolean values
+        use_api:
+          activeFormFields.length > 0
+            ? Boolean(activeFormFields[0].use_api)
+            : false,
+        use_upload_placeholder:
+          activeFormFields.length > 0
+            ? Boolean(activeFormFields[0].use_upload_placeholder)
+            : false,
+        use_file_url:
+          activeFormFields.length > 0
+            ? Boolean(activeFormFields[0].use_file_url)
+            : false,
+
+        // Already fixed boolean values
+        is_required:
+          activeFormFields.length > 0
+            ? Boolean(activeFormFields[0].required)
+            : false,
+        validation_message:
+          activeFormFields.length > 0
+            ? Boolean(activeFormFields[0].validation_message)
+            : false,
+        hidden:
+          activeFormFields.length > 0
+            ? Boolean(activeFormFields[0].disabled)
+            : false,
+
+        placeholder: activeFormFields.map(
+          (field: any) => field.placeholder || ""
+        ),
         cardui_json: activeFormFields,
       };
 
@@ -446,9 +496,15 @@ export default function AgentBuilder() {
                 : "grid-cols-3"
             }`}
           >
-            <TabsTrigger value="form">Agent</TabsTrigger>
-            <TabsTrigger value="agents">Agents</TabsTrigger>
-            <TabsTrigger value="connections">Connections</TabsTrigger>
+            <TabsTrigger disabled={currentPath} value="form">
+              Agent
+            </TabsTrigger>
+            <TabsTrigger disabled={currentPath} value="agents">
+              Agents
+            </TabsTrigger>
+            <TabsTrigger disabled={currentPath} value="connections">
+              Connections
+            </TabsTrigger>
             {currentPath && <TabsTrigger value="edit">Edit</TabsTrigger>}
             {viewPath && <TabsTrigger value="view">Form Data</TabsTrigger>}
           </TabsList>
@@ -663,12 +719,12 @@ export default function AgentBuilder() {
                   >
                     Maker
                   </TabsTrigger>
-                  <TabsTrigger
+                  {/* <TabsTrigger
                     value="form"
                     className="inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
                   >
                     Form
-                  </TabsTrigger>
+                  </TabsTrigger> */}
                   <TabsTrigger
                     value="chat"
                     className="inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
