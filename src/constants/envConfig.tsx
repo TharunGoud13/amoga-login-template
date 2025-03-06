@@ -7,6 +7,8 @@ export const GET_ONE_CONTACT_API =
   "https://amogademo-postgrest.morr.biz/user_catalog?user_catalog_id=eq.";
 export const SAVE_FORM_DATA = "https://amogademo-postgrest.morr.biz/form_setup";
 export const ADD_FORM_DATA = "https://amogademo-postgrest.morr.biz/form_data";
+export const SAVE_FORM_FIELDS =
+  "https://amogademo-postgrest.morr.biz/form_fields";
 export const ADD_CONNECTIONS =
   "https://amogademo-postgrest.morr.biz/form_connections";
 export const STORY_TEMPLATE =

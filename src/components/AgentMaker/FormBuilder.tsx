@@ -12,7 +12,11 @@ import List from "./List/List";
 import { ConnectionTable } from "./connections";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { NEXT_PUBLIC_API_KEY, SAVE_FORM_DATA } from "@/constants/envConfig";
+import {
+  NEXT_PUBLIC_API_KEY,
+  SAVE_FORM_DATA,
+  SAVE_FORM_FIELDS,
+} from "@/constants/envConfig";
 import { useSession } from "next-auth/react";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "../ui/use-toast";
@@ -27,6 +31,7 @@ import { ChatForm } from "./ChatPreview";
 import { Card } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
 import { ChatWithDB } from "./ChatWithData";
+import AgentsList from "./AgentsList";
 
 export interface Session {
   user: {
@@ -276,6 +281,8 @@ export default function AgentBuilder() {
       return;
     }
 
+    const formCode = `Agent_${Math.random().toString().slice(-4)}`;
+
     const payload = {
       status: formStatus,
       created_user_id: session?.user?.id,
@@ -287,6 +294,7 @@ export default function AgentBuilder() {
       form_json: activeFormFields,
       version_no: 1,
       form_group: "Agents",
+      form_code: formCode,
       data_api_url: apiEndpoint,
       content: contentData,
       form_success_url: redirectUrl,
@@ -319,10 +327,46 @@ export default function AgentBuilder() {
         });
       }
 
+      const getFormSetupData = await fetch(
+        `${SAVE_FORM_DATA}?share_url=eq.${payload.share_url}`,
+        {
+          method: "GET",
+          headers: headers,
+        }
+      );
+      const result = await getFormSetupData.json();
+      console.log("result----", result);
+      console.log("activeFormFields----", activeFormFields);
+
+      const formFieldsData = {
+        form_id: result[0].form_id,
+        created_date: formatDateToCustomFormat(date),
+        form_name: formInput,
+        form_code: formCode,
+        field_name: activeFormFields.map((field: any) => field.name),
+        label: activeFormFields.map((field: any) => field.label),
+        // options: activeFormFields.map((field: any) => field.options),
+        placeholder: activeFormFields.map((field: any) => field.placeholder),
+        // is_required: activeFormFields.map((field: any) => field.required),
+        cardui_json: activeFormFields,
+      };
+
+      const saveFormFieldsResponse = await fetch(SAVE_FORM_FIELDS, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(formFieldsData),
+      });
+      if (!saveFormFieldsResponse.ok) {
+        toast({
+          description: "Failed to save form fields",
+          variant: "destructive",
+        });
+      }
+
       if (response.ok) {
         setIsLoading(false);
         toast({ description: "Form saved successfully", variant: "default" });
-        route.push(`/form_maker/${payload.share_url}`);
+        // route.push(`/form_maker/${payload.share_url}`);
       } else {
         setIsLoading(false);
         toast({ description: "Failed to save form", variant: "destructive" });
@@ -403,7 +447,7 @@ export default function AgentBuilder() {
             }`}
           >
             <TabsTrigger value="form">Agent</TabsTrigger>
-            <TabsTrigger value="list">Agents</TabsTrigger>
+            <TabsTrigger value="agents">Agents</TabsTrigger>
             <TabsTrigger value="connections">Connections</TabsTrigger>
             {currentPath && <TabsTrigger value="edit">Edit</TabsTrigger>}
             {viewPath && <TabsTrigger value="view">Form Data</TabsTrigger>}
@@ -573,8 +617,9 @@ export default function AgentBuilder() {
             setApiFieldData={setApiFieldData}
           />
         </TabsContent>
-        <TabsContent value="list">
-          <List />
+
+        <TabsContent value="agents">
+          <AgentsList />
         </TabsContent>
         <TabsContent value="view">
           <View />

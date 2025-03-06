@@ -199,7 +199,7 @@ export function FormSettingsModal({
       <DialogContent className="w-full max-w-[800px]">
         <DialogHeader>
           <DialogTitle className="flex justify-between items-center">
-            Form Settings
+            Agent Settings
             {/* <Button variant="ghost" size="icon" onClick={onClose}>
               <X className="h-4 w-4" />
             </Button> */}
