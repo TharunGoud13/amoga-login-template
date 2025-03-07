@@ -305,7 +305,7 @@ const ChatwithDataCardJSON = ({
           <TabsList defaultValue={"data"} className="grid grid-cols-10 gap-2.5">
             <TabsTrigger value="json">JSON</TabsTrigger>
             <TabsTrigger value="data">Data</TabsTrigger>
-            <TabsTrigger value="chat-json">Chat JSON</TabsTrigger>
+            <TabsTrigger value="chat-json">Render</TabsTrigger>
             <TabsTrigger value="key-metrics">Metrics</TabsTrigger>
             <TabsTrigger value="key-metrics-json">KM JSON</TabsTrigger>
             <TabsTrigger value="pug-story">Pug Story</TabsTrigger>

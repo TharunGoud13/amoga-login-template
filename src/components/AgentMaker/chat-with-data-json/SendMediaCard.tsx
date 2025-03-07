@@ -26,6 +26,8 @@ import DataCard from "../field-components/MediaPieChart";
 import MediaDataLineChart from "../field-components/MediaDataLineChart";
 import MediaDataBarChart from "../field-components/MediaDataBarChart";
 import MediaDataBarHorizontalChart from "../field-components/MediaDataBarHorizontalChart";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const getFileIcon = (fileName: any) => {
   const extension = fileName.split(".").pop().toLowerCase();
@@ -48,7 +50,7 @@ const getFileIcon = (fileName: any) => {
   }
 };
 
-const SendMediaCardJSON = ({ field }: any) => {
+const SendMediaCardJSON = ({ field, formData, onRadioChange }: any) => {
   const {
     custom_html = "",
     card_type = "",
@@ -171,6 +173,30 @@ const SendMediaCardJSON = ({ field }: any) => {
               dangerouslySetInnerHTML={{ __html: custom_html }}
             />
           </div>
+
+          {field.chat_with_data?.buttons && (
+            <div className="p-4">
+              <RadioGroup
+                value={formData?.preference}
+                onValueChange={onRadioChange}
+                className="flex w-full flex-wrap items-center"
+              >
+                <div className="flex flex-wrap items-center gap-2.5">
+                  {field.chat_with_data?.buttons?.map((item: any, index: any) =>
+                    item?.button_text ? (
+                      <div
+                        key={index}
+                        className="flex border rounded-full p-2.5 items-center gap-2"
+                      >
+                        <RadioGroupItem value={item?.button_text} id={index} />
+                        <Label htmlFor={index}>{item?.button_text}</Label>
+                      </div>
+                    ) : null
+                  )}
+                </div>
+              </RadioGroup>
+            </div>
+          )}
         </CardContent>
         <CardFooter className="flex justify-between pb-2">
           <Button variant="ghost" size="icon">

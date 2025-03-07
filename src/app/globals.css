@@ -302,16 +302,15 @@
 }
 
 /* For WebKit browsers (Chrome, Safari) */
-::-webkit-scrollbar {
-  width: 8px; /* Width of the scrollbar */
+/* ::-webkit-scrollbar {
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent; /* Background of the scrollbar track */
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: lightgray; /* Color of the scrollbar thumb */
-  border-radius: 6px; /* Roundness of the scrollbar thumb */
-  /* border: 3px solid #f1f1f1; Padding around the scrollbar thumb */
-}
+  background-color: lightgray;
+  border-radius: 6px;
+} */
