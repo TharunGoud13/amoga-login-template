@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import React, { useEffect, useState } from "react";
-import { FormFieldType } from "@/types";
+import { AgentFieldType, FormFieldType } from "@/types";
 import { defaultFieldConfig } from "@/constants";
 import If from "../ui/if";
 import { FormFieldList } from "./FormFieldList";
@@ -97,7 +97,7 @@ export default function AgentBuilder() {
       placeholder: "",
     };
 
-    const newField: FormFieldType = {
+    const newField: AgentFieldType = {
       checked: true,
       description: description || "",
       disabled: false,
@@ -122,11 +122,13 @@ export default function AgentBuilder() {
       placeholder_pdf_file_url: "",
       validation_message: "",
       variant_code: newFieldName,
+      use_settings_upload: false,
       media_card_data: {
         media_url: "",
         card_type: "",
         card_json: [],
         custom_html: "",
+        use_upload: false,
         action_urls: {
           like: "",
           favorite: "",
@@ -202,7 +204,7 @@ export default function AgentBuilder() {
   const getData = async () => {
     try {
       const response = await fetch(
-        `${SAVE_FORM_DATA}?form_id=eq.${currentId}`,
+        `${SAVE_FORM_FIELDS}?form_id=eq.${currentId}`,
         {
           method: "GET",
           headers: {
@@ -232,8 +234,8 @@ export default function AgentBuilder() {
   }, []);
 
   useEffect(() => {
-    if (currentPath && editModeData?.form_json) {
-      setFormFields(editModeData.form_json);
+    if (currentPath && editModeData?.cardui_json) {
+      setFormFields(editModeData?.cardui_json);
       setEditFormInput(editModeData?.form_name || "");
     }
   }, [currentPath, editModeData]);
@@ -726,7 +728,7 @@ export default function AgentBuilder() {
                     Form
                   </TabsTrigger> */}
                   <TabsTrigger
-                    value="chat"
+                    value="chat_with_data"
                     className="inline-flex items-center justify-center whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm"
                   >
                     Chat
@@ -789,6 +791,20 @@ export default function AgentBuilder() {
                 <div className=" w-full h-full">
                   {formFields?.length > 0 ? (
                     <ChatForm
+                      formFields={formFields}
+                      apiFieldData={apiFieldData}
+                    />
+                  ) : (
+                    <div className="h-[50vh] flex justify-center items-center">
+                      <p>No form element selected yet.</p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+              <TabsContent value="chat_with_data">
+                <div className="max-w-[950px] h-full">
+                  {formFields?.length > 0 ? (
+                    <ChatWithDB
                       formFields={formFields}
                       apiFieldData={apiFieldData}
                     />

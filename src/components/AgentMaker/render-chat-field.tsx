@@ -63,6 +63,8 @@ import { toast } from "sonner";
 import { Result } from "@/lib/types";
 import { useSession } from "next-auth/react";
 import { Session } from "./FormBuilder";
+import AnalyticJSON from "./chat-with-data-json/AnalyticJSON";
+import SendMediaCardJSON from "./chat-with-data-json/SendMediaCard";
 
 const ALLOWED_FILES_TYPES = [
   "application/pdf",
@@ -1621,6 +1623,58 @@ const RenderInputField = ({
             </div>
           </RadioGroup>
         </div>
+      );
+    case "Chat with Data JSON":
+      return (
+        <Card className="w-full overflow-hidden">
+          <CardContent className="space-y-4 p-4">
+            {/* Send Media Card Section */}
+            {(currentField?.media_card_data?.media_url ||
+              currentField?.media_card_data?.custom_html) && (
+              <div className="mb-4">
+                <SendMediaCardJSON field={currentField} />
+              </div>
+            )}
+
+            {/* Analytic Card Section */}
+            {/* {currentField?.media_card_data?.card_json && (
+              <div className="mb-4">
+                <AnalyticJSON field={currentField} />
+              </div>
+            )} */}
+
+            {/* Radio Buttons Section */}
+            {currentField.chat_with_data?.buttons && (
+              <div className="">
+                <RadioGroup
+                  value={formData.preference}
+                  onValueChange={(value) => {
+                    handleRadioChange(value);
+                  }}
+                  className="flex w-full flex-wrap items-center"
+                >
+                  <div className="flex flex-wrap items-center gap-2.5">
+                    {currentField.chat_with_data?.buttons?.map(
+                      (item: any, index: any) =>
+                        item?.button_text ? (
+                          <div
+                            key={index}
+                            className="flex border rounded-full p-2.5 items-center gap-2"
+                          >
+                            <RadioGroupItem
+                              value={item?.button_text}
+                              id={index}
+                            />
+                            <Label htmlFor={index}>{item?.button_text}</Label>
+                          </div>
+                        ) : null
+                    )}
+                  </div>
+                </RadioGroup>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       );
 
     default:

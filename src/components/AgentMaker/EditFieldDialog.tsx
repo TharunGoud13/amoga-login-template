@@ -47,7 +47,7 @@ import ChatwithDataActions from "./field-components/ChatwithDataActions";
 type EditFieldDialogProps = {
   isOpen: boolean;
   onClose: () => void;
-  field: FormFieldType | null;
+  field: any;
   onSave: (updatedField: FormFieldType) => void;
   existingField: string[];
   setApiFieldData: any;
@@ -926,9 +926,13 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                       <Label htmlFor="file-upload">
                         <div className="flex items-center gap-2.5 my-2">
                           <Checkbox
-                            checked={isPlaceholderChecked}
+                            checked={editedField.use_settings_upload}
                             onCheckedChange={() =>
-                              setIsPlaceholderChecked(!isPlaceholderChecked)
+                              setEditedField({
+                                ...editedField,
+                                use_settings_upload:
+                                  !editedField.use_settings_upload,
+                              })
                             }
                           />{" "}
                           Use upload placeholder
@@ -940,7 +944,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                           <label
                             htmlFor="file-upload"
                             className={`relative flex flex-col items-center justify-center w-full h-64 border border-primary border-dashed rounded-lg ${
-                              !isPlaceholderChecked
+                              !editedField.use_settings_upload
                                 ? "cursor-not-allowed"
                                 : "cursor-pointer"
                             } bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden`}
@@ -970,16 +974,24 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                             ) : (
                               <div
                                 className={`flex ${
-                                  !isPlaceholderChecked &&
+                                  !editedField.use_settings_upload &&
                                   "bg-gray-100 cursor-not-allowed"
                                 } flex-col items-center justify-center pt-5 pb-6`}
                               >
                                 <UploadIcon className="w-8 h-8 mb-4 text-primary" />
                                 <p className="mb-2 text-sm text-primary">
-                                  <span className="font-semibold">
-                                    Click to upload
-                                  </span>{" "}
-                                  or drag and drop
+                                  {editedField.media_card_data?.media_url ? (
+                                    <span className="font-semibold">
+                                      {editedField.placeholder_file_url}
+                                    </span>
+                                  ) : (
+                                    <>
+                                      <span className="font-semibold">
+                                        Click to upload
+                                      </span>{" "}
+                                      or drag and drop
+                                    </>
+                                  )}
                                 </p>
                                 <p className="text-xs text-primary">
                                   JPG, PNG, or GIF (MAX. 5MB)
@@ -990,7 +1002,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                               id="file-upload"
                               type="file"
                               disabled={
-                                !isPlaceholderChecked ||
+                                !editedField.use_settings_upload ||
                                 uploading ||
                                 imageUrl?.length > 0
                               }
@@ -1006,8 +1018,16 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                     <div>
                       <div className="flex gap-2.5 items-center my-2">
                         <Checkbox
-                          checked={isUrlChecked}
-                          onCheckedChange={() => setIsUrlChecked(!isUrlChecked)}
+                          checked={editedField.media_card_data?.use_url}
+                          onCheckedChange={() =>
+                            setEditedField({
+                              ...editedField,
+                              media_card_data: {
+                                ...editedField.media_card_data,
+                                use_url: !editedField.media_card_data?.use_url,
+                              },
+                            })
+                          }
                         />{" "}
                         Use URL placeholder
                       </div>
@@ -1946,7 +1966,8 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                 field?.variant !== "Send Media Card" &&
                 field?.variant !== "Analytic Card" &&
                 field?.variant !== "Chat with Data" &&
-                field?.variant !== "Chat with Data Auto"
+                field?.variant !== "Chat with Data Auto" &&
+                field?.variant !== "Chat with Data JSON"
               }
               render={() => <div>Card content goes here.</div>}
             />
@@ -1955,13 +1976,15 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                 field?.variant === "Send Media Card" ||
                 field?.variant === "Analytic Card" ||
                 field?.variant === "Chat with Data" ||
-                field?.variant === "Chat with Data Auto"
+                field?.variant === "Chat with Data Auto" ||
+                field?.variant === "Chat with Data JSON"
               }
               render={() => (
                 <div className="space-y-2.5">
                   <>
                     <Label htmlFor="media-card">Content Type</Label>
                     <Select
+                      value={editedField.media_card_data?.card_type}
                       onValueChange={(value) => {
                         setEditedField({
                           ...editedField,
@@ -1987,12 +2010,20 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                   </>
                   {/* -------------------------------- */}
                   <div>
-                    <Label htmlFor="file-upload">
+                    <Label htmlFor="file-upload-checkbox">
                       <div className="flex items-center gap-2.5 my-2">
                         <Checkbox
-                          checked={isPlaceholderChecked}
+                          id="file-upload-checkbox"
+                          checked={editedField.media_card_data?.use_upload}
                           onCheckedChange={() =>
-                            setIsPlaceholderChecked(!isPlaceholderChecked)
+                            setEditedField({
+                              ...editedField,
+                              media_card_data: {
+                                ...editedField.media_card_data,
+                                use_upload:
+                                  !editedField.media_card_data?.use_upload,
+                              },
+                            })
                           }
                         />{" "}
                         Use upload placeholder
@@ -2004,7 +2035,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                         <label
                           htmlFor="file-upload"
                           className={`relative flex flex-col items-center justify-center w-full h-64 border border-primary border-dashed rounded-lg ${
-                            !isPlaceholderChecked
+                            !editedField.media_card_data?.use_upload
                               ? "cursor-not-allowed"
                               : "cursor-pointer"
                           } bg-secondary hover:bg-secondary transition-all duration-300 ease-in-out overflow-hidden`}
@@ -2029,16 +2060,24 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                           ) : (
                             <div
                               className={`flex ${
-                                !isPlaceholderChecked &&
+                                !editedField.media_card_data?.use_upload &&
                                 "bg-gray-100 cursor-not-allowed"
                               } flex-col items-center justify-center pt-5 pb-6`}
                             >
                               <UploadIcon className="w-8 h-8 mb-4 text-primary" />
                               <p className="mb-2 text-sm text-primary">
-                                <span className="font-semibold">
-                                  Click to upload
-                                </span>{" "}
-                                or drag and drop
+                                {editedField.media_card_data?.media_url ? (
+                                  <span className="font-semibold text-center">
+                                    {editedField.media_card_data.media_url}
+                                  </span>
+                                ) : (
+                                  <>
+                                    <span className="font-semibold">
+                                      Click to upload
+                                    </span>{" "}
+                                    or drag and drop
+                                  </>
+                                )}
                               </p>
                             </div>
                           )}
@@ -2046,7 +2085,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                             id="file-upload"
                             type="file"
                             disabled={
-                              !isPlaceholderChecked ||
+                              !editedField.media_card_data?.use_upload ||
                               uploading ||
                               mediaCardPreviews?.length > 0 ||
                               selectedValue === "Page URL" ||
@@ -2054,6 +2093,12 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                             }
                             onChange={handleMediaUpload}
                             className="hidden"
+                            onClick={(e) => {
+                              if (!editedField.media_card_data?.use_upload) {
+                                e.preventDefault();
+                              }
+                            }}
+                            // Removed the value prop as file inputs can only have empty string values
                           />
                         </label>
                       </div>
@@ -2063,26 +2108,41 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                   <div>
                     <div className="flex gap-2.5 items-center my-2">
                       <Checkbox
-                        checked={isUrlChecked}
-                        onCheckedChange={() => setIsUrlChecked(!isUrlChecked)}
+                        checked={editedField.media_card_data?.use_url}
+                        onCheckedChange={() =>
+                          setEditedField({
+                            ...editedField,
+                            media_card_data: {
+                              ...editedField.media_card_data,
+                              use_url: !editedField.media_card_data?.use_url,
+                            },
+                          })
+                        }
                       />{" "}
                       Use URL placeholder
                     </div>
                     <div className="mt-2.5 flex items-center gap-2.5">
                       <Input
-                        value={mediaCardUrl}
+                        value={editedField.media_card_data?.media_url}
                         placeholder="Enter File URL"
                         className="border-secondary"
                         disabled={
-                          !isUrlChecked || mediaCardPreviews?.length > 0
+                          !editedField.media_card_data?.use_url ||
+                          mediaCardPreviews?.length > 0
                         }
                         onChange={(e) => {
-                          setMediaCardUrl(e.target.value);
+                          setEditedField({
+                            ...editedField,
+                            media_card_data: {
+                              ...editedField.media_card_data,
+                              media_url: e.target.value,
+                            },
+                          });
                         }}
                       />
                       <Button
                         disabled={
-                          !isUrlChecked ||
+                          !editedField.media_card_data?.use_url ||
                           !mediaCardUrl ||
                           mediaCardPreviews?.length > 0
                         }
@@ -2100,6 +2160,7 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                   <Label htmlFor="custom-html">Custom HTML</Label>
                   <Textarea
                     id="custom-html"
+                    value={editedField.media_card_data?.custom_html}
                     className="min-h-[100px]"
                     onChange={(e) => {
                       setEditedField({
@@ -2114,26 +2175,35 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
                   {/* -----------------*/}
                   <div className="space-y-2">
                     <Label htmlFor="card-json">Card JSON</Label>
-                    <Textarea
-                      onChange={(e) => {
-                        try {
-                          const parsedData = JSON.parse(e.target.value);
-                          setEditedField({
-                            ...editedField,
-                            media_card_data: {
-                              ...editedField.media_card_data,
-                              card_json: parsedData,
-                            },
-                          });
-                        } catch (error) {
-                          console.error("Invalid JSON:", error);
-                          // Optionally show error to user via toast/alert
-                        }
-                      }}
-                      id="card-json"
-                      placeholder="Enter valid JSON here"
-                      className="min-h-[100px] text-sm"
-                    />
+                    <div className="flex flex-col space-y-2">
+                      <Textarea
+                        id="card-json"
+                        onChange={(e) => {
+                          try {
+                            const parsedData = JSON.parse(e.target.value);
+                            setEditedField({
+                              ...editedField,
+                              media_card_data: {
+                                ...editedField.media_card_data,
+                                card_json: Array.isArray(parsedData)
+                                  ? parsedData
+                                  : [parsedData],
+                              },
+                            });
+                          } catch (error) {
+                            console.error("Invalid JSON:", error);
+                            // Optionally show error to user via toast/alert
+                          }
+                        }}
+                        value={JSON.stringify(
+                          editedField.media_card_data?.card_json || [],
+                          null,
+                          2
+                        )}
+                        placeholder="Enter valid JSON array here"
+                        className="min-h-[100px] text-sm font-mono"
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -2292,14 +2362,16 @@ export const EditFieldDialog: React.FC<EditFieldDialogProps> = ({
             <If
               condition={
                 field?.variant !== "Chat with Data" &&
-                field?.variant !== "Chat with Data Auto"
+                field?.variant !== "Chat with Data Auto" &&
+                field?.variant !== "Chat with Data JSON"
               }
               render={() => <div>Actions content goes here.</div>}
             />
             <If
               condition={
                 field?.variant == "Chat with Data" ||
-                field?.variant == "Chat with Data Auto"
+                field?.variant == "Chat with Data Auto" ||
+                field?.variant == "Chat with Data JSON"
               }
               render={() => (
                 <div>

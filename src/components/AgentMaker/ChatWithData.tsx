@@ -28,6 +28,7 @@ import { Result } from "@/lib/types";
 import ChatwithDataCard from "./field-components/ChatwithDataCard";
 import Spinner from "../ui/Spinner";
 import ChatwithDataCardAuto from "./chat-with-data-auto/ChatwithDataCardAuto";
+import ChatwithDataCardJSON from "./chat-with-data-json/ChatwithDataJSON";
 
 type Message = {
   id: string;
@@ -787,6 +788,50 @@ export function ChatWithDB({ formFields, apiFieldData }: any) {
             chartConfig={chartConfig}
             apiData={apiData}
             componentName={componentName}
+          />
+        </div>
+      );
+      const updatedFormData = {
+        ...formData,
+        [currentField.name]: currentField,
+      };
+
+      // Update form data
+      setFormData(updatedFormData);
+      const nextStep = findNextActiveField(currentStep);
+      setCurrentStep(nextStep);
+
+      if (nextStep !== -1) {
+        const nextField = formFields[nextStep];
+        addMessage(
+          "assistant",
+          <div>
+            <span className="label">{nextField.label}</span>
+            {nextField.required && <span className="text-red-500">*</span>}
+            <br />
+            <span className="text-sm text-gray-400">
+              {nextField.description}
+            </span>
+          </div>
+        );
+      } else {
+        addMessage("assistant", "Thank you for completing the form.");
+        addMessage("assistant", <FormSummaryCard formData={updatedFormData} />);
+      }
+    }
+
+    if (currentField?.variant === "Chat with Data JSON") {
+      addMessage(
+        "user",
+        <div className="flex w-full overflow-x-auto  md:w-[80vw] items-center">
+          <ChatwithDataCardJSON
+            results={results}
+            column={columns}
+            chartConfig={chartConfig}
+            apiData={apiData}
+            componentName={componentName}
+            formData={formData}
+            currentField={currentField}
           />
         </div>
       );
