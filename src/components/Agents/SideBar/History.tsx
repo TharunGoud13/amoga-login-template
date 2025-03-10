@@ -12,7 +12,7 @@ interface Props {
   data: any;
   title: string;
   setDeleteHistory: (deleteHistory: boolean) => void;
-  refreshHistory: () => Promise<void>;
+  refreshHistory: () => any;
 }
 
 const HistoryBar = ({

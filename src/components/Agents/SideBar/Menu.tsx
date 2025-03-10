@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../../ui/sheet";
 import { useRouter } from "next/navigation";
 import { toast } from "../../ui/use-toast";
 import { useState } from "react";
+import Link from "next/link";
 
 interface Props {
   open: boolean;
@@ -17,10 +18,6 @@ interface Props {
 const MenuBar = ({ open, setOpen, data, title, setDeleteHistory }: Props) => {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
-  const handleClick = (id: string) => {
-    router.push(`/Agent/${id}`);
-    router.push(`/Agent/${id}`);
-  };
 
   const handleDelete = async (id: string) => {
     console.log("id----", id);
@@ -78,9 +75,9 @@ const MenuBar = ({ open, setOpen, data, title, setDeleteHistory }: Props) => {
                     className="hover:bg-secondary cursor-pointer p-2.5 rounded-md"
                   >
                     <div className="flex justify-between items-center gap-2">
-                      <p onClick={() => handleClick(prompt.id)}>
+                      <Link href={`/Agent/Chat/${prompt.form_id}`}>
                         {prompt.form_name}
-                      </p>
+                      </Link>
                     </div>
                   </div>
                 ))}
