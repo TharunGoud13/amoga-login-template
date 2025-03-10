@@ -46,6 +46,8 @@ import BookmarkBar from "./SideBar/Bookmark";
 import { Session } from "../doc-template/DocTemplate";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { SAVE_FORM_FIELDS } from "@/constants/envConfig";
+import axiosInstance from "@/utils/axiosInstance";
 
 const favoritePrompts = [
   { id: 1, text: "Explain quantum computing in simple terms" },
@@ -53,14 +55,6 @@ const favoritePrompts = [
   { id: 3, text: "Describe the process of photosynthesis" },
   { id: 4, text: "Compare and contrast renewable energy sources" },
   { id: 5, text: "Outline the major events of World War II" },
-];
-
-const chatAgents = [
-  { id: 1, text: "General Assistant", icon: Bot },
-  { id: 2, text: "Code Helper", icon: Code },
-  { id: 3, text: "Creative Writer", icon: Pencil },
-  { id: 4, text: "Data Analyst", icon: FileText },
-  { id: 5, text: "Image Creator", icon: Image },
 ];
 
 const AgentEditor = ({ chatId }: { chatId?: string }) => {
@@ -94,6 +88,18 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [getMenuData, setMenuData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchMenuData = async () => {
+      const response = await axiosInstance.get(SAVE_FORM_FIELDS);
+      const filteredData = response.data.filter((form: any) =>
+        form?.users_json?.includes(session?.user?.email)
+      );
+      setMenuData(filteredData);
+    };
+    fetchMenuData();
+  }, [openMenu, session]);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -1151,7 +1157,7 @@ const AgentEditor = ({ chatId }: { chatId?: string }) => {
       <MenuBar
         open={openMenu}
         setOpen={setOpenMenu}
-        data={chatAgents}
+        data={getMenuData}
         setDeleteHistory={setDeleteHistory}
         title="Menu"
       />

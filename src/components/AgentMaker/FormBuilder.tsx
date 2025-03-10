@@ -75,6 +75,7 @@ export default function AgentBuilder() {
   const [formStatus, setFormStatus] = React.useState("");
   const [successMsg, setSuccessMsg] = React.useState("");
   const [redirectUrl, setRedirectUrl] = React.useState("");
+  const [selectedUsers, setSelectedUsers] = React.useState<string[]>([]);
 
   const currentPath = path.includes("edit");
   const currentId = path.split("/").at(-1);
@@ -302,6 +303,7 @@ export default function AgentBuilder() {
       form_success_url: redirectUrl,
       form_success_message: successMsg,
       share_url: uuidv4(),
+      users_json: selectedUsers,
       custom_one: nameFields,
     };
 
@@ -349,6 +351,8 @@ export default function AgentBuilder() {
         label: activeFormFields.map((field: any) => field.label),
         variant: activeFormFields.map((field: any) => field.variant_code),
         description: activeFormFields.map((field: any) => field.description),
+        users_json: selectedUsers,
+
         // String values
         upload_placeholder:
           activeFormFields.length > 0
@@ -855,6 +859,7 @@ export default function AgentBuilder() {
           setSuccessMsg={setSuccessMsg}
           setRedirectActionUrl={setRedirectUrl}
           formInput={formInput}
+          setUsersSelected={setSelectedUsers}
         />
       </Tabs>
     </section>

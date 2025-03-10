@@ -4,6 +4,7 @@ import { Input } from "../../ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../../ui/sheet";
 import { useRouter } from "next/navigation";
 import { toast } from "../../ui/use-toast";
+import { useState } from "react";
 
 interface Props {
   open: boolean;
@@ -15,6 +16,7 @@ interface Props {
 
 const MenuBar = ({ open, setOpen, data, title, setDeleteHistory }: Props) => {
   const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
   const handleClick = (id: string) => {
     router.push(`/Agent/${id}`);
     router.push(`/Agent/${id}`);
@@ -44,6 +46,9 @@ const MenuBar = ({ open, setOpen, data, title, setDeleteHistory }: Props) => {
       });
     }
   };
+
+  const filteredData =
+    data && data.filter((item: any) => item.form_name.includes(searchTerm));
   return (
     <div>
       <div>
@@ -59,28 +64,25 @@ const MenuBar = ({ open, setOpen, data, title, setDeleteHistory }: Props) => {
                 <Input
                   className="border-none"
                   placeholder={`Search ${title}...`}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
             </SheetHeader>
-            {/* <div className="flex flex-col gap-2.5 mt-2.5">
-              {data.map((prompt: any) => (
+            <div className="flex flex-col gap-2.5 mt-2.5">
+              {filteredData.map((prompt: any) => (
                 <div
                   key={prompt.chatId}
                   className="hover:bg-secondary cursor-pointer p-2.5 rounded-md"
                 >
-                  <Star />
                   <div className="flex justify-between items-center gap-2">
                     <p onClick={() => handleClick(prompt.id)}>
-                      {prompt.content}
+                      {prompt.form_name}
                     </p>
-                    <Trash
-                      className="h-5 w-5 text-muted-foreground"
-                      onClick={() => handleDelete(prompt.id)}
-                    />
                   </div>
                 </div>
               ))}
-            </div> */}
+            </div>
           </SheetContent>
         </Sheet>
       </div>
