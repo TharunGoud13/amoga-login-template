@@ -49,7 +49,7 @@ interface FormEntry {
   actionApi: string;
   automationName: string;
   html: string;
-  json: string;
+  json: string[];
 }
 
 interface ValidationErrors {
@@ -644,11 +644,22 @@ function SortableItem({
               <div>
                 <Label htmlFor={`json-${entry.id}`}>JSON</Label>
                 <Textarea
-                  id={`json-${entry.id}`}
-                  value={editedEntry.json}
-                  onChange={(e) =>
-                    setEditedEntry({ ...editedEntry, json: e.target.value })
-                  }
+                  id="json"
+                  value={JSON.stringify(editedEntry.json, null, 2)}
+                  onChange={(e) => {
+                    try {
+                      const parsedData = JSON.parse(e.target.value);
+                      setEditedEntry({
+                        ...editedEntry,
+                        json: Array.isArray(parsedData)
+                          ? parsedData
+                          : [parsedData],
+                      });
+                    } catch (error) {
+                      console.error("Invalid JSON:", error);
+                      // Optionally show error to user via toast/alert
+                    }
+                  }}
                   className="mt-1"
                   placeholder="Enter JSON"
                 />
@@ -748,7 +759,7 @@ function NewEntryForm({
     actionApi: "",
     automationName: "",
     html: "",
-    json: "",
+    json: [],
     apiField: "",
     component_name: "",
   });
@@ -897,7 +908,7 @@ function NewEntryForm({
         actionApi: "",
         automationName: "",
         html: "",
-        json: "",
+        json: [],
       });
       setErrors({});
     }
@@ -1375,8 +1386,19 @@ function NewEntryForm({
           <Label htmlFor="json">JSON</Label>
           <Textarea
             id="json"
-            value={newEntry.json}
-            onChange={(e) => setNewEntry({ ...newEntry, json: e.target.value })}
+            value={JSON.stringify(newEntry.json, null, 2)}
+            onChange={(e) => {
+              try {
+                const parsedData = JSON.parse(e.target.value);
+                setNewEntry({
+                  ...newEntry,
+                  json: Array.isArray(parsedData) ? parsedData : [parsedData],
+                });
+              } catch (error) {
+                console.error("Invalid JSON:", error);
+                // Optionally show error to user via toast/alert
+              }
+            }}
             className="mt-1"
             placeholder="Enter JSON"
           />

@@ -419,7 +419,11 @@ const ChatwithDataCardJSON = ({
           </TabsContent>
           <TabsContent value="chat-json">
             {currentField?.variant === "Chat with Data JSON" && (
-              <AnalyticJSON field={currentField} data={data} />
+              <AnalyticJSON
+                field={currentField}
+                data={data}
+                formData={formData}
+              />
             )}
           </TabsContent>
           <TabsContent value="chart">

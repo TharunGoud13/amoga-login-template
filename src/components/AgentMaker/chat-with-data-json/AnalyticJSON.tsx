@@ -38,11 +38,17 @@ import {
 } from "recharts";
 import GanttChart from "../chat-with-data-auto/GanttChart";
 
-const AnalyticJSON = ({ field, data }: any) => {
+const AnalyticJSON = ({ field, data, formData }: any) => {
   console.log("field----", field);
   console.log("data----", data);
   const card_json = field?.media_card_data?.card_json;
+  const field_buttons = field?.chat_with_data?.buttons;
+  const card_actions_json = field_buttons.find(
+    (field: any) => field.button_text === formData.preference
+  )?.json;
   const columns = data.length > 0 ? Object.keys(data[0]) : [];
+
+  console.log("card_actions_json----", card_actions_json);
 
   const formatColumnTitle = (title: string) => {
     return title
@@ -469,15 +475,15 @@ const AnalyticJSON = ({ field, data }: any) => {
     <div>
       <Card className="p-2.5">
         <div className="bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 p-6">
-          {card_json &&
-            card_json[0]?.body?.[0]?.columns?.map(
+          {card_actions_json &&
+            card_actions_json[0]?.body?.[0]?.columns?.map(
               (column: any, colIndex: any) => (
                 <div key={colIndex} className={`w-${column.width}/3`}>
                   {column.items?.map((item: any) => renderElement(item))}
                 </div>
               )
             )}
-          {!card_json && (
+          {!card_actions_json && (
             <>
               <h5 className="font-bold text-xl text-gray-900 dark:text-white mb-4">
                 Project Plans Analysis

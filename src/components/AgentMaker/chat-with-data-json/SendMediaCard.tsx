@@ -62,6 +62,42 @@ const SendMediaCardJSON = ({ field, formData, onRadioChange }: any) => {
   const totalRevenue =
     card_json?.reduce((sum: number, item: any) => sum + item.revenue, 0) || 0;
 
+  const renderElement = (item: any) => {
+    if (!item || !item.type) return null;
+
+    switch (item.type) {
+      case "Heading":
+        return (
+          <h5
+            key={item.text}
+            className={`${
+              item.weight === "bolder" ? "font-bold text-2xl" : "font-normal"
+            } ${
+              item.isSubtle ? "text-gray-500" : "text-gray-900"
+            } dark:text-white`}
+          >
+            {item.text}
+          </h5>
+        );
+      case "Paragraph":
+        return (
+          <p
+            key={item.text}
+            className={`${
+              item.weight === "bolder" ? "font-bold text-2xl" : "font-normal"
+            } ${
+              item.isSubtle ? "text-gray-500" : "text-gray-900"
+            } dark:text-white`}
+          >
+            {item.text}
+          </p>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
     <div>
       <Card className="w-full max-w-sm mx-auto overflow-hidden">
@@ -172,6 +208,16 @@ const SendMediaCardJSON = ({ field, formData, onRadioChange }: any) => {
               }}
               dangerouslySetInnerHTML={{ __html: custom_html }}
             />
+          </div>
+          <div className="p-4">
+            {card_json &&
+              card_json[0]?.body?.[0]?.columns?.map(
+                (column: any, colIndex: any) => (
+                  <div key={colIndex} className={`w-${column.width}/3`}>
+                    {column.items?.map((item: any) => renderElement(item))}
+                  </div>
+                )
+              )}
           </div>
 
           {field.chat_with_data?.buttons && (
