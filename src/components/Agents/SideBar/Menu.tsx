@@ -70,18 +70,20 @@ const MenuBar = ({ open, setOpen, data, title, setDeleteHistory }: Props) => {
               </div>
             </SheetHeader>
             <div className="flex flex-col gap-2.5 mt-2.5">
-              {filteredData.map((prompt: any) => (
-                <div
-                  key={prompt.chatId}
-                  className="hover:bg-secondary cursor-pointer p-2.5 rounded-md"
-                >
-                  <div className="flex justify-between items-center gap-2">
-                    <p onClick={() => handleClick(prompt.id)}>
-                      {prompt.form_name}
-                    </p>
+              {filteredData &&
+                filteredData.length > 0 &&
+                filteredData.map((prompt: any) => (
+                  <div
+                    key={prompt.chatId}
+                    className="hover:bg-secondary cursor-pointer p-2.5 rounded-md"
+                  >
+                    <div className="flex justify-between items-center gap-2">
+                      <p onClick={() => handleClick(prompt.id)}>
+                        {prompt.form_name}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           </SheetContent>
         </Sheet>
