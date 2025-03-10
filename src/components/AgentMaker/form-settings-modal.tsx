@@ -64,6 +64,8 @@ export function FormSettingsModal({
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
+  console.log("editModeData----", editModeData);
+
   const {
     content,
     data_api_url,
@@ -87,7 +89,9 @@ export function FormSettingsModal({
   }, []);
 
   useEffect(() => {
-    setSelectedUsers(editModeData?.users_json);
+    if (editModeData?.users_json) {
+      setSelectedUsers(editModeData?.users_json);
+    }
   }, [editModeData]);
 
   // Update form status when active state changes
