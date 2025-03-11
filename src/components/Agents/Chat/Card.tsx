@@ -29,6 +29,13 @@ import MediaDataBarHorizontalChart from "../../AgentMaker/field-components/Media
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import axiosInstance from "@/utils/axiosInstance";
+import { useSession } from "next-auth/react";
+import {
+  generateChartConfig,
+  generateQuery,
+  runGenerateSQLQuery,
+} from "@/components/chat-with-db/actions";
+import { toast } from "@/components/ui/use-toast";
 
 const getFileIcon = (fileName: any) => {
   const extension = fileName.split(".").pop().toLowerCase();
@@ -51,23 +58,76 @@ const getFileIcon = (fileName: any) => {
   }
 };
 
-const CardRender = ({ field }: any) => {
-  //   const {
-  //     custom_html = "",
-  //     card_type = "",
-  //     media_url = "",
-  //     card_json = [],
-  //     component_name = "",
-  //   } = field?.media_card_data || {};
-  //   const { card_type, media_url, custom_html, card_json, component_name } =
-  //     field?.cardui_json[0]?.media_card_data;
-
-  console.log("field----", field);
+const CardRender = ({
+  field,
+  handleRadioChange,
+  setLoading,
+  setResults,
+  setColumns,
+  setChartConfig,
+  setComponentName,
+  setApiData,
+  session,
+}: any) => {
+  console.log("field==========", field);
+  console.log("rendered=======here===");
   const totalRevenue =
-    field?.cardui_json[0]?.media_card_data?.card_json?.reduce(
-      (sum: number, item: any) => sum + item.revenue,
-      0
-    ) || 0;
+    (field?.cardui_json?.length > 0 &&
+      field?.cardui_json?.[0]?.media_card_data?.card_json?.reduce(
+        (sum: number, item: any) => sum + item.revenue,
+        0
+      )) ||
+    0;
+
+  const handleSubmit = async (suggestion: any, dataFilter: any) => {
+    setLoading(true);
+    const question = suggestion;
+    if (!suggestion) return;
+    try {
+      const query = await generateQuery(question, session, dataFilter);
+      console.log("query----", query);
+      if (query === undefined) {
+        toast({
+          description: "An error occurred. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const data = await runGenerateSQLQuery(query);
+      const columns = data.length > 0 ? Object.keys(data[0]) : [];
+      setResults(data);
+      setColumns(columns);
+      const generation = await generateChartConfig(data, question);
+      setChartConfig(generation.config);
+      setLoading(false);
+    } catch (e) {
+      setLoading(false);
+      toast({
+        description: "An error occurred. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRadioChangeInternal = (value: string) => {
+    const selectedItem = field?.cardui_json?.[0]?.chat_with_data?.buttons?.find(
+      (item: any) => item?.button_text === value
+    );
+    console.log("selectedItem-----", selectedItem);
+    if (selectedItem) {
+      setComponentName(selectedItem);
+      if (selectedItem?.enable_prompt) {
+        handleSubmit(selectedItem?.prompt, selectedItem?.prompt_dataFilter);
+      }
+      if (selectedItem?.enable_api || selectedItem?.enable_dataApi) {
+        setApiData(selectedItem);
+      }
+    }
+
+    if (handleRadioChange) {
+      handleRadioChange(value);
+    }
+  };
 
   const renderElement = (item: any) => {
     if (!item || !item.type) return null;
@@ -106,8 +166,8 @@ const CardRender = ({ field }: any) => {
   };
 
   return (
-    <div>
-      <Card className="w-full max-w-sm mx-auto overflow-hidden">
+    <div className="w-full">
+      <Card className="w-full   overflow-hidden">
         <CardHeader>
           <CardTitle className="">
             {field?.label && JSON.parse(field?.label)}
@@ -118,24 +178,25 @@ const CardRender = ({ field }: any) => {
         </CardHeader>
         <CardContent className="space-y-4 p-0">
           <div className="relative w-full aspect-video bg-muted">
-            {field?.cardui_json[0]?.media_card_data?.media_url &&
-              field?.cardui_json[0]?.media_card_data?.card_type === "Image" && (
+            {field?.cardui_json?.[0]?.media_card_data?.media_url &&
+              field?.cardui_json?.[0]?.media_card_data?.card_type ===
+                "Image" && (
                 <Image
-                  src={field?.cardui_json[0]?.media_card_data?.media_url}
+                  src={field?.cardui_json?.[0]?.media_card_data?.media_url}
                   alt="Media Image"
                   layout="fill"
                 />
               )}
-            {field?.cardui_json[0]?.media_card_data?.media_url &&
-              field?.cardui_json[0]?.media_card_data?.card_type === "Video" &&
-              (field?.cardui_json[0]?.media_card_data?.media_url.startsWith(
+            {field?.cardui_json?.[0]?.media_card_data?.media_url &&
+              field?.cardui_json?.[0]?.media_card_data?.card_type === "Video" &&
+              (field?.cardui_json?.[0]?.media_card_data?.media_url.startsWith(
                 "http"
               ) ? (
                 /(youtube\.com|youtu\.be)/.test(
-                  field?.cardui_json[0]?.media_card_data?.media_url
+                  field?.cardui_json?.[0]?.media_card_data?.media_url
                 ) ? (
                   <iframe
-                    src={field?.cardui_json[0]?.media_card_data?.media_url.replace(
+                    src={field?.cardui_json?.[0]?.media_card_data?.media_url.replace(
                       "watch?v=",
                       "embed/"
                     )}
@@ -159,8 +220,9 @@ const CardRender = ({ field }: any) => {
                   className="h-fit w-full"
                 />
               ))}
-            {field?.cardui_json[0]?.media_card_data?.media_url &&
-              field?.cardui_json[0]?.media_card_data?.card_type === "File" && (
+            {field?.cardui_json?.[0]?.media_card_data?.media_url &&
+              field?.cardui_json?.[0]?.media_card_data?.card_type ===
+                "File" && (
                 <div className="flex flex-col justify-center items-center h-full">
                   <div className="text-4xl font-bold text-primary mb-2">
                     {getFileIcon(
@@ -176,35 +238,37 @@ const CardRender = ({ field }: any) => {
                   </div>
                 </div>
               )}
-            {field?.cardui_json[0]?.media_card_data?.media_url &&
-              field?.cardui_json[0]?.media_card_data?.card_type === "Pdf" && (
+            {field?.cardui_json?.[0]?.media_card_data?.media_url &&
+              field?.cardui_json?.[0]?.media_card_data?.card_type === "Pdf" && (
                 <div className="flex flex-col justify-center items-center h-full">
                   <div className="text-4xl font-bold text-primary mb-2">
                     <FaFilePdf className="w-8 h-8 text-red-500" />
                   </div>
                   <div className="text-sm flex flex-wrap max-w-[80%] text-wrap text-primary  truncate">
-                    {field?.cardui_json[0]?.media_card_data?.media_url
+                    {field?.cardui_json?.[0]?.media_card_data?.media_url
                       .split("/")
                       .at(-1)}
                   </div>
                 </div>
               )}
-            {field?.cardui_json[0]?.media_card_data?.media_url &&
-              field?.cardui_json[0]?.media_card_data?.card_type ===
+            {field?.cardui_json?.[0]?.media_card_data?.media_url &&
+              field?.cardui_json?.[0]?.media_card_data?.card_type ===
                 "Page URL" && (
                 <div className="flex flex-col justify-center items-center h-full">
                   <div className="flex gap-2.5 max-w-[80%] flex-wrap items-center">
                     <div className="flex items-center gap-2 w-full">
                       {getFileIcon(
-                        field?.cardui_json[0]?.media_card_data?.media_url
+                        field?.cardui_json?.[0]?.media_card_data?.media_url
                       )}
                       <span className="flex-1 text-primary text-sm break-words overflow-hidden text-ellipsis">
-                        {field?.cardui_json[0]?.media_card_data?.media_url}
+                        {field?.cardui_json?.[0]?.media_card_data?.media_url}
                       </span>
                     </div>
                     <div className="flex  justify-center w-full">
                       <a
-                        href={field?.cardui_json[0]?.media_card_data?.media_url}
+                        href={
+                          field?.cardui_json?.[0]?.media_card_data?.media_url
+                        }
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center"
@@ -221,7 +285,7 @@ const CardRender = ({ field }: any) => {
                   </div>
                 </div>
               )}
-            {field?.cardui_json[0]?.media_card_data?.card_type ===
+            {field?.cardui_json?.[0]?.media_card_data?.card_type ===
               "Data card" && (
               <div className="h-full">
                 <Card className="h-full">
@@ -232,18 +296,18 @@ const CardRender = ({ field }: any) => {
                 </Card>
               </div>
             )}
-            {field?.cardui_json[0]?.media_card_data?.card_type ===
+            {field?.cardui_json?.[0]?.media_card_data?.card_type ===
               "Chart card" &&
-              (field?.cardui_json[0]?.media_card_data?.component_name ===
+              (field?.cardui_json?.[0]?.media_card_data?.component_name ===
               "Data Card Donut Chart" ? (
                 <DataCard field={field} />
-              ) : field?.cardui_json[0]?.media_card_data?.component_name ===
+              ) : field?.cardui_json?.[0]?.media_card_data?.component_name ===
                 "Data Card Line Chart" ? (
                 <MediaDataLineChart field={field} />
-              ) : field?.cardui_json[0]?.media_card_data?.component_name ===
+              ) : field?.cardui_json?.[0]?.media_card_data?.component_name ===
                 "Data Card Bar Chart" ? (
                 <MediaDataBarChart field={field} />
-              ) : field?.cardui_json[0]?.media_card_data?.component_name ===
+              ) : field?.cardui_json?.[0]?.media_card_data?.component_name ===
                 "Data Card Bar Chart Horizontal" ? (
                 <MediaDataBarHorizontalChart field={field} />
               ) : null)}
@@ -258,13 +322,13 @@ const CardRender = ({ field }: any) => {
                 hyphens: "auto",
               }}
               dangerouslySetInnerHTML={{
-                __html: field?.cardui_json[0]?.media_card_data?.custom_html,
+                __html: field?.cardui_json?.[0]?.media_card_data?.custom_html,
               }}
             />
           </div>
           <div className="p-4">
-            {field?.cardui_json[0]?.media_card_data?.card_json &&
-              field?.cardui_json[0]?.media_card_data?.card_json[0]?.body?.[0]?.columns?.map(
+            {field?.cardui_json?.[0]?.media_card_data?.card_json &&
+              field?.cardui_json?.[0]?.media_card_data?.card_json[0]?.body?.[0]?.columns?.map(
                 (column: any, colIndex: any) => (
                   <div key={colIndex} className={`w-${column.width}/3`}>
                     {column.items?.map((item: any) => renderElement(item))}
@@ -273,22 +337,15 @@ const CardRender = ({ field }: any) => {
               )}
           </div>
 
-          {field?.cardui_json[0]?.chat_with_data?.buttons && (
+          {field?.cardui_json?.[0]?.chat_with_data?.buttons && (
             <div className="p-4">
               <RadioGroup
-                value={field?.cardui_json[0]?.chat_with_data?.preference}
-                onValueChange={(value) => {
-                  const handleRadioChange = (value: string) => {
-                    if (field?.cardui_json[0]?.chat_with_data) {
-                      field.chat_with_data.preference = value;
-                    }
-                  };
-                  handleRadioChange(value);
-                }}
+                value={field?.cardui_json?.[0]?.chat_with_data?.preference}
+                onValueChange={handleRadioChangeInternal}
                 className="flex w-full flex-wrap items-center"
               >
                 <div className="flex flex-wrap items-center gap-2.5">
-                  {field?.cardui_json[0]?.chat_with_data?.buttons?.map(
+                  {field?.cardui_json?.[0]?.chat_with_data?.buttons?.map(
                     (item: any, index: any) =>
                       item?.button_text ? (
                         <div

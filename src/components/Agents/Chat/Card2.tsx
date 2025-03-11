@@ -23,6 +23,7 @@ import {
   Star,
   ThumbsDown,
   ThumbsUp,
+  User,
   X,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -55,6 +56,10 @@ import { SAVE_FORM_FIELDS } from "@/constants/envConfig";
 import axiosInstance from "@/utils/axiosInstance";
 import { Card } from "@/components/ui/card";
 import CardRender from "./Card";
+import ChatwithDataCardJSON from "@/components/AgentMaker/chat-with-data-json/ChatwithDataJSON";
+import TablesRendered from "./TablesRendered";
+import { Avatar } from "@/components/ui/avatar";
+import { FaArrowUp } from "react-icons/fa";
 
 const favoritePrompts = [
   { id: 1, text: "Explain quantum computing in simple terms" },
@@ -65,7 +70,9 @@ const favoritePrompts = [
 ];
 
 const ChatEditor = ({ field }: { field: any }) => {
-  console.log("field----11", field);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [selectedValue, setSelectedValue] = useState<string>("");
+
   const suggestions = ["Chat with Data", "Chat with Doc"];
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -75,12 +82,8 @@ const ChatEditor = ({ field }: { field: any }) => {
   const [prompt, setPrompt] = useState<string>("");
   const [history, setHistory] = useState<any[]>([]);
   const [likes, setLikes] = useState<any[]>([]);
-  const [messages, setMessages] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { data: sessionData } = useSession();
-  const session: Session | null = sessionData
-    ? (sessionData as unknown as Session)
-    : null;
+
   const [deleteHistory, setDeleteHistory] = useState<boolean>(false);
   const router = useRouter();
   const [userChatSession, setUserChatSession] = useState<any>({});
@@ -97,6 +100,23 @@ const ChatEditor = ({ field }: { field: any }) => {
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [getMenuData, setMenuData] = useState<any>(null);
+  const [cardField, setCardField] = useState<any>(field);
+  const [loading, setLoading] = useState(false);
+  const { data: sessionData } = useSession();
+  const session: Session | null = sessionData
+    ? (sessionData as unknown as Session)
+    : null;
+  const [results, setResults] = useState<any[]>([]);
+  const [columns, setColumns] = useState<string[]>([]);
+  const [chartConfig, setChartConfig] = useState<any>(null);
+  const [componentName, setComponentName] = useState<any>(null);
+  const [apiData, setApiData] = useState<any>(null);
+
+  useEffect(() => {
+    if (field) {
+      setCardField(field);
+    }
+  }, [field]);
 
   useEffect(() => {
     const fetchMenuData = async () => {
@@ -108,6 +128,73 @@ const ChatEditor = ({ field }: { field: any }) => {
     };
     fetchMenuData();
   }, [openMenu, session]);
+
+  const dummyData = {
+    results: [
+      { id: 1, name: "Product A", sales: 100, revenue: 1000 },
+      { id: 2, name: "Product B", sales: 200, revenue: 2000 },
+    ],
+    columns: ["id", "name", "sales", "revenue"],
+    chartConfig: {
+      type: "bar",
+      xAxis: "name",
+      yAxis: "sales",
+    },
+    componentName: {
+      name: "Sales Analysis",
+      type: "Data Card Bar Chart",
+    },
+  };
+
+  // Add message helper function
+  const addMessage = (role: "user" | "assistant", content: React.ReactNode) => {
+    setMessages((prev) => [...prev, { id: uuidv4(), role, content }]);
+  };
+
+  console.log("result-----", { results, columns, chartConfig, componentName });
+  useEffect(() => {
+    console.log("rendered=======");
+    console.log("cardField----", cardField);
+    if (messages.length === 0 && cardField) {
+      // Add cardField check
+      const messageContent = (
+        <div className="flex w-full items-center">
+          <CardRender
+            key={JSON.stringify(cardField)} // Add key to force re-render
+            field={cardField}
+            setLoading={setLoading}
+            setResults={setResults}
+            setColumns={setColumns}
+            setChartConfig={setChartConfig}
+            setComponentName={setComponentName}
+            setApiData={setApiData}
+            session={session}
+            handleRadioChange={(value: any) => {
+              setLoading(true);
+              setSelectedValue(value);
+              setCardField((prev: any) => {
+                const updated = {
+                  ...prev,
+                  cardui_json: [
+                    {
+                      ...prev.cardui_json[0],
+                      chat_with_data: {
+                        ...prev.cardui_json[0]?.chat_with_data,
+                        preference: value,
+                      },
+                    },
+                  ],
+                };
+                console.log("Updated cardField:", updated);
+                return updated;
+              });
+            }}
+          />
+        </div>
+      );
+      addMessage("assistant", messageContent);
+    }
+  }, [cardField, messages.length]);
 
   //   useEffect(() => {
   //     const fetchUsers = async () => {
@@ -1062,7 +1149,76 @@ const ChatEditor = ({ field }: { field: any }) => {
   //       });
   //     }
   //   };
+  const handleSubmit = () => {
+    if (!selectedValue) return;
+    setMessages([
+      {
+        id: uuidv4(),
+        role: "assistant",
+        content: (
+          <div className="flex flex-col">
+            <span className="font-medium">
+              {JSON.parse(field?.label) || "Please select your preference"}
+            </span>
+            {JSON.parse(field?.description) && (
+              <span className="text-sm text-muted-foreground">
+                {JSON.parse(field?.description)}
+              </span>
+            )}
+          </div>
+        ),
+      },
+    ]);
 
+    // Add user message with TablesRendered
+    addMessage(
+      "user",
+      <div className="flex w-full overflow-x-auto  items-center">
+        <TablesRendered
+          results={results}
+          columns={columns}
+          currentField={cardField}
+          chartConfig={chartConfig}
+          componentName={componentName}
+          apiData={apiData}
+          preference={selectedValue}
+        />
+      </div>
+    );
+  };
+
+  const handleRefresh = () => {
+    // Reset all states
+    setSelectedValue("");
+    setResults([]);
+    setColumns([]);
+    setChartConfig(null);
+    setComponentName(null);
+    setApiData(null);
+
+    // Reset messages to show CardRender
+    setMessages([
+      {
+        id: uuidv4(),
+        role: "assistant",
+        content: (
+          <div className="flex w-full overflow-x-auto md:w-[80vw] items-center">
+            <CardRender
+              field={field}
+              handleRadioChange={(value: any) => setSelectedValue(value)}
+              setLoading={setLoading}
+              setResults={setResults}
+              setColumns={setColumns}
+              setChartConfig={setChartConfig}
+              setComponentName={setComponentName}
+              setApiData={setApiData}
+              session={session}
+            />
+          </div>
+        ),
+      },
+    ]);
+  };
   return (
     <div className="w-full h-full">
       <div className="flex items-center justify-between">
@@ -1073,6 +1229,12 @@ const ChatEditor = ({ field }: { field: any }) => {
           </h1>
         </Link>
         <div className="flex items-center justify-end gap-5">
+          <span
+            className="text-muted-foreground cursor-pointer"
+            onClick={handleRefresh}
+          >
+            <RefreshCw className="w-5 h-5" />
+          </span>
           <Link href="/Agent">
             <span className="text-muted-foreground cursor-pointer">
               <Plus className="w-5 h-5" />
@@ -1170,9 +1332,58 @@ const ChatEditor = ({ field }: { field: any }) => {
         setDeleteHistory={setDeleteHistory}
         title="Menu"
       />
-      <div className="mt-4">
-        <CardRender field={field} />
+
+      <div className="flex flex-col space-y-4 w-full">
+        <div className="flex flex-col space-y-4">
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex ${
+                message.role === "user" ? "justify-end" : "justify-start"
+              } items-end`}
+            >
+              {message.role === "assistant" && (
+                <Avatar className="mr-2">
+                  <Bot className="h-5 w-5" />
+                </Avatar>
+              )}
+              <div
+                className={`w-full  rounded-lg p-4 ${
+                  message.role === "assistant"
+                    ? "bg-secondary w-full"
+                    : "bg-secondary overflow-x-auto text-primary-foreground"
+                }`}
+              >
+                {message.content}
+              </div>
+              {message.role === "user" && (
+                <Avatar className="ml-2">
+                  <User className="h-5 w-5" />
+                </Avatar>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {selectedValue && (
+          <div className="flex justify-end mt-4">
+            <Button onClick={handleSubmit} disabled={loading}>
+              {loading ? (
+                <div>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                </div>
+              ) : (
+                <FaArrowUp className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        )}
       </div>
+
+      {/* <div className="mt-4">
+        <CardRender field={field} />
+        <Button onClick={handleSubmit}>Submit</Button>
+      </div> */}
     </div>
   );
 };
