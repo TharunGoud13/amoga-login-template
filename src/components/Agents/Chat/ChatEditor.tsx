@@ -52,7 +52,11 @@ import BookmarkBar from "@/components/Agents/SideBar/Bookmark";
 import { Session } from "@/components/doc-template/DocTemplate";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { SAVE_FORM_FIELDS } from "@/constants/envConfig";
+import {
+  CHAT_MESSAGE_API,
+  CHAT_SESSION_API,
+  SAVE_FORM_FIELDS,
+} from "@/constants/envConfig";
 import axiosInstance from "@/utils/axiosInstance";
 import { Card } from "@/components/ui/card";
 import CardRender from "./Card";
@@ -60,6 +64,7 @@ import ChatwithDataCardJSON from "@/components/AgentMaker/chat-with-data-json/Ch
 import TablesRendered from "./TablesRendered";
 import { Avatar } from "@/components/ui/avatar";
 import { FaArrowUp } from "react-icons/fa";
+import ChatHistory from "./ChatSideBar/ChatHistory";
 
 const favoritePrompts = [
   { id: 1, text: "Explain quantum computing in simple terms" },
@@ -69,7 +74,7 @@ const favoritePrompts = [
   { id: 5, text: "Outline the major events of World War II" },
 ];
 
-const ChatEditor = ({ field }: { field: any }) => {
+const ChatEditor = ({ field, chatId }: { field: any; chatId?: string }) => {
   const [messages, setMessages] = useState<any[]>([]);
   const [selectedValue, setSelectedValue] = useState<string>("");
 
@@ -119,6 +124,51 @@ const ChatEditor = ({ field }: { field: any }) => {
   }, [field]);
 
   useEffect(() => {
+    console.log("field=======", field);
+    const initializeChat = async () => {
+      if (!chatId && userChatSession?.id && field) {
+        // Generate a UUID for the new chat
+        const newChatUuid = uuidv4();
+        const chatCode = `Agent_${Math.random().toString().slice(-4)}`;
+
+        try {
+          // Create a new chat
+          await fetch("https://amogaagents.morr.biz/Chat", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+            },
+            body: JSON.stringify({
+              createdAt: new Date().toISOString(),
+              user_id: userChatSession?.id,
+              id: newChatUuid,
+              form_name: field?.form_name,
+              form_code: field?.form_code,
+              chat_session: [
+                `${session?.user?.business_number},${field?.form_name},${chatCode},${session?.user?.name}`,
+              ],
+              chat_code: chatCode,
+              form_id: field?.form_id,
+            }),
+          });
+
+          // Redirect to the new chat URL
+          router.push(`/Agent/Chat/${field?.form_id}/${newChatUuid}`);
+        } catch (error) {
+          console.error("Error creating chat:", error);
+          toast({
+            description: "Failed to create new chat",
+            variant: "destructive",
+          });
+        }
+      }
+    };
+
+    initializeChat();
+  }, [chatId, userChatSession?.id, field]);
+
+  useEffect(() => {
     const fetchMenuData = async () => {
       const response = await axiosInstance.get(SAVE_FORM_FIELDS);
       const filteredData = response.data.filter((form: any) =>
@@ -129,32 +179,12 @@ const ChatEditor = ({ field }: { field: any }) => {
     fetchMenuData();
   }, [openMenu, session]);
 
-  const dummyData = {
-    results: [
-      { id: 1, name: "Product A", sales: 100, revenue: 1000 },
-      { id: 2, name: "Product B", sales: 200, revenue: 2000 },
-    ],
-    columns: ["id", "name", "sales", "revenue"],
-    chartConfig: {
-      type: "bar",
-      xAxis: "name",
-      yAxis: "sales",
-    },
-    componentName: {
-      name: "Sales Analysis",
-      type: "Data Card Bar Chart",
-    },
-  };
-
   // Add message helper function
   const addMessage = (role: "user" | "assistant", content: React.ReactNode) => {
     setMessages((prev) => [...prev, { id: uuidv4(), role, content }]);
   };
 
-  console.log("result-----", { results, columns, chartConfig, componentName });
   useEffect(() => {
-    console.log("rendered=======");
-    console.log("cardField----", cardField);
     if (messages.length === 0 && cardField) {
       // Add cardField check
       const messageContent = (
@@ -185,7 +215,6 @@ const ChatEditor = ({ field }: { field: any }) => {
                     },
                   ],
                 };
-                console.log("Updated cardField:", updated);
                 return updated;
               });
             }}
@@ -196,69 +225,109 @@ const ChatEditor = ({ field }: { field: any }) => {
     }
   }, [cardField, messages.length]);
 
-  //   useEffect(() => {
-  //     const fetchUsers = async () => {
-  //       const response = await fetch("https://amogaagents.morr.biz/User", {
-  //         method: "GET",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-  //         },
-  //       });
-  //       const data = await response.json();
-  //       if (data.length > 0) {
-  //         const existingUser = data.find(
-  //           (user: any) => user?.email === session?.user?.email
-  //         );
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const response = await fetch("https://amogaagents.morr.biz/User", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+        },
+      });
+      const data = await response.json();
+      if (data.length > 0) {
+        const existingUser = data.find(
+          (user: any) => user?.email === session?.user?.email
+        );
 
-  //         setUserChatSession(existingUser);
-  //         if (!existingUser) {
-  //           const newUser = await fetch("https://amogaagents.morr.biz/User", {
-  //             method: "POST",
-  //             headers: {
-  //               "Content-Type": "application/json",
-  //               Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-  //             },
-  //             body: JSON.stringify({
-  //               email: session?.user?.email,
-  //               mobile: session?.user?.mobile,
-  //             }),
-  //           });
-  //           const newUserData = await newUser.json();
-  //           setUserChatSession(newUserData);
-  //         }
-  //       }
-  //     };
-  //     fetchUsers();
-  //   }, [session]);
+        setUserChatSession(existingUser);
+        if (!existingUser) {
+          const newUser = await fetch("https://amogaagents.morr.biz/User", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+            },
+            body: JSON.stringify({
+              email: session?.user?.email,
+              mobile: session?.user?.mobile,
+            }),
+          });
+          const newUserData = await newUser.json();
+          setUserChatSession(newUserData);
+        }
+      }
+    };
+    fetchUsers();
+  }, [session]);
 
-  //   const fetchHistory = async (userChatSession: any, setHistory: any) => {
-  //     const response = await fetch("https://amogaagents.morr.biz/Chat", {
-  //       method: "GET",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-  //       },
-  //     });
-  //     if (!response.ok) {
-  //       toast({
-  //         description: "Failed to fetch history",
-  //         variant: "destructive",
-  //       });
-  //       return;
-  //     }
-  //     const data = await response.json();
-  //     const filteredData = data.filter(
-  //       (item: any) => item.user_id == userChatSession?.id
-  //     );
-  //     setHistory(filteredData);
-  //   };
+  const fetchHistory = async (userChatSession: any, setHistory: any) => {
+    try {
+      const response = await fetch(
+        `https://amogaagents.morr.biz/Chat?form_name=neq.null`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+          },
+        }
+      );
 
-  //   useEffect(() => {
-  //     if (userChatSession) {
-  //       fetchHistory(userChatSession, setHistory);
-  //     }
-  //   }, [userChatSession, openHistory]);
+      if (!response.ok) {
+        toast({
+          description: "Failed to fetch history",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const data = await response.json();
+
+      // Sort messages by creation timestamp
+      const sortedMessages = data.sort((a: any, b: any) => {
+        return (
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+      });
+
+      // Map the messages to include all necessary fields
+      const formattedMessages = sortedMessages.map((msg: any) => ({
+        id: msg.id,
+        chatId: msg.chatId,
+        content: msg.content,
+        role: msg.role,
+        status: msg.status,
+        createdAt: msg.createdAt,
+        user_id: msg.user_id,
+        bookmark: msg.bookmark,
+        isLike: msg.isLike,
+        favorite: msg.favorite,
+        response_data_json: msg.response_data_json,
+        prompt_json: msg.prompt_json,
+        form_name: msg.form_name,
+        form_code: msg.form_code,
+        chat_code: msg.chat_code,
+        form_id: msg.form_id,
+      }));
+
+      setHistory(formattedMessages);
+    } catch (error) {
+      console.error("Error fetching history:", error);
+      toast({
+        description: "Failed to fetch history",
+        variant: "destructive",
+      });
+    }
+  };
+
+  console.log("history----", history);
+
+  useEffect(() => {
+    if (chatId && userChatSession) {
+      fetchHistory(userChatSession, setHistory);
+    }
+  }, [chatId, userChatSession]);
 
   //   useEffect(() => {
   //     const fetchBookmarks = async () => {
@@ -1149,42 +1218,113 @@ const ChatEditor = ({ field }: { field: any }) => {
   //       });
   //     }
   //   };
-  const handleSubmit = () => {
-    if (!selectedValue) return;
-    setMessages([
-      {
-        id: uuidv4(),
-        role: "assistant",
-        content: (
-          <div className="flex flex-col">
-            <span className="font-medium">
-              {JSON.parse(field?.label) || "Please select your preference"}
-            </span>
-            {JSON.parse(field?.description) && (
-              <span className="text-sm text-muted-foreground">
-                {JSON.parse(field?.description)}
-              </span>
-            )}
-          </div>
-        ),
-      },
-    ]);
 
-    // Add user message with TablesRendered
-    addMessage(
-      "user",
-      <div className="flex w-full overflow-x-auto  items-center">
-        <TablesRendered
-          results={results}
-          columns={columns}
-          currentField={cardField}
-          chartConfig={chartConfig}
-          componentName={componentName}
-          apiData={apiData}
-          preference={selectedValue}
-        />
-      </div>
-    );
+  const handleSubmit = async () => {
+    if (!selectedValue) return;
+    setIsLoading(true);
+
+    try {
+      // Get chat details
+      const chatResponse = await fetch(
+        `https://amogaagents.morr.biz/Chat?id=eq.${chatId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const chatData = await chatResponse.json();
+      const currentChat = chatData[0];
+      console.log("currentChat-----", currentChat);
+
+      // Prepare prompt JSON
+      const selectedButton =
+        field?.cardui_json?.[0]?.chat_with_data?.buttons.find(
+          (button: any) => button.button_text === selectedValue
+        );
+
+      // Prepare prompt JSON with proper structure
+      const promptJson = {
+        action: selectedButton?.button_text || selectedValue,
+        prompt: selectedButton?.prompt || "",
+        datetime: new Date().toISOString(),
+      };
+
+      // Prepare response data JSON
+      const responseDataJson = {
+        form_id: field?.form_id,
+        results,
+        columns,
+        chartConfig,
+        componentName,
+        apiData,
+      };
+
+      // Save message to API
+      await fetch("https://amogaagents.morr.biz/Message", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+        },
+        body: JSON.stringify({
+          id: uuidv4(),
+          chatId: currentChat.id,
+          prompt_json: promptJson,
+          response_data_json: responseDataJson,
+          chat_session: currentChat.chat_session,
+          createdAt: new Date().toISOString(),
+          user_id: session?.user?.id,
+        }),
+      });
+
+      // Update UI with messages
+      setMessages([
+        {
+          id: uuidv4(),
+          role: "assistant",
+          content: (
+            <div className="flex flex-col">
+              <span className="font-medium">
+                {JSON.parse(field?.label) || "Please select your preference"}
+              </span>
+              {JSON.parse(field?.description) && (
+                <span className="text-sm text-muted-foreground">
+                  {JSON.parse(field?.description)}
+                </span>
+              )}
+            </div>
+          ),
+        },
+      ]);
+
+      // Add user message with TablesRendered
+      addMessage(
+        "user",
+        <div className="flex w-full overflow-x-auto items-center">
+          <TablesRendered
+            results={results}
+            columns={columns}
+            currentField={cardField}
+            chartConfig={chartConfig}
+            componentName={componentName}
+            apiData={apiData}
+            preference={selectedValue}
+          />
+        </div>
+      );
+
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error in handleSubmit:", error);
+      toast({
+        description: "An error occurred while saving the message",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+    }
   };
 
   const handleRefresh = () => {
@@ -1308,14 +1448,13 @@ const ChatEditor = ({ field }: { field: any }) => {
         </div>
       )}
 
-      <HistoryBar
+      <ChatHistory
         open={openHistory}
         setOpen={setOpenHistory}
         data={history}
         setDeleteHistory={setDeleteHistory}
         title="History"
-        // refreshHistory={() => fetchHistory(userChatSession, setHistory)}
-        refreshHistory={() => {}}
+        refreshHistory={() => fetchHistory(userChatSession, setHistory)}
       />
       <BookmarkBar
         open={openFavorites}
