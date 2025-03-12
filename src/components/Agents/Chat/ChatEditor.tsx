@@ -200,7 +200,6 @@ const ChatEditor = ({ field, chatId }: { field: any; chatId?: string }) => {
             setApiData={setApiData}
             session={session}
             handleRadioChange={(value: any) => {
-              setLoading(true);
               setSelectedValue(value);
               setCardField((prev: any) => {
                 const updated = {
@@ -1359,6 +1358,7 @@ const ChatEditor = ({ field, chatId }: { field: any; chatId?: string }) => {
       },
     ]);
   };
+
   return (
     <div className="w-full h-full">
       <div className="flex items-center justify-between">

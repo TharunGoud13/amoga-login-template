@@ -169,8 +169,8 @@ const TablesRendered = ({
       };
     }
 
-    if (apiData?.dataApi_response && Array.isArray(apiData.dataApi_response)) {
-      const responseData = apiData.dataApi_response;
+    if (apiData?.api_response && Array.isArray(apiData.api_response)) {
+      const responseData = apiData.api_response;
       const allKeys =
         responseData.length > 0 ? Object.keys(responseData[0]) : [];
 

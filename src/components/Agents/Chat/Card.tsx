@@ -121,6 +121,7 @@ const CardRender = ({
       }
       if (selectedItem?.enable_api || selectedItem?.enable_dataApi) {
         setApiData(selectedItem);
+        setLoading(false);
       }
     }
 
