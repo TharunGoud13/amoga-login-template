@@ -96,8 +96,7 @@ const ChatwithDataCardJSON = ({
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 10;
 
-  console.log("formData----", formData);
-  console.log("currentField----", currentField);
+  console.log("apiData....", apiData);
 
   const generateChartApiConfig = (data: any[]) => {
     if (!data || data.length === 0) return null;
@@ -167,8 +166,8 @@ const ChatwithDataCardJSON = ({
       };
     }
 
-    if (apiData?.dataApi_response && Array.isArray(apiData.dataApi_response)) {
-      const responseData = apiData.dataApi_response;
+    if (apiData?.api_response && Array.isArray(apiData.api_response)) {
+      const responseData = apiData.api_response;
       const allKeys =
         responseData.length > 0 ? Object.keys(responseData[0]) : [];
 
