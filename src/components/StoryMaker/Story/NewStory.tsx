@@ -33,10 +33,12 @@ import axiosInstance from "@/utils/axiosInstance";
 export default function NewStory({
   isEdit,
   isView,
+  id,
   storyId,
 }: {
   isEdit: boolean;
   isView: boolean;
+  id?: string;
   storyId?: string;
 }) {
   const [formData, setFormData] = useState({
@@ -71,15 +73,15 @@ export default function NewStory({
           date: data.created_date,
           storyTitle: data.story_title,
           storyCategory: data.story_category,
-          shortDescription: data.short_description,
+          shortDescription: data.story_short_description,
           description: data.story_description,
-          storyData: data.story_data,
+          storyData: data.story_data_json,
           storyExtractMetrics: data.story_extract_metrics,
           storyPrompt: data.story_prompt,
           storyScript: data.story_script,
           storyResponse: data.story_response,
-          storyAutomation: data.story_automation,
-          storyWorkflow: data.story_workflow,
+          storyAutomation: data.story_automation_json,
+          storyWorkflow: data.story_workflow_json,
           status: data.status,
         });
       };
@@ -101,7 +103,7 @@ export default function NewStory({
         created_date: new Date(formData.date).toISOString(),
         business_name: session?.user?.business_name,
         business_number: session?.user?.business_number,
-        ref_template_code: storyId,
+        ref_template_code: id,
         story_title: formData.storyTitle,
         story_category: formData.storyCategory,
         story_short_description: formData.shortDescription,
@@ -154,7 +156,7 @@ export default function NewStory({
         <div className="mt-4 flex justify-between items-center">
           <h2 className="text-2xl font-bold">New Story</h2>
           <Button variant="outline" size="sm">
-            <Link href={`/StoryMaker/Story/${storyId}`}>Back to Story</Link>
+            <Link href={`/StoryMaker/Story/${id}`}>Back to Story</Link>
           </Button>
         </div>
         <div className="space-y-2 mt-3">

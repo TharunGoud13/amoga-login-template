@@ -227,41 +227,27 @@ const Story = ({ id }: { id: string }) => {
                     <span>{item.status}</span>
                   </p>
 
-                  <p className="flex items-center gap-2 text-md">
-                    <Calendar className="h-5 w-5 text-muted-foreground" />
-                    <span>
-                      Date: {new Date(item.created_date).toLocaleDateString()}
-                    </span>
-                  </p>
-
-                  {/* <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center">
                     <p className="flex items-center gap-2 text-md">
-                      <LuCopyCheck className="h-5 w-5 text-muted-foreground" />
+                      <Calendar className="h-5 w-5 text-muted-foreground" />
+                      <span>
+                        Date: {new Date(item.created_date).toLocaleDateString()}
+                      </span>
+                    </p>
 
-                      <span>{item.status}</span>
-                    </p>
-                    <p className="text-md flex items-center gap-2">
-                      <LuChartPie className="h-5 w-5 text-muted-foreground stroke-[1.5]" />
-                      <span>{item.plan_progress_track}</span>
-                    </p>
                     <div className="flex gap-1.5 md:gap-2 space-x-2">
-                      <File className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                      <ClipboardCheck className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       <Link
-                        href={`/Projects/Docs/${id}/edit/${item.mydoc_list_id}`}
+                        href={`/StoryMaker/Story/${id}/edit/${item.story_id}`}
                       >
                         <Edit className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                       </Link>
-                      <Link
+                      {/* <Link
                         href={`/Projects/Docs/${id}/view/${item.mydoc_list_id}`}
                       >
                         <Eye className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-                      </Link>
-                      <LuMessageCircleMore className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
-
-                      <LuChartNoAxesGantt className="h-3.5 w-3.5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                      </Link> */}
                     </div>
-                  </div> */}
+                  </div>
                 </CardContent>
               </Card>
             ))}
