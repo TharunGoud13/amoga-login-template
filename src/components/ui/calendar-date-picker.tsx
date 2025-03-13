@@ -29,6 +29,7 @@ export const CalendarDatePicker = ({
   const isMsg = path.includes("Msg");
   const isDoBox = path.includes("DoBox");
   const isProjects = path.includes("Projects");
+  const isStoryMaker = path.includes("StoryMaker");
 
   useEffect(() => {
     setSelectedDate(date);
@@ -54,7 +55,12 @@ export const CalendarDatePicker = ({
             className={cn(
               buttonClass,
               `${
-                isTask || isProjects || isDoBox || isPlanPhase || isMsg
+                isTask ||
+                isProjects ||
+                isDoBox ||
+                isPlanPhase ||
+                isMsg ||
+                isStoryMaker
                   ? "w-full"
                   : "w-[200px]"
               } justify-start text-left font-normal`,
