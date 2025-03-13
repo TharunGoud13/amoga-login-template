@@ -52,6 +52,7 @@ export default function NewStory({
     storyPrompt: "",
     storyScript: "",
     storyResponse: "",
+    storyCardJson: "",
     storyAutomation: "",
     storyWorkflow: "",
     status: "",
@@ -80,6 +81,7 @@ export default function NewStory({
           storyPrompt: data.story_prompt,
           storyScript: data.story_script,
           storyResponse: data.story_response,
+          storyCardJson: data.story_card_json,
           storyAutomation: data.story_automation_json,
           storyWorkflow: data.story_workflow_json,
           status: data.status,
@@ -113,6 +115,7 @@ export default function NewStory({
         story_prompt: formData.storyPrompt,
         story_script: formData.storyScript,
         story_response: formData.storyResponse,
+        story_card_json: formData.storyCardJson,
         story_automation_json: formData.storyAutomation,
         story_workflow_json: formData.storyWorkflow,
         status: formData.status,
@@ -281,10 +284,22 @@ export default function NewStory({
           <Label htmlFor="story-response">Story Response</Label>
           <Textarea
             id="story-response"
-            placeholder="Generated response will appear here..."
+            placeholder="Enter your response here..."
             value={formData.storyResponse}
             onChange={(e) =>
               setFormData({ ...formData, storyResponse: e.target.value })
+            }
+            className="min-h-[100px]"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="story-card-json">Story Card JSON</Label>
+          <Textarea
+            id="story-card-json"
+            placeholder="Enter your card json here..."
+            value={formData.storyCardJson}
+            onChange={(e) =>
+              setFormData({ ...formData, storyCardJson: e.target.value })
             }
             className="min-h-[100px]"
           />
@@ -340,7 +355,10 @@ export default function NewStory({
           </Select>
         </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex justify-end gap-2">
+        <Link href={`/StoryMaker/Story/${id}`}>
+          <Button variant="outline">Cancel</Button>
+        </Link>
         <Button
           disabled={
             loading ||
@@ -361,7 +379,7 @@ export default function NewStory({
           }
           onClick={handleSave}
         >
-          Save Story
+          Save
         </Button>
       </CardFooter>
     </Card>

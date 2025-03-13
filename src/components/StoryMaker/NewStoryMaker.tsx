@@ -340,7 +340,10 @@ export default function NewStoryTemplate({
           </Select>
         </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex justify-end gap-2">
+        <Link href="/StoryMaker">
+          <Button variant="outline">Cancel</Button>
+        </Link>
         <Button
           disabled={
             loading ||
@@ -354,7 +357,7 @@ export default function NewStoryTemplate({
           }
           onClick={handleSave}
         >
-          Save Template
+          Save
         </Button>
       </CardFooter>
     </Card>
