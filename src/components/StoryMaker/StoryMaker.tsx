@@ -108,7 +108,7 @@ const StoryMaker = () => {
             {data
               .filter((item: any) => {
                 const searchTerm = search.toLowerCase();
-                return item.template_name.toLowerCase().includes(searchTerm);
+                return item?.template_name?.toLowerCase().includes(searchTerm);
               })
               .map((item: any) => (
                 <Card key={item.story_id} className="py-2 px-2">
@@ -139,7 +139,7 @@ const StoryMaker = () => {
                         <span> {item.story_api_url}</span>
                       </p> */}
                       <div className="flex gap-1.5 md:gap-2 space-x-2">
-                        <Link href={`/StoryMaker`}>
+                        <Link href={`/StoryMaker/Story/${item.story_id}`}>
                           <BookOpenText className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
                         <Link href={`/StoryMaker/edit/${item.story_id}`}>
