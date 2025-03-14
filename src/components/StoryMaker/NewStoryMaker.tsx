@@ -131,6 +131,8 @@ export default function NewStoryTemplate({
       header.append("Content-Type", "application/json");
       header.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
 
+      const templateCode = `Template-${Math.random().toString().slice(-4)}`;
+
       const requestOptions = {
         story_description: description,
         status: status,
@@ -143,6 +145,7 @@ export default function NewStoryTemplate({
         business_number: session?.user?.business_number,
         story_api_url: `${TEMPLATE_API}/${templateName}`,
         template_name: templateName,
+        template_code: templateCode,
         template_type: additionalField,
         template_json: dataModel,
         pug_template: pugTemplate,

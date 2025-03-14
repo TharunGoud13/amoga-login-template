@@ -63,6 +63,20 @@ export default function NewStory({
     ? (sessionData as unknown as Session)
     : null;
 
+  const [story_data, setStoryData] = useState<any[]>([]);
+
+  console.log("story_data----", story_data);
+
+  useEffect(() => {
+    const fetchStoryData = async () => {
+      const response = await axiosInstance.get(
+        `${STORY_TEMPLATE}?story_id=eq.${id}`
+      );
+      setStoryData(response.data);
+    };
+    fetchStoryData();
+  }, []);
+
   useEffect(() => {
     if (isEdit && storyId) {
       const fetchStory = async () => {
@@ -105,7 +119,7 @@ export default function NewStory({
         created_date: new Date(formData.date).toISOString(),
         business_name: session?.user?.business_name,
         business_number: session?.user?.business_number,
-        ref_template_code: id,
+        ref_template_code: story_data[0].template_code,
         story_title: formData.storyTitle,
         story_category: formData.storyCategory,
         story_short_description: formData.shortDescription,

@@ -16,11 +16,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { ADD_CONNECTIONS, NEXT_PUBLIC_API_KEY } from "@/constants/envConfig";
+import {
+  ADD_CONNECTIONS,
+  NEXT_PUBLIC_API_KEY,
+  STORY_TEMPLATE,
+  TEMPLATE_API,
+} from "@/constants/envConfig";
 import { toast } from "@/components/ui/use-toast";
 import { useSession } from "next-auth/react";
 import { Session } from "../FormBuilder";
 import { SelectGroup } from "@radix-ui/react-select";
+import axiosInstance from "@/utils/axiosInstance";
 
 // Define the shape of the data you are working with
 interface FormEntry {
@@ -43,6 +49,8 @@ interface FormEntry {
   metricApi: string;
   storyApiEnabled: boolean;
   storyApi: string;
+  storyName: string;
+  storyCode: string;
   apiResponse: [];
   dataApiResponse: [];
   actionApiEnabled: boolean;
@@ -87,10 +95,24 @@ function SortableItem({
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedEntry, setEditedEntry] = useState(entry);
+  const [story_data, setStoryData] = useState<any[]>([]);
   const { data: sessionData } = useSession();
   const session: Session | null = sessionData
     ? (sessionData as unknown as Session)
     : null;
+
+  useEffect(() => {
+    const fetchStoryData = async () => {
+      const response = await axiosInstance.get(STORY_TEMPLATE);
+      const filteredData = response.data.filter(
+        (item: any) => item.business_number === session?.user?.business_number
+      );
+      setStoryData(filteredData);
+    };
+    fetchStoryData();
+  }, [editedEntry.storyApiEnabled]);
+
+  console.log("story_data----", story_data);
 
   const fetchValidApi = async () => {
     const requestOptions = {
@@ -216,10 +238,10 @@ function SortableItem({
       toast({ description: "Invalid API URL", variant: "destructive" });
       return;
     }
-    if (editedEntry.storyApiEnabled && !(isValidStoryApi?.length > 0)) {
-      toast({ description: "Invalid API URL", variant: "destructive" });
-      return;
-    }
+    // if (editedEntry.storyApiEnabled && !(isValidStoryApi?.length > 0)) {
+    //   toast({ description: "Invalid API URL", variant: "destructive" });
+    //   return;
+    // }
 
     setIsEditing(false);
     onSave(editedEntry);
@@ -250,6 +272,8 @@ function SortableItem({
                 metricApiEnabled: editedEntry.metricApiEnabled,
                 metricApi: editedEntry.metricApi,
                 storyApi: editedEntry.storyApi,
+                storyName: editedEntry.storyName,
+                storyCode: editedEntry.storyCode,
                 actionApiEnabled: editedEntry.actionApiEnabled,
                 actionApi: editedEntry.actionApi,
                 automationName: editedEntry.automationName,
@@ -265,6 +289,66 @@ function SortableItem({
   const handleCancel = () => {
     setIsEditing(false);
     setEditedEntry(entry);
+  };
+
+  const handleAddApi = async () => {
+    // setLoading(true);
+    const { apiEndpoint, apiField } = editedEntry;
+
+    const validApis = await fetchValidApi();
+    const isValid = validApis.filter(
+      (item: any) => item.api_url === apiEndpoint
+    );
+
+    if (isValid.length === 0) {
+      toast({ description: "Invalid API URL", variant: "destructive" });
+    }
+
+    if (!isValid || !apiEndpoint || !apiField) {
+      toast({ description: "Something went wrong", variant: "destructive" });
+    }
+    if (isValid && isValid.length > 0 && apiEndpoint && apiField) {
+      const { key, secret } = isValid && isValid[0];
+
+      try {
+        const requestOptions = {
+          method: "GET",
+          headers: {
+            [key]: secret,
+            "Content-Type": "application/json",
+          },
+        };
+        const response = await fetch(apiEndpoint, requestOptions);
+        if (!response.ok) {
+          toast({
+            description: "Failed to fetch data",
+            variant: "destructive",
+          });
+        }
+        const data = await response.json();
+
+        if (data) {
+          const fieldData = data.map((item: any) => ({
+            [apiField]: item[apiField],
+          }));
+          setEditedEntry({ ...editedEntry, apiResponse: fieldData });
+          // setLoading(false);
+          toast({
+            description: "Options added from API successfully",
+            variant: "default",
+          });
+        } else {
+          toast({
+            description: "No valid  values found",
+            variant: "destructive",
+          });
+          // setLoading(false);
+        }
+      } catch (error) {
+        toast({ description: "Failed to fetch data", variant: "destructive" });
+        // setLoading(false);
+      }
+    }
   };
 
   return (
@@ -399,6 +483,13 @@ function SortableItem({
                   placeholder="Enter API Field"
                 />
               </div>
+              <Button
+                disabled={!editedEntry.isApi}
+                className="mt-1"
+                onClick={handleAddApi}
+              >
+                Add API
+              </Button>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id={`data-api-${entry.id}`}
@@ -582,6 +673,38 @@ function SortableItem({
                   placeholder="Enter Story API endpoint"
                 />
               </div>
+              <div>
+                <Label htmlFor="story-name">Story Name </Label>
+                <Select
+                  disabled={!editedEntry.storyApiEnabled}
+                  value={editedEntry.storyName}
+                  onValueChange={(value) => {
+                    const selectedStory: any = story_data.find(
+                      (item: any) => item.story_title === value
+                    );
+                    setEditedEntry({
+                      ...editedEntry,
+                      storyName: value,
+                      storyCode: selectedStory?.ref_template_code || "",
+                      json: [
+                        JSON.parse(selectedStory?.story_card_json || "[]"),
+                        ...editedEntry.json,
+                      ],
+                    });
+                  }}
+                >
+                  <SelectTrigger id="story-name">
+                    <SelectValue placeholder="Select Story Name" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {story_data?.map((item: any, index: number) => (
+                      <SelectItem key={index} value={item.story_title}>
+                        {item.story_title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id={`action-api-${entry.id}`}
@@ -645,7 +768,18 @@ function SortableItem({
                 <Label htmlFor={`json-${entry.id}`}>JSON</Label>
                 <Textarea
                   id="json"
-                  value={JSON.stringify(editedEntry.json, null, 2)}
+                  value={
+                    editedEntry.storyName && story_data.length > 0
+                      ? JSON.stringify(
+                          story_data.find(
+                            (item: any) =>
+                              item.story_title === editedEntry.storyName
+                          )?.story_card_json || [],
+                          null,
+                          2
+                        )
+                      : JSON.stringify(editedEntry.json, null, 2)
+                  }
                   onChange={(e) => {
                     try {
                       const parsedData = JSON.parse(e.target.value);
@@ -755,6 +889,8 @@ function NewEntryForm({
     metricApi: "",
     storyApiEnabled: false,
     storyApi: "",
+    storyName: "",
+    storyCode: "",
     actionApiEnabled: false,
     actionApi: "",
     automationName: "",
@@ -765,10 +901,24 @@ function NewEntryForm({
   });
 
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const [story_data, setStoryData] = useState<any[]>([]);
   const { data: sessionData } = useSession();
   const session: Session | null = sessionData
     ? (sessionData as unknown as Session)
     : null;
+
+  useEffect(() => {
+    const fetchStoryData = async () => {
+      const response = await axiosInstance.get(STORY_TEMPLATE);
+      const filteredData = response.data.filter(
+        (item: any) => item.business_number === session?.user?.business_number
+      );
+      setStoryData(filteredData);
+    };
+    fetchStoryData();
+  }, [newEntry.storyApiEnabled]);
+
+  console.log("story_data----", story_data);
 
   const validateField = (name: string, value: any) => {
     let fieldErrors: ValidationErrors = {};
@@ -841,22 +991,22 @@ function NewEntryForm({
       });
     }
 
-    if (newEntry.storyApiEnabled && !(isValidStoryApi.length > 0)) {
-      formErrors.storyApiValid = "Invalid story API";
-      toast({
-        description: "Invalid story API",
-        variant: "destructive",
-      });
-    }
+    // if (newEntry.storyApiEnabled && !(isValidStoryApi.length > 0)) {
+    //   formErrors.storyApiValid = "Invalid story API";
+    //   toast({
+    //     description: "Invalid story API",
+    //     variant: "destructive",
+    //   });
+    // }
 
     // Validate component name
-    if (!newEntry.component_name) {
-      formErrors.component_name = "Component name is required";
-      toast({
-        description: "Please enter component name",
-        variant: "destructive",
-      });
-    }
+    // if (!newEntry.component_name) {
+    //   formErrors.component_name = "Component name is required";
+    //   toast({
+    //     description: "Please enter component name",
+    //     variant: "destructive",
+    //   });
+    // }
 
     // Validate prompt or API
     if (newEntry.isPrompt && !newEntry.promptText) {
@@ -903,6 +1053,8 @@ function NewEntryForm({
         metricApiEnabled: false,
         metricApi: "",
         storyApi: "",
+        storyName: "",
+        storyCode: "",
         storyApiEnabled: false,
         actionApiEnabled: false,
         actionApi: "",
@@ -1337,6 +1489,38 @@ function NewEntryForm({
             placeholder="Enter Story API endpoint"
           />
         </div>
+        <div>
+          <Label htmlFor="story-name">Story Name </Label>
+          <Select
+            disabled={!newEntry.storyApiEnabled}
+            value={newEntry.storyName}
+            onValueChange={(value) => {
+              const selectedStory = story_data.find(
+                (item: any) => item.story_title === value
+              );
+              setNewEntry({
+                ...newEntry,
+                storyName: value,
+                storyCode: selectedStory?.ref_template_code || "",
+                json: [
+                  JSON.parse(selectedStory?.story_card_json || "[]"),
+                  ...newEntry.json,
+                ],
+              });
+            }}
+          >
+            <SelectTrigger id="story-name">
+              <SelectValue placeholder="Select Story Name" />
+            </SelectTrigger>
+            <SelectContent>
+              {story_data?.map((item: any, index: number) => (
+                <SelectItem key={index} value={item.story_title}>
+                  {item.story_title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <div className="flex items-center space-x-2">
           <Checkbox
             id="action-api"
@@ -1445,6 +1629,8 @@ export default function ChatwithDataActions({
         dataApiResponse: button.dataApiResponse || [],
         storyApiEnabled: button.storyApiEnabled || false,
         storyApi: button.storyApi || "",
+        storyName: button.storyName || "",
+        storyCode: button.storyCode || "",
         metricApiEnabled: button.metricApiEnabled || false,
         metricApi: button.metricApi || "",
         actionApiEnabled: button.actionApiEnabled || false,
@@ -1479,6 +1665,8 @@ export default function ChatwithDataActions({
           dataApiResponse: button.dataApi_response || [],
           storyApiEnabled: button.storyApiEnabled || false,
           storyApi: button.storyApi || "",
+          storyName: button.storyName || "",
+          storyCode: button.storyCode || "",
           metricApiEnabled: button.metricApiEnabled || false,
           metricApi: button.metricApi || "",
           actionApiEnabled: button.actionApiEnabled || false,
@@ -1518,6 +1706,8 @@ export default function ChatwithDataActions({
           apiField: entry.apiField,
           storyApiEnabled: entry.storyApiEnabled,
           storyApi: entry.storyApi,
+          storyName: entry.storyName,
+          storyCode: entry.storyCode,
           metricApiEnabled: entry.metricApiEnabled,
           metricApi: entry.metricApi,
           actionApiEnabled: entry.actionApiEnabled,
@@ -1559,6 +1749,8 @@ export default function ChatwithDataActions({
           apiField: entry.apiField,
           storyApiEnabled: entry.storyApiEnabled,
           storyApi: entry.storyApi,
+          storyName: entry.storyName,
+          storyCode: entry.storyCode,
           metricApiEnabled: entry.metricApiEnabled,
           metricApi: entry.metricApi,
           actionApiEnabled: entry.actionApiEnabled,
@@ -1604,6 +1796,8 @@ export default function ChatwithDataActions({
                 apiField: updatedEntry.apiField,
                 storyApiEnabled: updatedEntry.storyApiEnabled,
                 storyApi: updatedEntry.storyApi,
+                storyName: updatedEntry.storyName,
+                storyCode: updatedEntry.storyCode,
                 metricApiEnabled: updatedEntry.metricApiEnabled,
                 metricApi: updatedEntry.metricApi,
                 actionApiEnabled: updatedEntry.actionApiEnabled,

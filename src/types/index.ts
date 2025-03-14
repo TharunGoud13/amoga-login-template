@@ -145,6 +145,9 @@ export type AgentFieldType = {
         component_name?: string;
         metricApi?: string;
         metricApiEnabled?: boolean;
+        storyApiEnabled?: boolean;
+        storyName?: string;
+        storyCode?: string;
       }
     ];
   };
