@@ -279,6 +279,117 @@
 
     --ring: 218 100% 56%;
   }
+
+  .gradient-2 {
+    --gradient: linear-gradient(to top left, #673ab7, #512da8);
+
+    --background: 278 33.800000000000004% 3.76%;
+    --foreground: 278 5.2% 97.35%;
+
+    --muted: 278 26% 14.1%;
+    --muted-foreground: 278 5.2% 54.7%;
+
+    --popover: 278 54.6% 6.109999999999999%;
+    --popover-foreground: 278 5.2% 97.35%;
+
+    --card: 278 54.6% 6.109999999999999%;
+    --card-foreground: 278 5.2% 97.35%;
+
+    --border: 278 26% 14.1%;
+    --input: 278 26% 14.1%;
+
+    --primary: 278 52% 47%;
+    --primary-foreground: 278 5.2% 4.699999999999999%;
+
+    --secondary: 278 26% 14.1%;
+    --secondary-foreground: 278 5.2% 97.35%;
+
+    --accent: 278 26% 14.1%;
+    --accent-foreground: 278 5.2% 97.35%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 278 5.2% 97.35%;
+
+    --ring: 278 52% 47%;
+  }
+  .violet-gradient {
+    --gradient: linear-gradient(
+      to top left,
+      #0c0c6d,
+      #de512b,
+      #98d0c1,
+      #5bb226,
+      #023c0d
+    );
+    --background: 255 99% 98.48%;
+    --foreground: 255 8% 0.96%;
+
+    --muted: 255 8% 92.4%;
+    --muted-foreground: 255 4% 42.4%;
+
+    --popover: 255 26% 92.4%;
+    --popover-foreground: 255 8% 1.2%;
+
+    --card: 255 26% 92.4%;
+    --card-foreground: 255 8% 1.2%;
+
+    --border: 255 13% 89.96%;
+    --input: 255 13% 89.96%;
+
+    --primary: 255 80% 24%;
+    --primary-foreground: 255 1.6% 92.4%;
+
+    --secondary: 255 4% 96.2%;
+    --secondary-foreground: 255 5.800000000000001% 12.4%;
+
+    --accent: 255 4% 96.2%;
+    --accent-foreground: 255 5.800000000000001% 12.4%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --ring: 255 80% 24%;
+
+    --radius: 0.5rem;
+  }
+  .zinc {
+    --gradient: linear-gradient(
+      to top left,
+      #ada996,
+      #f2f2f2,
+      #dbdbdb,
+      #eaeaea
+    );
+
+    --background: 53 7.8% 5.12%;
+    --foreground: 53 1.2% 98.2%;
+
+    --muted: 53 6% 19.2%;
+    --muted-foreground: 53 1.2% 56.4%;
+
+    --popover: 53 62.6% 8.32%;
+    --popover-foreground: 53 1.2% 98.2%;
+
+    --card: 53 62.6% 8.32%;
+    --card-foreground: 53 1.2% 98.2%;
+
+    --border: 53 6% 19.2%;
+    --input: 53 6% 19.2%;
+
+    --primary: 53 12% 64%;
+    --primary-foreground: 53 1.2% 6.4%;
+
+    --secondary: 53 6% 19.2%;
+    --secondary-foreground: 53 1.2% 98.2%;
+
+    --accent: 53 6% 19.2%;
+    --accent-foreground: 53 1.2% 98.2%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 53 1.2% 98.2%;
+
+    --ring: 53 12% 64%;
+  }
 }
 
 @layer base {
