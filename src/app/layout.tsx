@@ -11,7 +11,7 @@ import { MetricProvider } from "../../hooks/MetricContext";
 import { MetricDataProvider } from "../../hooks/useMetricData";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
-
+import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 const poppins = Poppins({
   subsets: ["latin"],
   display: "swap",
@@ -36,12 +36,23 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
+      <head>
+        <link
+          rel="manifest"
+          href="https://progressier.app/hZpE1TadpKi3EdMzQSW1/progressier.json"
+        />
+        <script
+          defer
+          src="https://progressier.app/hZpE1TadpKi3EdMzQSW1/script.js"
+        ></script>
+      </head>
       <body className={poppins.className}>
         <NextIntlClientProvider messages={messages}>
           <NextTopLoader />
           <Providers session={session}>
             <MetricDataProvider>
               <MetricProvider>
+                <ServiceWorkerRegistration />
                 {children}
                 <SpeedInsights />
                 <Analytics />
