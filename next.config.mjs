@@ -37,4 +37,4 @@ const withPWAConfig = withPWA({
   dest: "public",
 });
 
-export default withPWAConfig(withNextIntl(nextConfig));
+export default withNextIntl(nextConfig);
