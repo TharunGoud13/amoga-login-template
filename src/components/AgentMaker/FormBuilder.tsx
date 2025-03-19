@@ -32,6 +32,7 @@ import { Card } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
 import { ChatWithDB } from "./ChatWithData";
 import AgentsList from "./AgentsList";
+import ConnectionsNew from "./Connections/ConnectionsNew";
 
 export interface Session {
   user: {
@@ -691,7 +692,7 @@ export default function AgentBuilder() {
         </TabsContent>
 
         <TabsContent value="connections">
-          <ConnectionTable />
+          <ConnectionsNew />
         </TabsContent>
         <TabsContent value="edit">
           <div className="w-full min-h-screen overflow-y-auto  max-w-[800px] mx-auto md:p-4 space-y-6">
