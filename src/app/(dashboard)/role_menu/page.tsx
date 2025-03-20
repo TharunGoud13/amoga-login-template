@@ -36,7 +36,7 @@ const RoleList = async () => {
   });
 
   return (
-    <div className="flex flex-col items-center justify-center   w-full min-w-screen gap-4 min-h-screen">
+    <div className="flex flex-col items-center justify-center pt-4 mb-4 pb-4  w-full min-w-screen gap-4 h-full">
       <div className="flex   w-full justify-center items-center">
         <div className="grid grid-cols-1  w-full md:w-auto px-4 md:px-0 my-5 md:my-0 md:grid-cols-3 gap-4">
           {filteredPages.map((page: any, index: number) => (
