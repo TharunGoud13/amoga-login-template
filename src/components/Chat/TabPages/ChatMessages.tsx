@@ -6,13 +6,21 @@ import {
   ArrowUp,
   Bot,
   Copy,
+  Download,
   Edit,
   Eye,
+  File,
+  FileAudio,
+  FileDownIcon,
+  FileImage,
   FileUp,
+  FileVideo,
   History,
   Loader2,
   Menu,
   Mic,
+  Pause,
+  Play,
   Plus,
   RefreshCw,
   Reply,
@@ -42,6 +50,7 @@ import axiosInstance from "@/utils/axiosInstance";
 import { CHAT_MESSAGE_API } from "@/constants/envConfig";
 import { v4 as uuidv4 } from "uuid";
 import { EmojiPicker } from "@/components/ui/emoji-picker";
+import { FaFilePdf } from "react-icons/fa";
 
 const socket = io(
   process.env.NODE_ENV === "development"
@@ -53,8 +62,17 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
   const [messages, setMessages] = useState<any[]>([]);
   const [message, setMessage] = useState<string>("");
   const [repliedMessage, setRepliedMessage] = useState<any>(null);
+  const [fileUploadLoading, setFileUploadLoading] = useState<boolean>(false);
+  const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
   const { data: sessionData } = useSession();
+  const [attachments, setAttachments] = useState<any>({
+    attachment_url: "",
+    attachment_type: "",
+    attachment_name: "",
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const session: Session | null = sessionData
@@ -155,6 +173,9 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
         repliedMessage?.agentMsgId,
       chat_message_type: "text",
       soc_room_id: roomId,
+      attachment_url: attachments?.attachment_url,
+      attachment_type: attachments?.attachment_type,
+      attachment_name: attachments?.attachment_name,
       sender_id: session?.user?.id,
       chat_message: message,
       from_business_number: session?.user?.business_number,
@@ -167,13 +188,38 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
 
       await axiosInstance.post(CHAT_MESSAGE_API, payload);
       setMessage("");
+      setAttachments({
+        attachment_url: "",
+        attachment_type: "",
+        attachment_name: "",
+      });
       setRepliedMessage(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      if (audioInputRef.current) {
+        audioInputRef.current.value = "";
+      }
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to send message",
         variant: "destructive",
       });
+    }
+  };
+
+  const generateFileIcon = (type: string) => {
+    if (type.includes("audio")) {
+      return <FileAudio className="w-5 h-5" />;
+    } else if (type.includes("video")) {
+      return <FileVideo className="w-5 h-5" />;
+    } else if (type.includes("image")) {
+      return <FileImage className="w-5 h-5" />;
+    } else if (type.includes("pdf")) {
+      return <File className="w-5 h-5" />;
+    } else if (type.includes("doc")) {
+      return <FileDownIcon className="w-5 h-5" />;
     }
   };
 
@@ -250,6 +296,77 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
     )?.chat_message;
   };
 
+  console.log("attachments-----", attachments);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileUploadLoading(true);
+    const file = e.target.files?.[0];
+    setMessage(file?.name || "");
+    const formData = new FormData();
+    formData.append("file", file || "");
+    console.log("file-----", file);
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      setAttachments({
+        attachment_url: data.url,
+        attachment_type: file?.type,
+        attachment_name: file?.name,
+      });
+      console.log("data-----", data);
+    } catch (error) {
+      console.log("error-----", error);
+    } finally {
+      setFileUploadLoading(false);
+    }
+  };
+
+  const handleDownload = async (url: string, name: string) => {
+    if (!url || !name) return;
+
+    try {
+      const response = await fetch(url);
+      console.log("response----", response);
+      const blob = await response.blob();
+      console.log("blob-----", blob);
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = name;
+      a.click();
+      window.URL.revokeObjectURL(blobUrl);
+      console.log("blobUrl-----", blobUrl);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to download file",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const playAudio = (url: string, type: string) => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio(url);
+      audioRef.current.addEventListener("ended", () => {
+        setIsAudioPlaying(false);
+      });
+    }
+
+    if (type === "play") {
+      setIsAudioPlaying(true);
+      audioRef.current.play();
+    } else {
+      setIsAudioPlaying(false);
+      audioRef.current.pause();
+    }
+  };
+
   return (
     <div className="w-full h-full">
       <div className="flex border-b border-gray-200 pb-5 items-center justify-between">
@@ -320,12 +437,53 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                   )}
                   <div className="flex items-center w-full gap-2">
                     {/* <div className="relative"> */}
-                    <EmojiPicker
+                    {/* <EmojiPicker
                       onChange={(value) => handleEmoji(value, message)}
-                    />
+                    /> */}
                     {/* </div> */}
                     <div className="rounded-t-md relative w-full rounded-l-lg p-3 bg-muted">
-                      {message.chat_message}
+                      {message.attachment_url && message.attachment_type ? (
+                        <div className="flex items-center gap-2">
+                          {generateFileIcon(message.attachment_type)}
+                          {message.attachment_name}
+                          {message.attachment_type.includes("audio") && (
+                            <div className="flex items-center gap-2">
+                              {isAudioPlaying ? (
+                                <Pause
+                                  onClick={() =>
+                                    playAudio(message.attachment_url, "pause")
+                                  }
+                                  className="w-5 h-5 cursor-pointer text-muted-foreground"
+                                />
+                              ) : (
+                                <Play
+                                  className="w-5 h-5 cursor-pointer text-muted-foreground"
+                                  onClick={() =>
+                                    playAudio(message.attachment_url, "play")
+                                  }
+                                />
+                              )}
+                            </div>
+                          )}
+                          <Eye
+                            className="w-5 h-5 cursor-pointer text-muted-foreground"
+                            onClick={() =>
+                              window.open(message.attachment_url, "_blank")
+                            }
+                          />
+                          <Download
+                            className="w-5 h-5 cursor-pointer text-muted-foreground"
+                            onClick={() =>
+                              handleDownload(
+                                message.attachment_url,
+                                message.attachment_name
+                              )
+                            }
+                          />
+                        </div>
+                      ) : (
+                        message.chat_message
+                      )}
                       <div className="absolute">
                         {message.reactions && (
                           <div className="flex items-center bg-gray-200 rounded-full p-1 gap-2">
@@ -418,19 +576,29 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                     />
                   </span>
                   <span className="text-muted-foreground cursor-pointer">
-                    <Mic className="w-5 h-5" />
+                    <Mic
+                      className="w-5 h-5"
+                      onClick={() => audioInputRef.current?.click()}
+                    />
                     <input
                       type="file"
                       accept=".mp3,.mp4,.mov,.wmv,.avi"
                       className="hidden"
+                      ref={audioInputRef}
+                      onChange={handleFileChange}
                     />
                   </span>
                   <span className="text-muted-foreground cursor-pointer">
-                    <FileUp className="w-5 h-5" />
+                    <FileUp
+                      className="w-5 h-5"
+                      onClick={() => fileInputRef.current?.click()}
+                    />
                     <input
                       type="file"
-                      accept=".mp3,.mp4,.mov,.wmv,.avi"
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.wav,.mp3,.mp4,.mov,.wmv,.avi"
                       className="hidden"
+                      onChange={handleFileChange}
+                      ref={fileInputRef}
                     />
                   </span>
 
@@ -438,7 +606,7 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                 </div>
                 <div>
                   <Button
-                    disabled={!messages}
+                    disabled={!messages || !message || fileUploadLoading}
                     size="icon"
                     className="rounded-full"
                   >
