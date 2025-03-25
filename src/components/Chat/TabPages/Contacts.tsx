@@ -10,6 +10,7 @@ import {
   Loader,
   Mail,
   MapPin,
+  MessageCircle,
   Phone,
   Plus,
   Search,
@@ -122,6 +123,11 @@ const Contacts = () => {
                           href={`/Chat/contacts/edit/${item.user_catalog_id}`}
                         >
                           <Edit className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                        </Link>
+                        <Link
+                          href={`/Chat/contacts/messages/${item.user_catalog_id}`}
+                        >
+                          <MessageCircle className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                         </Link>
                       </div>
                     </div>
