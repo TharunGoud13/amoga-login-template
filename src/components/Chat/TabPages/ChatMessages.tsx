@@ -455,7 +455,7 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                               alt={
                                 message.attachment_name || "Attachment image"
                               }
-                              className="max-h-[200px] h-full w-full max-w-[350px] object-cover rounded-md"
+                              className="max-h-[250px] h-full w-full  object-cover rounded-md"
                               width={350}
                               height={200}
                               priority
@@ -464,7 +464,7 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                           ) : message.attachment_type.includes("video") ? (
                             <video
                               src={message.attachment_url}
-                              className="max-h-[200px] w-full max-w-[350px] rounded-md"
+                              className="max-h-[250px] w-full rounded-md"
                               width={100}
                               controls
                               height={100}
@@ -532,7 +532,7 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                           </div>
                         )}
                       </div>
-                      <div className="absolute flex items-center gap-2 right-2 bottom-0 translate-y-full mt-2">
+                      <div className="absolute flex items-center gap-2 right-2 pt-2 bottom-0 translate-y-full mt-2">
                         <Sparkle
                           onClick={(e) => handleIconClick(message, "important")}
                           className={`h-5 w-5 cursor-pointer text-muted-foreground ${
