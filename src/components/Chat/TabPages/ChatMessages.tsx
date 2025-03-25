@@ -548,9 +548,13 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                         <AlarmClockPlus
                           className={`h-5 w-5 cursor-pointer text-muted-foreground`}
                         />
+                        <Reply
+                          className="h-5 w-5 cursor-pointer text-muted-foreground sm:hidden"
+                          onClick={() => handleReply(message)}
+                        />
                       </div>
                     </div>
-                    <span className="text-muted-foreground cursor-pointer">
+                    <span className="text-muted-foreground cursor-pointer hidden sm:block">
                       <Reply
                         className="w-5 h-5"
                         onClick={() => handleReply(message)}
