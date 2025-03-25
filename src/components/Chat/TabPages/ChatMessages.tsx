@@ -549,17 +549,17 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                           className={`h-5 w-5 cursor-pointer text-muted-foreground`}
                         />
                         <Reply
-                          className="h-5 w-5 cursor-pointer text-muted-foreground sm:hidden"
+                          className="h-5 w-5 cursor-pointer text-muted-foreground "
                           onClick={() => handleReply(message)}
                         />
                       </div>
                     </div>
-                    <span className="text-muted-foreground cursor-pointer hidden sm:block">
+                    {/* <span className="text-muted-foreground cursor-pointer hidden sm:block">
                       <Reply
                         className="w-5 h-5"
                         onClick={() => handleReply(message)}
                       />
-                    </span>
+                    </span> */}
                   </div>
 
                   <div ref={messagesEndRef}></div>
