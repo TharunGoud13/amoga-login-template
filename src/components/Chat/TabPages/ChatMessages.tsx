@@ -404,14 +404,14 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
           ref={scrollAreaRef}
           className="h-[calc(70vh-100px)] w-full relative"
         >
-          <div className="flex flex-col gap-4 w-full md:p-4">
+          <div className="flex flex-col gap-4 w-full md:p-4 p-2">
             {messages.map((message, index) => (
               <div
                 key={index}
                 ref={messagesEndRef}
-                className="flex items-center gap-2 w-full justify-start "
+                className="flex items-start gap-2 w-full justify-start flex-wrap sm:flex-nowrap"
               >
-                <div className="flex bg-secondary rounded-full h-10 w-10 flex-col items-center justify-center">
+                <div className="flex bg-secondary rounded-full h-10 w-10 flex-shrink-0 flex-col items-center justify-center">
                   {message.from_business_number ===
                   session?.user?.business_number ? (
                     <p className="flex flex-col items-center justify-center">
@@ -428,11 +428,11 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                     {new Date(message.created_date).toLocaleDateString()}
                   </span>
                   {message.replied_to_message_id && (
-                    <div className="flex items-center w-full gap-2">
+                    <div className="flex items-center w-full gap-2 flex-wrap">
                       <span className="text-sm font-semibold">
                         Replied to:{" "}
                       </span>
-                      <span className="text-sm">
+                      <span className="text-sm break-words">
                         {findRepliedMessageContent(
                           message.replied_to_message_id ||
                             message.ref_chat_message_id
@@ -440,7 +440,7 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                       </span>
                     </div>
                   )}
-                  <div className="flex items-center w-full gap-2">
+                  <div className="flex items-start w-full gap-2 flex-wrap sm:flex-nowrap">
                     {/* <div className="relative"> */}
                     {/* <EmojiPicker
                       onChange={(value) => handleEmoji(value, message)}
@@ -448,14 +448,14 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                     {/* </div> */}
                     <div className="rounded-t-md relative w-full rounded-l-lg p-3 bg-muted">
                       {message.attachment_url && message.attachment_type ? (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           {message.attachment_type.includes("image") ? (
                             <Image
                               src={message.attachment_url}
                               alt={
                                 message.attachment_name || "Attachment image"
                               }
-                              className="h-[200px] w-[350px] object-cover rounded-md"
+                              className="max-h-[200px] h-full w-full max-w-[350px] object-cover rounded-md"
                               width={350}
                               height={200}
                               priority
@@ -464,7 +464,7 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                           ) : message.attachment_type.includes("video") ? (
                             <video
                               src={message.attachment_url}
-                              className="h-[200px] w-[350px] rounded-md"
+                              className="max-h-[200px] w-full max-w-[350px] rounded-md"
                               width={100}
                               controls
                               height={100}
@@ -472,7 +472,9 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                           ) : (
                             <>
                               {generateFileIcon(message.attachment_type)}
-                              {message.attachment_name}
+                              <span className="break-words">
+                                {message.attachment_name}
+                              </span>
                               {message.attachment_type.includes("audio") && (
                                 <div className="flex items-center gap-2">
                                   {isAudioPlaying ? (
@@ -500,24 +502,28 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                               )}
                             </>
                           )}
-                          <Eye
-                            className="w-5 h-5 cursor-pointer text-muted-foreground"
-                            onClick={() =>
-                              window.open(message.attachment_url, "_blank")
-                            }
-                          />
-                          <Download
-                            className="w-5 h-5 cursor-pointer text-muted-foreground"
-                            onClick={() =>
-                              handleDownload(
-                                message.attachment_url,
-                                message.attachment_name
-                              )
-                            }
-                          />
+                          <div className="flex gap-2 mt-2 w-full">
+                            <Eye
+                              className="w-5 h-5 cursor-pointer text-muted-foreground"
+                              onClick={() =>
+                                window.open(message.attachment_url, "_blank")
+                              }
+                            />
+                            <Download
+                              className="w-5 h-5 cursor-pointer text-muted-foreground"
+                              onClick={() =>
+                                handleDownload(
+                                  message.attachment_url,
+                                  message.attachment_name
+                                )
+                              }
+                            />
+                          </div>
                         </div>
                       ) : (
-                        message.chat_message
+                        <div className="break-words">
+                          {message.chat_message}
+                        </div>
                       )}
                       <div className="absolute">
                         {message.reactions && (
@@ -556,8 +562,8 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
 
                   <div>
                     {message.role === "assistant" && (
-                      <div className="flex  md:ml-3 items-center gap-5">
-                        <div className="flex items-center gap-5">
+                      <div className="flex md:ml-3 items-center gap-2 flex-wrap">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <Eye className="w-5 h-5 cursor-pointer text-muted-foreground" />
                           <Star
                             className={`w-5 h-5 cursor-pointer text-muted-foreground ${
@@ -569,7 +575,6 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                           <Copy className="w-5 h-5 cursor-pointer text-muted-foreground" />
                           <RefreshCw className="w-5 h-5 cursor-pointer text-muted-foreground" />
                           <Share2 className="w-5 h-5 cursor-pointer text-muted-foreground" />
-
                           <Edit className="w-5 h-5 cursor-pointer text-muted-foreground" />
                         </div>
                       </div>
@@ -595,58 +600,65 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                 />
               </div>
             )}
-            <div className="border flex items-center rounded-full   p-2.5  w-full md:w-full">
-              <Input
-                placeholder="Type your message here..."
-                className="bg-transparent border-none"
-                value={message}
-                ref={inputRef}
-                onChange={(e) => setMessage(e.target.value)}
-              />
-              <div className="flex justify-between items-center gap-2 ml-2">
-                <div className="flex items-center gap-5 mr-3">
-                  <span className="text-muted-foreground cursor-pointer">
-                    <EmojiPicker
-                      onChange={(value) => setMessage(message + value)}
-                    />
-                  </span>
-                  <span className="text-muted-foreground cursor-pointer">
-                    <Mic
-                      className="w-5 h-5"
-                      onClick={() => audioInputRef.current?.click()}
-                    />
-                    <input
-                      type="file"
-                      accept=".mp3,.mp4,.mov,.wmv,.avi"
-                      className="hidden"
-                      ref={audioInputRef}
-                      onChange={handleFileChange}
-                    />
-                  </span>
-                  <span className="text-muted-foreground cursor-pointer">
-                    <FileUp
-                      className="w-5 h-5"
-                      onClick={() => fileInputRef.current?.click()}
-                    />
-                    <input
-                      type="file"
-                      accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.wav,.mp3,.mp4,.mov,.wmv,.avi,.jpg,.jpeg,.png,.gif"
-                      className="hidden"
-                      onChange={handleFileChange}
-                      ref={fileInputRef}
-                    />
-                  </span>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-muted-foreground cursor-pointer">
+                <EmojiPicker
+                  onChange={(value) => setMessage(message + value)}
+                />
+              </span>
+              <div className="border flex items-center rounded-full   p-2.5  w-full md:w-full">
+                <Input
+                  placeholder="Type your message here..."
+                  className="bg-transparent border-none"
+                  value={message}
+                  ref={inputRef}
+                  onChange={(e) => setMessage(e.target.value)}
+                />
+                <div className="flex justify-between items-center gap-2 ml-2">
+                  <div className="flex items-center gap-5 mr-3">
+                    {/* <span className="text-muted-foreground cursor-pointer">
+                      <EmojiPicker
+                        onChange={(value) => setMessage(message + value)}
+                      />
+                    </span> */}
+                    {/* <span className="text-muted-foreground cursor-pointer">
+                      <Mic
+                        className="w-5 h-5"
+                        onClick={() => audioInputRef.current?.click()}
+                      />
+                      <input
+                        type="file"
+                        accept=".mp3,.mp4,.mov,.wmv,.avi"
+                        className="hidden"
+                        ref={audioInputRef}
+                        onChange={handleFileChange}
+                      />
+                    </span> */}
+                    <span className="text-muted-foreground cursor-pointer">
+                      <FileUp
+                        className="w-5 h-5"
+                        onClick={() => fileInputRef.current?.click()}
+                      />
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.wav,.mp3,.mp4,.mov,.wmv,.avi,.jpg,.jpeg,.png,.gif,.mp3,.mp4,.mov,.wmv,.avi"
+                        className="hidden"
+                        onChange={handleFileChange}
+                        ref={fileInputRef}
+                      />
+                    </span>
 
-                  <input type="file" className="hidden" />
-                </div>
-                <div>
-                  <Button
-                    disabled={!messages || !message || fileUploadLoading}
-                    size="icon"
-                    className="rounded-full"
-                  >
-                    <ArrowUp className="w-5 h-5" />
-                  </Button>
+                    <input type="file" className="hidden" />
+                  </div>
+                  <div>
+                    <Button
+                      disabled={!messages || !message || fileUploadLoading}
+                      size="icon"
+                      className="rounded-full"
+                    >
+                      <ArrowUp className="w-5 h-5" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
