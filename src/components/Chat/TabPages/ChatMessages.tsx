@@ -51,6 +51,7 @@ import { CHAT_MESSAGE_API } from "@/constants/envConfig";
 import { v4 as uuidv4 } from "uuid";
 import { EmojiPicker } from "@/components/ui/emoji-picker";
 import { FaFilePdf } from "react-icons/fa";
+import Image from "next/image";
 
 const socket = io(
   process.env.NODE_ENV === "development"
@@ -73,6 +74,7 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const session: Session | null = sessionData
@@ -282,6 +284,9 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
 
   const handleReply = (message: any) => {
     console.log("message-----", message);
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
     setRepliedMessage(message);
   };
 
@@ -444,26 +449,56 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                     <div className="rounded-t-md relative w-full rounded-l-lg p-3 bg-muted">
                       {message.attachment_url && message.attachment_type ? (
                         <div className="flex items-center gap-2">
-                          {generateFileIcon(message.attachment_type)}
-                          {message.attachment_name}
-                          {message.attachment_type.includes("audio") && (
-                            <div className="flex items-center gap-2">
-                              {isAudioPlaying ? (
-                                <Pause
-                                  onClick={() =>
-                                    playAudio(message.attachment_url, "pause")
-                                  }
-                                  className="w-5 h-5 cursor-pointer text-muted-foreground"
-                                />
-                              ) : (
-                                <Play
-                                  className="w-5 h-5 cursor-pointer text-muted-foreground"
-                                  onClick={() =>
-                                    playAudio(message.attachment_url, "play")
-                                  }
-                                />
+                          {message.attachment_type.includes("image") ? (
+                            <Image
+                              src={message.attachment_url}
+                              alt={
+                                message.attachment_name || "Attachment image"
+                              }
+                              className="h-[200px] w-[350px] object-cover rounded-md"
+                              width={350}
+                              height={200}
+                              priority
+                              unoptimized={true}
+                            />
+                          ) : message.attachment_type.includes("video") ? (
+                            <video
+                              src={message.attachment_url}
+                              className="h-[200px] w-[350px] rounded-md"
+                              width={100}
+                              controls
+                              height={100}
+                            />
+                          ) : (
+                            <>
+                              {generateFileIcon(message.attachment_type)}
+                              {message.attachment_name}
+                              {message.attachment_type.includes("audio") && (
+                                <div className="flex items-center gap-2">
+                                  {isAudioPlaying ? (
+                                    <Pause
+                                      onClick={() =>
+                                        playAudio(
+                                          message.attachment_url,
+                                          "pause"
+                                        )
+                                      }
+                                      className="w-5 h-5 cursor-pointer text-muted-foreground"
+                                    />
+                                  ) : (
+                                    <Play
+                                      className="w-5 h-5 cursor-pointer text-muted-foreground"
+                                      onClick={() =>
+                                        playAudio(
+                                          message.attachment_url,
+                                          "play"
+                                        )
+                                      }
+                                    />
+                                  )}
+                                </div>
                               )}
-                            </div>
+                            </>
                           )}
                           <Eye
                             className="w-5 h-5 cursor-pointer text-muted-foreground"
@@ -491,7 +526,7 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                           </div>
                         )}
                       </div>
-                      <div className="absolute flex items-center gap-2 right-2 top-[51px]">
+                      <div className="absolute flex items-center gap-2 right-2 bottom-0 translate-y-full mt-2">
                         <Sparkle
                           onClick={(e) => handleIconClick(message, "important")}
                           className={`h-5 w-5 cursor-pointer text-muted-foreground ${
@@ -505,8 +540,7 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                           }`}
                         />
                         <AlarmClockPlus
-                          className={`h-5 w-5 cursor-pointer text-muted-foreground 
-                          }`}
+                          className={`h-5 w-5 cursor-pointer text-muted-foreground`}
                         />
                       </div>
                     </div>
@@ -566,6 +600,7 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                 placeholder="Type your message here..."
                 className="bg-transparent border-none"
                 value={message}
+                ref={inputRef}
                 onChange={(e) => setMessage(e.target.value)}
               />
               <div className="flex justify-between items-center gap-2 ml-2">
@@ -595,7 +630,7 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                     />
                     <input
                       type="file"
-                      accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.wav,.mp3,.mp4,.mov,.wmv,.avi"
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.wav,.mp3,.mp4,.mov,.wmv,.avi,.jpg,.jpeg,.png,.gif"
                       className="hidden"
                       onChange={handleFileChange}
                       ref={fileInputRef}
