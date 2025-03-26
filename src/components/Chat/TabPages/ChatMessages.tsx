@@ -503,12 +503,12 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                             </>
                           )}
                           <div className="flex gap-2 mt-2 w-full">
-                            <Eye
-                              className="w-5 h-5 cursor-pointer text-muted-foreground"
-                              onClick={() =>
-                                window.open(message.attachment_url, "_blank")
-                              }
-                            />
+                            <Link
+                              href={`/Chat/contacts/messages/${chatId}/viewFile/${message.id}`}
+                              target="_blank"
+                            >
+                              <Eye className="w-5 h-5 cursor-pointer text-muted-foreground" />
+                            </Link>
                             <Download
                               className="w-5 h-5 cursor-pointer text-muted-foreground"
                               onClick={() =>
