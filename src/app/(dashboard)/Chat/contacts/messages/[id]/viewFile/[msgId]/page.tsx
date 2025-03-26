@@ -1,5 +1,5 @@
 "use client";
-import ChatFilePreview from "@/components/Chat/TabPages/ChatFilePreview";
+import ChatFilePreview from "@/components/Chat/components/ChatFilePreview";
 import { CHAT_MESSAGE_API } from "@/constants/envConfig";
 import axiosInstance from "@/utils/axiosInstance";
 import axios from "axios";

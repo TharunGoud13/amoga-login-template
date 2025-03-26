@@ -15,6 +15,7 @@ import {
   FileImage,
   FileUp,
   FileVideo,
+  Forward,
   History,
   Loader2,
   Menu,
@@ -423,6 +424,21 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                 </div>
 
                 <div className="flex flex-col w-full gap-2">
+                  {message.is_forwared && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground  p-2 rounded-md">
+                      <Forward className="w-4 h-4" />
+                      <div className="flex flex-col">
+                        <span>
+                          Forwarded by {message.forwared_by_user_name}
+                        </span>
+                        {message.original_sender && (
+                          <span className="text-xs">
+                            Originally from: {message.original_sender}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   <span className="text-xs text-muted-foreground">
                     {/* {new Date(message.created_date).toLocaleTimeString()} -{" "} */}
                     {new Date(message.created_date).toLocaleDateString()}
@@ -552,6 +568,9 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
                           className="h-5 w-5 cursor-pointer text-muted-foreground "
                           onClick={() => handleReply(message)}
                         />
+                        <Link href={`/Chat/forward/${message.agentMsgId}`}>
+                          <Forward className="h-5 w-5 cursor-pointer text-muted-foreground " />
+                        </Link>
                       </div>
                     </div>
                     {/* <span className="text-muted-foreground cursor-pointer hidden sm:block">
