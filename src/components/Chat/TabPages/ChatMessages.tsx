@@ -60,7 +60,13 @@ const socket = io(
     : "https://amoga-template-socket-1.onrender.com"
 );
 
-const ChatMessages = ({ chatId }: { chatId?: string }) => {
+const ChatMessages = ({
+  chatId,
+  isGroup,
+}: {
+  chatId?: string;
+  isGroup: boolean;
+}) => {
   const [messages, setMessages] = useState<any[]>([]);
   const [message, setMessage] = useState<string>("");
   const [repliedMessage, setRepliedMessage] = useState<any>(null);
@@ -113,8 +119,6 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
     fetchUserDetails();
   }, [chatId]);
 
-  console.log("recipientDetails-----", recipientDetails);
-
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -124,7 +128,9 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
   useEffect(() => {
     const fetchMessages = async () => {
       if (!chatId || !session?.user?.id) return;
-      const roomId = generateRoomId(session?.user?.id, chatId);
+      const roomId = isGroup
+        ? chatId
+        : generateRoomId(session?.user?.id, chatId);
       try {
         const response = await axiosInstance.get(
           `${CHAT_MESSAGE_API}?soc_room_id=eq.${roomId}&order=created_date.asc`
@@ -148,7 +154,9 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
 
   useEffect(() => {
     if (chatId && session?.user?.id) {
-      const roomId = generateRoomId(session?.user?.id, chatId);
+      const roomId = isGroup
+        ? chatId
+        : generateRoomId(session?.user?.id, chatId);
 
       socket.emit("join_room", roomId);
       console.log(`Joined room: ${roomId}`);
@@ -180,7 +188,8 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
 
     if (!chatId || !session?.user?.id) return;
 
-    const roomId = generateRoomId(session?.user?.id, chatId);
+    const roomId = isGroup ? chatId : generateRoomId(session?.user?.id, chatId);
+    console.log("roomId-----", roomId);
 
     const unqChatId = uuidv4();
 
@@ -257,7 +266,6 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
   };
 
   const handleIconClick = async (message: any, icon: string) => {
-    console.log("clicked----", { message, icon });
     try {
       await axiosInstance.patch(
         `${CHAT_MESSAGE_API}?id=eq.${message.id}`,
@@ -288,7 +296,6 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
   };
 
   const handleEmoji = async (value: string, message: any) => {
-    console.log("reactions-----", { value, message });
     if (!value || !message) return;
     try {
       await axiosInstance.patch(`${CHAT_MESSAGE_API}?id=eq.${message.id}`, {
@@ -314,14 +321,12 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
   };
 
   const handleReply = (message: any) => {
-    console.log("message-----", message);
     if (inputRef.current) {
       inputRef.current.focus();
     }
     setRepliedMessage(message);
   };
 
-  console.log("messages-----", messages);
   const findRepliedMessageContent = (repliedToMessageId: string) => {
     // Try to find the replied message using different possible identifiers
     return messages.find(
@@ -332,15 +337,13 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
     )?.chat_message;
   };
 
-  console.log("attachments-----", attachments);
-
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setFileUploadLoading(true);
     const file = e.target.files?.[0];
     setMessage(file?.name || "");
     const formData = new FormData();
     formData.append("file", file || "");
-    console.log("file-----", file);
+
     try {
       const response = await fetch("/api/upload", {
         method: "POST",
@@ -352,7 +355,6 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
         attachment_type: file?.type,
         attachment_name: file?.name,
       });
-      console.log("data-----", data);
     } catch (error) {
       console.log("error-----", error);
     } finally {
@@ -365,16 +367,13 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
 
     try {
       const response = await fetch(url);
-      console.log("response----", response);
       const blob = await response.blob();
-      console.log("blob-----", blob);
       const blobUrl = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = blobUrl;
       a.download = name;
       a.click();
       window.URL.revokeObjectURL(blobUrl);
-      console.log("blobUrl-----", blobUrl);
     } catch (error) {
       toast({
         title: "Error",
@@ -409,7 +408,7 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
         <Link href="/Chat">
           <h1 className="flex text-xl font-semibold items-center gap-2">
             <Bot className="w-5 h-5 text-muted-foreground" />
-            Chat
+            {isGroup ? "Group Chat" : "Chat"}
           </h1>
         </Link>
         <div className="flex items-center justify-end gap-5">

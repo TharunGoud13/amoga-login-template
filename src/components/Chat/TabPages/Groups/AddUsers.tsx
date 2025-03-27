@@ -189,7 +189,13 @@ const AddUsers = ({ chat_group_id }: { chat_group_id: string }) => {
                   <div className="flex justify-between items-center">
                     <h2 className="font-semibold text-md">{item.user_name}</h2>
                     <Checkbox
-                      checked={selectedContacts.includes(item)}
+                      checked={
+                        selectedContacts.includes(item) ||
+                        group?.chat_group_users_json?.some(
+                          (user: any) =>
+                            user.user_catalog_id === item.user_catalog_id
+                        )
+                      }
                       onCheckedChange={(checked) => {
                         if (checked) {
                           setSelectedContacts([...selectedContacts, item]);
