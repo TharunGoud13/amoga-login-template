@@ -2,6 +2,7 @@ import React from "react";
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import { TabsContent } from "@radix-ui/react-tabs";
 import Contacts from "./TabPages/Contacts";
+import Groups from "./TabPages/Groups/Groups";
 
 const ChatPage = () => {
   return (
@@ -20,7 +21,7 @@ const ChatPage = () => {
           <Contacts />
         </TabsContent>
         <TabsContent value="groups">
-          <h1>Groups</h1>
+          <Groups />
         </TabsContent>
         <TabsContent value="agents">
           <h1>Agents</h1>

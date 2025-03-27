@@ -48,7 +48,7 @@ import { Session } from "@/components/doc-template/DocTemplate";
 import { io } from "socket.io-client";
 import { toast } from "@/components/ui/use-toast";
 import axiosInstance from "@/utils/axiosInstance";
-import { CHAT_MESSAGE_API } from "@/constants/envConfig";
+import { CHAT_MESSAGE_API, GET_CONTACTS_API } from "@/constants/envConfig";
 import { v4 as uuidv4 } from "uuid";
 import { EmojiPicker } from "@/components/ui/emoji-picker";
 import { FaFilePdf } from "react-icons/fa";
@@ -66,6 +66,7 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
   const [repliedMessage, setRepliedMessage] = useState<any>(null);
   const [fileUploadLoading, setFileUploadLoading] = useState<boolean>(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
+  const [recipientDetails, setRecipientDetails] = useState<any>(null);
   const { data: sessionData } = useSession();
   const [attachments, setAttachments] = useState<any>({
     attachment_url: "",
@@ -88,6 +89,31 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
   ) => {
     return [sessionId, chatId].sort().join("_");
   };
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      if (!chatId) return;
+
+      try {
+        const response = await axiosInstance.get(
+          `${GET_CONTACTS_API}?user_catalog_id=eq.${chatId}`
+        );
+        if (response.data && response.data[0]) {
+          setRecipientDetails(response.data[0]);
+        }
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to fetch user details",
+        });
+      }
+    };
+
+    fetchUserDetails();
+  }, [chatId]);
+
+  console.log("recipientDetails-----", recipientDetails);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -183,6 +209,10 @@ const ChatMessages = ({ chatId }: { chatId?: string }) => {
       chat_message: message,
       from_business_number: session?.user?.business_number,
       from_business_name: session?.user?.business_name,
+      to_business_number: recipientDetails?.business_number,
+      to_business_name: recipientDetails?.business_name,
+      for_business_number: recipientDetails?.business_number,
+      for_business_name: recipientDetails?.business_name,
     };
 
     try {
