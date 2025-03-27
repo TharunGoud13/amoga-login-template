@@ -48,11 +48,16 @@ import { Session } from "@/components/doc-template/DocTemplate";
 import { io } from "socket.io-client";
 import { toast } from "@/components/ui/use-toast";
 import axiosInstance from "@/utils/axiosInstance";
-import { CHAT_MESSAGE_API, GET_CONTACTS_API } from "@/constants/envConfig";
+import {
+  CHAT_GROUP_API,
+  CHAT_MESSAGE_API,
+  GET_CONTACTS_API,
+} from "@/constants/envConfig";
 import { v4 as uuidv4 } from "uuid";
 import { EmojiPicker } from "@/components/ui/emoji-picker";
 import { FaFilePdf } from "react-icons/fa";
 import Image from "next/image";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const socket = io(
   process.env.NODE_ENV === "development"
@@ -69,6 +74,7 @@ const ChatMessages = ({
 }) => {
   const [messages, setMessages] = useState<any[]>([]);
   const [message, setMessage] = useState<string>("");
+  const [groupData, setGroupData] = useState<any>(null);
   const [repliedMessage, setRepliedMessage] = useState<any>(null);
   const [fileUploadLoading, setFileUploadLoading] = useState<boolean>(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
@@ -95,6 +101,30 @@ const ChatMessages = ({
   ) => {
     return [sessionId, chatId].sort().join("_");
   };
+
+  useEffect(() => {
+    const fetchGroupData = async () => {
+      if (isGroup) {
+        try {
+          const response = await axiosInstance.get(
+            `${CHAT_GROUP_API}?chat_group_id=eq.${chatId}`
+          );
+          if (response.data && response.data[0]) {
+            setGroupData(response.data[0]);
+          }
+        } catch (error) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to fetch group data",
+          });
+        }
+      }
+    };
+    fetchGroupData();
+  }, [chatId, isGroup]);
+
+  console.log("groupData-----", groupData);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -405,12 +435,37 @@ const ChatMessages = ({
   return (
     <div className="w-full h-full">
       <div className="flex border-b border-gray-200 pb-5 items-center justify-between">
-        <Link href="/Chat">
-          <h1 className="flex text-xl font-semibold items-center gap-2">
-            <Bot className="w-5 h-5 text-muted-foreground" />
-            {isGroup ? "Group Chat" : "Chat"}
-          </h1>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/Chat">
+            <h1 className="flex text-xl font-semibold items-center gap-2">
+              <Bot className="w-5 h-5 text-muted-foreground" />
+              {isGroup ? "Group Chat" : "Chat"}
+            </h1>
+          </Link>
+          <div className="flex items-center gap-2">
+            {groupData && (
+              <div className="flex gap-4 items-center">
+                <Avatar className="flex items-center justify-center bg-muted rounded-full h-10 w-10">
+                  <AvatarImage src={groupData?.profile_pic_url} />
+                  <AvatarFallback>
+                    {groupData?.created_user?.charAt(0)?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                {groupData?.chat_group_users_json?.map((item: any) => (
+                  <Avatar
+                    key={item.id}
+                    className="flex items-center justify-center bg-muted rounded-full h-10 w-10 -ml-2"
+                  >
+                    <AvatarImage src={item.profile_pic_url} />
+                    <AvatarFallback>
+                      {item.first_name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
         <div className="flex items-center justify-end gap-5">
           <Link href="/Chat">
             <span className="text-muted-foreground cursor-pointer">
@@ -444,11 +499,22 @@ const ChatMessages = ({
                 <div className="flex bg-secondary rounded-full h-10 w-10 flex-shrink-0 flex-col items-center justify-center">
                   {message.from_business_number ===
                   session?.user?.business_number ? (
-                    <p className="flex flex-col items-center justify-center">
-                      {session?.user?.name?.[0].toUpperCase()}
-                    </p>
+                    <Avatar className="h-10 w-10 flex items-center justify-center">
+                      <AvatarImage alt={session?.user?.name || "User"} />
+                      <AvatarFallback>
+                        {session?.user?.name?.[0].toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                   ) : (
-                    <p>{message?.created_user_name?.charAt(0).toUpperCase()}</p>
+                    <Avatar className="h-10 w-10 flex items-center justify-center">
+                      <AvatarImage
+                        src={message?.profile_pic_url}
+                        alt={message?.created_user_name || "User"}
+                      />
+                      <AvatarFallback>
+                        {message?.created_user_name?.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                   )}
                 </div>
 
