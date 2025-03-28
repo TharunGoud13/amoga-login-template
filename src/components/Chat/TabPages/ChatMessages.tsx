@@ -52,6 +52,7 @@ import {
   CHAT_GROUP_API,
   CHAT_MESSAGE_API,
   GET_CONTACTS_API,
+  LATEST_MESSAGE_API,
 } from "@/constants/envConfig";
 import { v4 as uuidv4 } from "uuid";
 import { EmojiPicker } from "@/components/ui/emoji-picker";
@@ -79,6 +80,7 @@ const ChatMessages = ({
   const [fileUploadLoading, setFileUploadLoading] = useState<boolean>(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState<boolean>(false);
   const [recipientDetails, setRecipientDetails] = useState<any>(null);
+  const [latestMessage, setLatestMessage] = useState<any>(null);
   const { data: sessionData } = useSession();
   const [attachments, setAttachments] = useState<any>({
     attachment_url: "",
@@ -103,6 +105,14 @@ const ChatMessages = ({
   };
 
   useEffect(() => {
+    const fetchLatestMessage = async () => {
+      const response = await axiosInstance.get(LATEST_MESSAGE_API);
+      setLatestMessage(response.data);
+    };
+    fetchLatestMessage();
+  }, [message]);
+
+  useEffect(() => {
     const fetchGroupData = async () => {
       if (isGroup) {
         try {
@@ -123,8 +133,6 @@ const ChatMessages = ({
     };
     fetchGroupData();
   }, [chatId, isGroup]);
-
-  console.log("groupData-----", groupData);
 
   useEffect(() => {
     const fetchUserDetails = async () => {
@@ -245,6 +253,8 @@ const ChatMessages = ({
       attachment_type: attachments?.attachment_type,
       attachment_name: attachments?.attachment_name,
       sender_id: session?.user?.id,
+      receiver_user_id: recipientDetails?.user_catalog_id,
+      receiver_group_id: isGroup ? chatId : null,
       chat_message: message,
       from_business_number: session?.user?.business_number,
       from_business_name: session?.user?.business_name,
@@ -259,6 +269,41 @@ const ChatMessages = ({
       //   setMessages((prev) => [...prev, payload]);
 
       await axiosInstance.post(CHAT_MESSAGE_API, payload);
+
+      // Check if there's an existing latest message for this specific conversation
+      const existingLatestMessage =
+        latestMessage && latestMessage.length > 0
+          ? latestMessage.find(
+              (msg: any) =>
+                (msg.sender_id == session?.user?.id &&
+                  msg.receiver_id == recipientDetails?.user_catalog_id) ||
+                (msg.sender_id == recipientDetails?.user_catalog_id &&
+                  msg.receiver_id == session?.user?.id)
+            )
+          : null;
+
+      const latestMessagePayload = {
+        sender_id: session?.user?.id,
+        receiver_id: recipientDetails?.user_catalog_id,
+        sender_user_name: session?.user?.name,
+        receiver_user_name: recipientDetails?.first_name,
+        sender_group_name: isGroup ? chatId : null,
+        chat_message: message,
+        created_datetime: new Date().toISOString(),
+        created_user_id: session?.user?.id,
+      };
+
+      if (existingLatestMessage) {
+        // Update existing latest message for this conversation
+        await axiosInstance.patch(
+          `${LATEST_MESSAGE_API}?id=eq.${existingLatestMessage.id}`,
+          latestMessagePayload
+        );
+      } else {
+        // Create new latest message entry for this conversation
+        await axiosInstance.post(LATEST_MESSAGE_API, latestMessagePayload);
+      }
+
       setMessage("");
       setAttachments({
         attachment_url: "",
@@ -439,7 +484,7 @@ const ChatMessages = ({
           <Link href="/Chat">
             <h1 className="flex text-xl font-semibold items-center gap-2">
               <Bot className="w-5 h-5 text-muted-foreground" />
-              {isGroup ? "Group Chat" : "Chat"}
+              {isGroup ? groupData?.chat_group_name : "Chat"}
             </h1>
           </Link>
           <div className="flex items-center gap-2">

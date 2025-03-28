@@ -3,11 +3,12 @@ import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import { TabsContent } from "@radix-ui/react-tabs";
 import Contacts from "./TabPages/Contacts";
 import Groups from "./TabPages/Groups/Groups";
+import Chats from "./TabPages/Chats/Chats";
 
 const ChatPage = () => {
   return (
     <div className="w-full">
-      <Tabs className="w-full" defaultValue="contacts">
+      <Tabs className="w-full" defaultValue="chats">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="chats">Chats</TabsTrigger>
           <TabsTrigger value="contacts">Contacts</TabsTrigger>
@@ -15,7 +16,7 @@ const ChatPage = () => {
           <TabsTrigger value="agents">Agents</TabsTrigger>
         </TabsList>
         <TabsContent value="chats">
-          <h1>Chat</h1>
+          <Chats />
         </TabsContent>
         <TabsContent value="contacts">
           <Contacts />
