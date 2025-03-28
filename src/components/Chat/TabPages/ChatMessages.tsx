@@ -188,7 +188,7 @@ const ChatMessages = ({
       }
     };
     fetchMessages();
-  }, [chatId, session?.user?.id]);
+  }, [chatId, session?.user?.id, isGroup]);
 
   useEffect(() => {
     if (chatId && session?.user?.id) {
@@ -203,7 +203,7 @@ const ChatMessages = ({
     return () => {
       socket.off("receive_msg");
     };
-  }, [chatId, session?.user?.id]);
+  }, [chatId, session?.user?.id, isGroup]);
 
   useEffect(() => {
     const handleReceiveMessage = (newMessage: any) => {
@@ -273,12 +273,15 @@ const ChatMessages = ({
       // Check if there's an existing latest message for this specific conversation
       const existingLatestMessage =
         latestMessage && latestMessage.length > 0
-          ? latestMessage.find(
-              (msg: any) =>
-                (msg.sender_id == session?.user?.id &&
-                  msg.receiver_id == recipientDetails?.user_catalog_id) ||
-                (msg.sender_id == recipientDetails?.user_catalog_id &&
-                  msg.receiver_id == session?.user?.id)
+          ? latestMessage.find((msg: any) =>
+              isGroup
+                ? // For group messages, match by group ID
+                  msg.receiver_group_name == chatId
+                : // For direct messages, match by sender/receiver pair
+                  (msg.sender_id == session?.user?.id &&
+                    msg.receiver_id == recipientDetails?.user_catalog_id) ||
+                  (msg.sender_id == recipientDetails?.user_catalog_id &&
+                    msg.receiver_id == session?.user?.id)
             )
           : null;
 
@@ -287,7 +290,7 @@ const ChatMessages = ({
         receiver_id: recipientDetails?.user_catalog_id,
         sender_user_name: session?.user?.name,
         receiver_user_name: recipientDetails?.first_name,
-        sender_group_name: isGroup ? chatId : null,
+        receiver_group_name: isGroup ? chatId : null,
         chat_message: message,
         created_datetime: new Date().toISOString(),
         created_user_id: session?.user?.id,
