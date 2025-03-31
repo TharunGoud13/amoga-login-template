@@ -9,7 +9,7 @@ import { FormPreview } from "./DocPreview";
 import { EditFieldDialog } from "./EditFieldDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import List from "./List/List";
-import { ConnectionTable } from "./connections";
+import ConnectionsNew from "./connections/connections";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import {
@@ -31,6 +31,7 @@ import { docFieldTypes } from "@/constants/docIndex";
 
 import { Card } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
+import DocCardTemplate from "./List/DocCardTemplate";
 
 export interface Session {
   user: {
@@ -165,7 +166,7 @@ export default function DocTemplate() {
   const getData = async () => {
     try {
       const response = await fetch(
-        `${SAVE_FORM_DATA}?form_id=eq.${currentId}`,
+        `${SAVE_DOC_TEMPLATE}?mydoc_id=eq.${currentId}`,
         {
           method: "GET",
           headers: {
@@ -177,6 +178,7 @@ export default function DocTemplate() {
 
       const result = await response.json();
       setEditModeData(result[0]);
+      console.log("result-----", result);
       if (response.ok) {
         toast({ description: "Data fetched successfully", variant: "default" });
       } else {
@@ -195,9 +197,10 @@ export default function DocTemplate() {
   }, []);
 
   useEffect(() => {
-    if (currentPath && editModeData?.form_json) {
-      setFormFields(editModeData.form_json);
-      setEditFormInput(editModeData?.form_name || "");
+    if (currentPath && editModeData?.doc_json) {
+      setFormFields(editModeData.doc_json);
+      setEditFormInput(editModeData?.template_name || "");
+      setFormInput(editModeData?.template_name || "");
     }
   }, [currentPath, editModeData]);
 
@@ -270,16 +273,19 @@ export default function DocTemplate() {
       if (currentPath && editModeData) {
         const updatePayload = {
           ...payload,
-          form_json: activeFormFields, // Use filtered form fields
-          form_name: editFormInput,
+          doc_json: activeFormFields, // Use filtered form fields
+          template_name: editFormInput,
           version_no: editModeData?.version_no + 1,
         };
 
-        response = await fetch(`${SAVE_DOC_TEMPLATE}?form_id=eq.${currentId}`, {
-          method: "PATCH",
-          headers: headers,
-          body: JSON.stringify(updatePayload),
-        });
+        response = await fetch(
+          `${SAVE_DOC_TEMPLATE}?mydoc_id=eq.${currentId}`,
+          {
+            method: "PATCH",
+            headers: headers,
+            body: JSON.stringify(updatePayload),
+          }
+        );
       } else {
         response = await fetch(SAVE_DOC_TEMPLATE, {
           method: "POST",
@@ -330,7 +336,7 @@ export default function DocTemplate() {
 
       setIsLoading(false);
       // toast({ description: "Doc saved successfully", variant: "default" });
-      route.push(`/doc-template/${payload.shareurl}`);
+      // route.push(`/doc-template/${payload.shareurl}`);
 
       setFormFields([]);
       setFormInput("");
@@ -390,6 +396,8 @@ export default function DocTemplate() {
     setIsDialogOpen(false);
   };
 
+  console.log("currentPath-----", currentPath);
+
   return (
     <section className="p-2.5  space-y-8">
       <Tabs
@@ -400,18 +408,25 @@ export default function DocTemplate() {
           <TabsList
             className={`grid items-center justify-center  ${
               currentPath
-                ? "grid-cols-4"
+                ? "grid-cols-5"
                 : viewPath
                 ? "grid-cols-4"
                 : "grid-cols-4"
             }`}
           >
-            <TabsTrigger value="doc-maker">Doc Maker</TabsTrigger>
-            <TabsTrigger value="doc-templates">Doc Templates</TabsTrigger>
-            <TabsTrigger value="doc-response">Doc Response</TabsTrigger>
-            <TabsTrigger value="connections">Connections</TabsTrigger>
+            <TabsTrigger disabled={currentPath} value="doc-maker">
+              Doc Maker
+            </TabsTrigger>
+            <TabsTrigger disabled={currentPath} value="doc-templates">
+              Doc Templates
+            </TabsTrigger>
+            <TabsTrigger disabled={currentPath} value="doc-response">
+              Doc Response
+            </TabsTrigger>
+            <TabsTrigger disabled={currentPath} value="connections">
+              Connections
+            </TabsTrigger>
             {currentPath && <TabsTrigger value="edit">Edit</TabsTrigger>}
-            {viewPath && <TabsTrigger value="view">Form Data</TabsTrigger>}
           </TabsList>
         </div>
         <TabsContent value="doc-maker">
@@ -540,7 +555,7 @@ export default function DocTemplate() {
           />
         </TabsContent>
         <TabsContent value="doc-templates">
-          <List />
+          <DocCardTemplate />
         </TabsContent>
         <TabsContent value="doc-response">
           <h1>Doc Response</h1>
@@ -550,7 +565,7 @@ export default function DocTemplate() {
         </TabsContent>
 
         <TabsContent value="connections">
-          <ConnectionTable />
+          <ConnectionsNew />
         </TabsContent>
         <TabsContent value="edit">
           <div className="w-full min-h-screen overflow-y-auto  max-w-[800px] mx-auto md:p-4 space-y-6">

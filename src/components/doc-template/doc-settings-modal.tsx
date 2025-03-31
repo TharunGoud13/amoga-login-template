@@ -51,13 +51,12 @@ export function FormSettingsModal({
   const [localFormInput, setLocalFormInput] = useState(formInput || ""); // Local state for form input
 
   const {
-    content,
     data_api_url,
     form_name,
     status,
     form_success_url,
     form_success_message,
-  } = editModeData;
+  } = editModeData || {};
 
   // Update form status when active state changes
   useEffect(() => {
@@ -73,14 +72,31 @@ export function FormSettingsModal({
     setApiUrl(data_api_url || "");
     setLocalFormInput(form_name || "");
     setFormInput(form_name || "");
-    setContent(content || "");
+    // setContent(content || "");
     setFormActive(status === "active");
     setSuccessMessage(form_success_message || "");
     setRedirectUrl(form_success_url || "");
   }, [
     data_api_url,
     form_name,
-    content,
+
+    status,
+    form_success_message,
+    form_success_url,
+    setFormInput,
+  ]);
+
+  useEffect(() => {
+    setApiUrl(data_api_url || "");
+    setLocalFormInput(form_name || "");
+    setFormInput(form_name || "");
+    // Remove the content destructuring that's causing the error
+    setFormActive(status === "active");
+    setSuccessMessage(form_success_message || "");
+    setRedirectUrl(form_success_url || "");
+  }, [
+    data_api_url,
+    form_name,
     status,
     form_success_message,
     form_success_url,
