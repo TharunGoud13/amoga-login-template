@@ -1,14 +1,18 @@
 import { MY_DOC_LIST } from "@/constants/envConfig";
 import React, { useEffect, useState } from "react";
 import { toast } from "../ui/use-toast";
-import { Edit, Eye, Loader, User } from "lucide-react";
+import { Calendar, Edit, Eye, File, Loader, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Session } from "../doc-template/DocTemplate";
 import { useSession } from "next-auth/react";
+import { Card, CardContent } from "../ui/card";
+import { Input } from "../ui/input";
+import Link from "next/link";
 
 const MyDocList = () => {
   const [docList, setDocList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [search, setSearch] = useState("");
   const router = useRouter();
   const { data: sessionData } = useSession();
   const session: Session | null = sessionData
@@ -44,45 +48,58 @@ const MyDocList = () => {
 
   return (
     <div>
-      {isLoading && (
-        <div className="flex justify-center  items-center ">
+      <div className="flex w-full mb-4 gap-4">
+        <div className="relative flex-grow">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search"
+            className="pl-10 text-md"
+          />
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center items-center">
           <Loader className="animate-spin" />
         </div>
-      )}
-      {!isLoading && (
-        <div>
-          {docList.map((doc: any) => (
-            <div key={doc.mydoc_list_id} className="border-b-2 space-y-3 p-2.5">
-              <h1 className="text-2xl font-bold">{doc.doc_name}</h1>
-              <p className="text-sm text-gray-500">
-                {new Date(doc.created_date).toLocaleDateString()}
-              </p>
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="flex items-center gap-2">
-                    <User className="w-5 h-5" />
-                    <p className="text-sm text-gray-500">
-                      {doc.created_user_name}
-                    </p>
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Eye
-                    className="w-5 h-5 cursor-pointer"
-                    onClick={() => {
-                      router.push(`/myDocs/view/${doc.mydoc_list_id}`);
-                    }}
-                  />
-                  <Edit
-                    className="w-5 h-5 cursor-pointer"
-                    onClick={() => {
-                      router.push(`/myDocs/edit/${doc.mydoc_list_id}`);
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
+      ) : (
+        <div className="space-y-4 w-full">
+          {docList
+            .filter((doc: any) =>
+              doc.doc_name.toLowerCase().includes(search.toLowerCase())
+            )
+            .map((doc: any) => (
+              <Card key={doc.mydoc_list_id} className="py-2 px-2">
+                <CardContent className="space-y-[10px] px-2 py-2">
+                  <h2 className="font-semibold text-md">{doc.doc_name}</h2>
+                  <p className="text-md text-muted-foreground">
+                    {doc.doc_group}
+                  </p>
+                  <p className="flex items-center gap-2 text-md">
+                    <span>Doc No: {doc.doc_no}</span>
+                  </p>
+                  <p className="flex items-center gap-2 text-md">
+                    <span>Version No: {doc.version_no}</span>
+                  </p>
+                  <p className="flex items-center gap-2 text-md">
+                    <Calendar className="h-5 w-5 text-muted-foreground" />
+                    <span>
+                      {new Date(doc.created_date).toLocaleDateString()}
+                    </span>
+                  </p>
+                  <div className="flex justify-end gap-2">
+                    <Link href={`/myDocs/view/${doc.mydoc_list_id}`}>
+                      <Eye className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                    </Link>
+                    <Link href={`/myDocs/edit/${doc.mydoc_list_id}`}>
+                      <Edit className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
         </div>
       )}
     </div>
