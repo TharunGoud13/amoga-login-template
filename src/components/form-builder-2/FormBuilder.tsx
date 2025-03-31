@@ -27,6 +27,8 @@ import { ChatForm } from "./ChatPreview";
 import { Card } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
 import { ChatWithDB } from "./ChatWithData";
+import ConnectionsNew from "./connections/Connections";
+import FormsList from "./List/List";
 
 export interface Session {
   user: {
@@ -574,14 +576,14 @@ export default function FormBuilder() {
           />
         </TabsContent>
         <TabsContent value="list">
-          <List />
+          <FormsList />
         </TabsContent>
         <TabsContent value="view">
           <View />
         </TabsContent>
 
         <TabsContent value="connections">
-          <ConnectionTable />
+          <ConnectionsNew />
         </TabsContent>
         <TabsContent value="edit">
           <div className="w-full min-h-screen overflow-y-auto  max-w-[800px] mx-auto md:p-4 space-y-6">
