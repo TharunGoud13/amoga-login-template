@@ -348,7 +348,7 @@ const NewConnections = ({
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => router.push("/AgentMaker/connections")}
+                    onClick={() => router.push("/doc-template")}
                   >
                     Cancel
                   </Button>
