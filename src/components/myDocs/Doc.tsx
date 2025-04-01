@@ -28,6 +28,7 @@ import { useSession } from "next-auth/react";
 import { Session } from "../doc-template/DocTemplate";
 import { v4 as uuidv4 } from "uuid";
 import MyDocList from "./MyDocList";
+import MyDocTemplates from "./MyDocTemplates";
 
 // Component mapping object
 const COMPONENT_MAP = {
@@ -274,6 +275,12 @@ const Doc = () => {
           >
             Doc List
           </TabsTrigger>
+          <TabsTrigger
+            value="templates"
+            className="flex-1 rounded-[16px] px-4 py-1.5 text-sm font-medium transition-all data-[state=active]:bg-black data-[state=active]:text-white"
+          >
+            Templates
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="new-doc">
@@ -333,6 +340,9 @@ const Doc = () => {
 
         <TabsContent value="doc-list">
           <MyDocList />
+        </TabsContent>
+        <TabsContent value="templates">
+          <MyDocTemplates />
         </TabsContent>
       </Tabs>
     </div>

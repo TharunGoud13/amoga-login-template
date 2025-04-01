@@ -14,6 +14,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { fetchValidApi } from "@/utils/fetchValidApi";
 import { toast } from "../ui/use-toast";
+import {
+  MultiSelector,
+  MultiSelectorContent,
+  MultiSelectorInput,
+  MultiSelectorItem,
+  MultiSelectorList,
+  MultiSelectorTrigger,
+} from "../ui/multi-select";
+import axiosInstance from "@/utils/axiosInstance";
+import { GET_CONTACTS_API } from "@/constants/envConfig";
 
 interface FormSettingsModalProps {
   isOpen: boolean;
@@ -27,6 +37,7 @@ interface FormSettingsModalProps {
   setSuccessMsg: (value: string) => void;
   setRedirectActionUrl: (value: string) => void;
   formInput: string;
+  setUsersSelected: (value: string[]) => void;
 }
 
 export function FormSettingsModal({
@@ -40,6 +51,7 @@ export function FormSettingsModal({
   setSuccessMsg,
   setRedirectActionUrl,
   formInput,
+  setUsersSelected,
 }: FormSettingsModalProps) {
   const [apiUrl, setApiUrl] = useState("");
   const [contentText, setContent] = useState("");
@@ -49,6 +61,8 @@ export function FormSettingsModal({
   const [redirectUrl, setRedirectUrl] = useState("");
   const [currentTab, setCurrentTab] = useState("settings");
   const [localFormInput, setLocalFormInput] = useState(formInput || ""); // Local state for form input
+  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
+  const [users, setUsers] = useState([]);
 
   const {
     data_api_url,
@@ -57,6 +71,25 @@ export function FormSettingsModal({
     form_success_url,
     form_success_message,
   } = editModeData || {};
+
+  useEffect(() => {
+    if (editModeData?.users_json) {
+      setSelectedUsers(editModeData?.users_json);
+    }
+  }, [editModeData]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axiosInstance.get(GET_CONTACTS_API);
+
+        setUsers(response.data);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchUsers();
+  }, []);
 
   // Update form status when active state changes
   useEffect(() => {
@@ -125,6 +158,10 @@ export function FormSettingsModal({
     });
   };
 
+  const handleSelectChange = (values: string[]) => {
+    setSelectedUsers(values);
+  };
+
   const handleContentSave = () => {
     if (!contentText.trim()) {
       toast({
@@ -190,9 +227,19 @@ export function FormSettingsModal({
     onClose();
   };
 
+  const handleUsersSave = () => {
+    setUsersSelected(selectedUsers);
+    toast({
+      description: "Users saved successfully",
+      variant: "default",
+    });
+    onClose();
+  };
+
   const renderSaveButton = () => {
     const saveHandlers = {
       settings: handleSettingsSave,
+      users: handleUsersSave,
       content: handleContentSave,
       connection: handleConnectionSave,
       action: handleActionSave,
@@ -226,8 +273,9 @@ export function FormSettingsModal({
           className="w-full"
           onValueChange={(value) => setCurrentTab(value)}
         >
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="settings">Settings</TabsTrigger>
+            <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="content">Content</TabsTrigger>
             <TabsTrigger value="connection">Connection</TabsTrigger>
             <TabsTrigger value="action">Action</TabsTrigger>
@@ -261,6 +309,28 @@ export function FormSettingsModal({
                 <Label htmlFor="formActive">Form Active</Label>
               </div>
             </div>
+          </TabsContent>
+          <TabsContent value="users">
+            <MultiSelector
+              values={selectedUsers}
+              onValuesChange={(values: string[]) => handleSelectChange(values)}
+            >
+              <MultiSelectorTrigger>
+                <MultiSelectorInput placeholder="Select Users" />
+              </MultiSelectorTrigger>
+              <MultiSelectorContent>
+                <MultiSelectorList>
+                  {users.map((item: any) => (
+                    <MultiSelectorItem
+                      key={item.user_catalog_id}
+                      value={item.user_email}
+                    >
+                      {item.user_email}
+                    </MultiSelectorItem>
+                  ))}
+                </MultiSelectorList>
+              </MultiSelectorContent>
+            </MultiSelector>
           </TabsContent>
           <TabsContent value="content">
             <div className="space-y-4">

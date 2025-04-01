@@ -76,6 +76,7 @@ export default function DocTemplate() {
   const [formStatus, setFormStatus] = React.useState("");
   const [successMsg, setSuccessMsg] = React.useState("");
   const [redirectUrl, setRedirectUrl] = React.useState("");
+  const [selectedUsers, setSelectedUsers] = React.useState<string[]>([]);
 
   const currentPath = path.includes("edit");
   const currentId = path.split("/").at(-1);
@@ -204,6 +205,8 @@ export default function DocTemplate() {
     }
   }, [currentPath, editModeData]);
 
+  console.log("selectedUsers-----", selectedUsers);
+
   const handleSave = async () => {
     const headers = new Headers();
     headers.append("Content-Type", "application/json");
@@ -256,6 +259,7 @@ export default function DocTemplate() {
       business_name: session?.user?.business_name,
       created_date: formatDateToCustomFormat(date),
       template_name: formInput,
+      share_to_user_json: selectedUsers,
       doc_json: activeFormFields,
       version_no: 1,
       data_api_url: apiEndpoint,
@@ -339,6 +343,7 @@ export default function DocTemplate() {
       // route.push(`/doc-template/${payload.shareurl}`);
 
       setFormFields([]);
+      setSelectedUsers([]);
       setFormInput("");
     } catch (error) {
       setIsLoading(false);
@@ -703,6 +708,7 @@ export default function DocTemplate() {
           setSuccessMsg={setSuccessMsg}
           setRedirectActionUrl={setRedirectUrl}
           formInput={formInput}
+          setUsersSelected={setSelectedUsers}
         />
       </Tabs>
     </section>
