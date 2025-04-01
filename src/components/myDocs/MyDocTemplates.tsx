@@ -53,6 +53,11 @@ const MyDocTemplates = () => {
             className="pl-10 text-md"
           />
         </div>
+        <Link href="/myDocs/new">
+          <Button size={"icon"}>
+            <Plus className="h-5 w-5" />
+          </Button>
+        </Link>
       </div>
 
       <div className="w-full space-y-4">
