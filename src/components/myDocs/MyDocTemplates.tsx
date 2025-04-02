@@ -30,7 +30,7 @@ const MyDocTemplates = () => {
         const response = await axiosInstance.get(SAVE_DOC_TEMPLATE);
 
         const filteredData = response.data.filter((item: any) =>
-          item?.share_to_user_json?.includes(session?.user?.email)
+          item?.users_json?.includes(session?.user?.email)
         );
         setTemplates(filteredData);
       } catch (err) {

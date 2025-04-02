@@ -239,7 +239,7 @@ const AddUsers = ({ chat_group_id }: { chat_group_id: string }) => {
             ))}
         </div>
       )}
-      <div className="fixed w-full flex justify-center items-center bottom-0 left-0 right-0 bg-white p-4">
+      <div className="fixed w-full flex justify-center items-center bottom-0 left-0 right-0  p-4">
         <Button
           className="max-w-[800px] w-full"
           disabled={selectedContacts.length === 0 || isLoading}

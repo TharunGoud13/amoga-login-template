@@ -259,7 +259,7 @@ export default function DocTemplate() {
       business_name: session?.user?.business_name,
       created_date: formatDateToCustomFormat(date),
       template_name: formInput,
-      share_to_user_json: selectedUsers,
+      users_json: selectedUsers,
       doc_json: activeFormFields,
       version_no: 1,
       data_api_url: apiEndpoint,

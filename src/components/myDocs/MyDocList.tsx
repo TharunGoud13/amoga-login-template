@@ -1,7 +1,16 @@
 import { MY_DOC_LIST } from "@/constants/envConfig";
 import React, { useEffect, useState } from "react";
 import { toast } from "../ui/use-toast";
-import { Calendar, Edit, Eye, File, Loader, Search } from "lucide-react";
+import {
+  Calendar,
+  Edit,
+  Eye,
+  File,
+  Loader,
+  Search,
+  Share,
+  Share2,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Session } from "../doc-template/DocTemplate";
 import { useSession } from "next-auth/react";
@@ -89,12 +98,15 @@ const MyDocList = () => {
                       {new Date(doc.created_date).toLocaleDateString()}
                     </span>
                   </p>
-                  <div className="flex justify-end gap-2">
+                  <div className="flex justify-end gap-2.5">
                     <Link href={`/myDocs/view/${doc.mydoc_list_id}`}>
                       <Eye className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                     </Link>
                     <Link href={`/myDocs/edit/${doc.mydoc_list_id}`}>
                       <Edit className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
+                    </Link>
+                    <Link href={`/myDocs/share/${doc.mydoc_list_id}`}>
+                      <Share2 className="h-5 w-5 text-muted-foreground stroke-[1.5] cursor-pointer hover:text-foreground" />
                     </Link>
                   </div>
                 </CardContent>
