@@ -24,11 +24,15 @@ export default async function UserNav() {
         </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent className=" fixed left-[-200px] top-[20px] ">
-        <DropdownMenuLabel className="text-primary">{session?.user?.name}</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-primary">
+          {session?.user?.name}
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {/* <Link href="/profile"> */}
-          <DropdownMenuItem className="text-primary">{session?.user?.email}</DropdownMenuItem>
-        {/* </Link> */}
+        <Link href="/profile">
+          <DropdownMenuItem className="text-primary">
+            {session?.user?.email}
+          </DropdownMenuItem>
+        </Link>
       </DropdownMenuContent>
     </DropdownMenu>
   );

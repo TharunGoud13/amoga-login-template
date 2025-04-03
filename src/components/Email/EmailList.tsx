@@ -1,0 +1,212 @@
+"use client";
+import {
+  AlertTriangle,
+  Archive,
+  CheckSquare,
+  Download,
+  EllipsisVertical,
+  Filter,
+  Flag,
+  Forward,
+  HelpCircle,
+  MessageSquare,
+  MoreVertical,
+  Plus,
+  Printer,
+  RefreshCw,
+  Reply,
+  Search,
+  Settings,
+  Share2,
+  Sliders,
+  Trash2,
+  Zap,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Input } from "../ui/input";
+import Link from "next/link";
+import axiosInstance from "@/utils/axiosInstance";
+import { EMAIL_LIST_API } from "@/constants/envConfig";
+import { Card, CardContent } from "../ui/card";
+import { Avatar, AvatarFallback } from "../ui/avatar";
+import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Button } from "../ui/button";
+
+const EmailList = () => {
+  const [emails, setEmails] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    const fetchEmails = async () => {
+      const response = await axiosInstance.get(EMAIL_LIST_API);
+      setEmails(response.data);
+    };
+    fetchEmails();
+  }, []);
+
+  console.log("emails------", emails);
+  return (
+    <div className="w-full">
+      <div className="flex gap-3 items-center w-full">
+        <div className="flex w-full items-center gap-2 pl-4 border rounded-md mt-5">
+          <Search className="w-5 h-5 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="border-0"
+            placeholder="Search"
+          />
+        </div>
+        <div className="flex items-center mt-4 gap-4">
+          <MessageSquare className="w-5 h-5 text-muted-foreground" />
+          <Filter className="w-5 h-5 text-muted-foreground" />
+          <Link href="/Email/new">
+            <Plus className="w-5 h-5 text-muted-foreground" />
+          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreVertical className="h-5 w-5" />
+                <span className="sr-only">More options</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem>
+                <CheckSquare className="h-4 w-4 mr-2" />
+                Mark all as read
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <HelpCircle className="h-4 w-4 mr-2" />
+                Help
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Sliders className="h-4 w-4 mr-2" />
+                Preferences
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Zap className="h-4 w-4 mr-2" />
+                Automations
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Sync Backup
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+      <div className="mt-4 space-y-4">
+        {emails
+          .filter((email: any) => email.subject.toLowerCase().includes(search))
+          .map((email: any) => {
+            return (
+              <Card key={email.email_list_id} className="space-y-2">
+                <Link
+                  href={`/Email/${email.email_list_id}`}
+                  key={email.email_list_id}
+                >
+                  <CardContent className="flex items-center p-4  gap-2">
+                    <div className="flex w-full  justify-between items-center">
+                      <div className="flex gap-2.5">
+                        <div>
+                          <Avatar>
+                            <AvatarFallback>
+                              {email?.sender_email?.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                        </div>
+                        <div className="flex flex-col">
+                          <span>{email?.subject}</span>
+                          <span className="text-sm text-muted-foreground">
+                            {email?.body}
+                          </span>
+                          <div className="flex gap-2">
+                            <span className="text-sm text-muted-foreground">
+                              {new Date(
+                                email?.created_date
+                              ).toLocaleDateString()}
+                            </span>
+                            {/* <span className="text-sm text-muted-foreground">
+                            {new Date(email?.created_date).toLocaleTimeString()}
+                          </span>
+                          {" - "}
+                          <span className="text-sm text-muted-foreground">
+                            {formatDistanceToNow(new Date(email?.created_date))}{" "}
+                            ago
+                          </span> */}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Flag className="h-5 w-5 text-muted-foreground" />
+                        <AlertTriangle className="h-5 w-5 text-muted-foreground" />
+                        <MessageSquare className="h-5 w-5 text-muted-foreground" />
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MoreVertical className="h-4 w-4" />
+                              <span className="sr-only">More options</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            align="end"
+                            className="w-[200px]"
+                          >
+                            <DropdownMenuItem>
+                              <Reply className="h-4 w-4 mr-2" />
+                              Reply
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Forward className="h-4 w-4 mr-2" />
+                              Forward
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Archive className="h-4 w-4 mr-2" />
+                              Archive
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Share2 className="h-4 w-4 mr-2" />
+                              Share
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Printer className="h-4 w-4 mr-2" />
+                              Print
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                              <Download className="h-4 w-4 mr-2" />
+                              Download
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-500">
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Link>
+              </Card>
+            );
+          })}
+      </div>
+    </div>
+  );
+};
+
+export default EmailList;

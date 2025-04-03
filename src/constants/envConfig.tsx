@@ -39,3 +39,5 @@ export const CHAT_GROUP_API = "https://amogaagents.morr.biz/chat_group";
 export const LATEST_MESSAGE_API = "https://amogaagents.morr.biz/latest_message";
 export const NEXT_PUBLIC_API_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYXBpX3VzZXIifQ.Ks_9ISeorCCS73q1WKEjZHu9kRx107eOx5VcImPh9U8";
+
+export const EMAIL_LIST_API = "https://amogademo-postgrest.morr.biz/email_list";
