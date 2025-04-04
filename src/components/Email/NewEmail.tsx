@@ -680,18 +680,15 @@ const NewEmail = ({ id, isView }: { id?: string; isView?: boolean }) => {
                   isView ? "mt-4 flex gap-2.5 items-center" : "hidden"
                 }`}
               >
-                <Link
-                  href={`/Email/new?mode=reply&emailId=${data?.email_list_id}`}
+                <Button
+                  variant={"outline"}
+                  className="flex items-center gap-2"
+                  type="button"
                 >
-                  <Button
-                    variant={"outline"}
-                    className="flex items-center gap-2"
-                    type="button"
-                  >
-                    <Reply className="h-5 w-5" />
-                    Reply
-                  </Button>
-                </Link>
+                  <Reply className="h-5 w-5" />
+                  Reply
+                </Button>
+
                 <Button
                   variant={"outline"}
                   className="flex items-center gap-2"
