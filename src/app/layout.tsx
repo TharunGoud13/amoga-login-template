@@ -35,16 +35,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale}>
-      <head>
-        <link
-          rel="manifest"
-          href="https://progressier.app/uCxAzsfaEcp9ZyywDo2Y/progressier.json"
-        />
-        <script
-          defer
-          src="https://progressier.app/uCxAzsfaEcp9ZyywDo2Y/script.js"
-        ></script>
-      </head>
+      <head></head>
       <body className={poppins.className}>
         <NextIntlClientProvider messages={messages}>
           <NextTopLoader />
