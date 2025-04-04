@@ -342,7 +342,7 @@ const NewEmail = ({ id, isView }: { id?: string; isView?: boolean }) => {
                     <div className="flex items-center gap-2">
                       <span>cc:</span>
                       {data?.cc_emails.map((item: any) => (
-                        <Avatar>
+                        <Avatar key={item.email_list_id}>
                           <AvatarFallback>
                             {item.charAt(0).toUpperCase()}
                           </AvatarFallback>
@@ -354,7 +354,7 @@ const NewEmail = ({ id, isView }: { id?: string; isView?: boolean }) => {
                     <div className="flex items-center gap-2">
                       <span>bcc:</span>
                       {data?.bcc_emails.map((item: any) => (
-                        <Avatar>
+                        <Avatar key={item.email_list_id}>
                           <AvatarFallback>
                             {item.charAt(0).toUpperCase()}
                           </AvatarFallback>
