@@ -371,11 +371,11 @@ const NewEmail = ({ id, isView }: { id?: string; isView?: boolean }) => {
                     {data?.sender_email}
                   </span>
                   <span className="text-sm text-gray-500">
-                    {new Date(data?.created_date).toLocaleString()}
-                    {" - "}
-                    {data?.created_date &&
+                    {new Date(data?.created_date).toLocaleDateString()}
+                    {/* {" - "} */}
+                    {/* {data?.created_date &&
                       formatDistanceToNow(new Date(data?.created_date))}{" "}
-                    ago
+                    ago */}
                   </span>
                 </div>
                 <div className="flex mt-2.5 gap-3 items-center">

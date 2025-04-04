@@ -171,7 +171,7 @@ const EmailList = () => {
                                 email?.created_date
                               ).toLocaleDateString()}
                             </span>
-                            <span className="text-sm text-muted-foreground">
+                            {/* <span className="text-sm text-muted-foreground">
                               {new Date(
                                 email?.created_date
                               ).toLocaleTimeString()}
@@ -182,7 +182,7 @@ const EmailList = () => {
                                 new Date(email?.created_date)
                               )}{" "}
                               ago
-                            </span>
+                            </span> */}
                           </div>
                         </Link>
                         <div className="flex mt-2.5 gap-3 items-center">
