@@ -2,6 +2,8 @@
 import {
   AlertTriangle,
   Archive,
+  Bell,
+  Bookmark,
   CheckSquare,
   Download,
   EllipsisVertical,
@@ -15,10 +17,12 @@ import {
   Printer,
   RefreshCw,
   Reply,
+  ReplyAll,
   Search,
   Settings,
   Share2,
   Sliders,
+  Star,
   Trash2,
   Zap,
 } from "lucide-react";
@@ -37,20 +41,51 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
+import { useCustomSession } from "@/utils/session";
+import { toast } from "../ui/use-toast";
 
 const EmailList = () => {
   const [emails, setEmails] = useState<string[]>([]);
   const [search, setSearch] = useState("");
+  const session = useCustomSession();
 
   useEffect(() => {
-    const fetchEmails = async () => {
-      const response = await axiosInstance.get(EMAIL_LIST_API);
-      setEmails(response.data);
-    };
     fetchEmails();
-  }, []);
+  }, [session]);
 
-  console.log("emails------", emails);
+  const fetchEmails = async () => {
+    const response = await axiosInstance.get(EMAIL_LIST_API);
+    const filterUserEmails = response.data?.filter((email: any) =>
+      email?.to_user_email.includes(session?.user?.email)
+    );
+    const filterEmails = filterUserEmails.filter(
+      (email: any) => email?.template !== true
+    );
+
+    setEmails(filterEmails);
+  };
+
+  const handleAddActions = async (email: any, action: string) => {
+    console.log("email------", email?.email_list_id);
+    console.log("action------", action);
+    try {
+      const response = await axiosInstance.patch(
+        `${EMAIL_LIST_API}?email_list_id=eq.${email?.email_list_id}`,
+        {
+          [action]: true,
+        }
+      );
+      fetchEmails();
+      console.log("response------", response);
+    } catch (error) {
+      console.log("error------", error);
+      toast({
+        description: "Something went wrong",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="w-full">
       <div className="flex gap-3 items-center w-full">
@@ -109,98 +144,154 @@ const EmailList = () => {
         {emails
           .filter((email: any) => email.subject.toLowerCase().includes(search))
           .map((email: any) => {
+            console.log("email------", email);
             return (
               <Card key={email.email_list_id} className="space-y-2">
-                <Link
-                  href={`/Email/${email.email_list_id}`}
-                  key={email.email_list_id}
-                >
-                  <CardContent className="flex items-center p-4  gap-2">
-                    <div className="flex w-full  justify-between items-center">
-                      <div className="flex gap-2.5">
-                        <div>
-                          <Avatar>
-                            <AvatarFallback>
-                              {email?.sender_email?.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                        </div>
-                        <div className="flex flex-col">
-                          <span>{email?.subject}</span>
-                          <span className="text-sm text-muted-foreground">
-                            {email?.body}
-                          </span>
+                <CardContent className="flex items-center p-4  gap-2">
+                  <div className="flex w-full  justify-between items-center">
+                    <div className="flex gap-2.5">
+                      <div>
+                        <Avatar>
+                          <AvatarFallback>
+                            {email?.sender_email?.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
+                      <div className="flex flex-col">
+                        <Link href={`/Email/view/${email.email_list_id}`}>
+                          <div className="flex flex-col">
+                            <span>{email?.subject}</span>
+                            <span className="text-sm text-muted-foreground">
+                              {email?.body}
+                            </span>
+                          </div>
                           <div className="flex gap-2">
                             <span className="text-sm text-muted-foreground">
                               {new Date(
                                 email?.created_date
                               ).toLocaleDateString()}
                             </span>
-                            {/* <span className="text-sm text-muted-foreground">
-                            {new Date(email?.created_date).toLocaleTimeString()}
-                          </span>
-                          {" - "}
-                          <span className="text-sm text-muted-foreground">
-                            {formatDistanceToNow(new Date(email?.created_date))}{" "}
-                            ago
-                          </span> */}
+                            <span className="text-sm text-muted-foreground">
+                              {new Date(
+                                email?.created_date
+                              ).toLocaleTimeString()}
+                            </span>
+                            {" - "}
+                            <span className="text-sm text-muted-foreground">
+                              {formatDistanceToNow(
+                                new Date(email?.created_date)
+                              )}{" "}
+                              ago
+                            </span>
                           </div>
+                        </Link>
+                        <div className="flex mt-2.5 gap-3 items-center">
+                          <Flag
+                            onClick={() =>
+                              handleAddActions(email, "is_important")
+                            }
+                            className={`h-4 w-4 cursor-pointer text-muted-foreground 
+                              ${
+                                email?.is_important
+                                  ? "border-secondary fill-red-500"
+                                  : ""
+                              }
+                              `}
+                          />
+                          <Star
+                            onClick={() =>
+                              handleAddActions(email, "is_starred")
+                            }
+                            className={`h-4 w-4 cursor-pointer text-muted-foreground 
+                              ${
+                                email?.is_starred
+                                  ? "border-secondary fill-yellow-500"
+                                  : ""
+                              }
+                              `}
+                          />
+                          <Bookmark
+                            onClick={() =>
+                              handleAddActions(email, "is_bookmark")
+                            }
+                            className={`h-4 w-4 cursor-pointer text-muted-foreground 
+                              ${
+                                email?.is_bookmark
+                                  ? "border-secondary fill-blue-500"
+                                  : ""
+                              }
+                              `}
+                          />
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <Flag className="h-5 w-5 text-muted-foreground" />
-                        <AlertTriangle className="h-5 w-5 text-muted-foreground" />
-                        <MessageSquare className="h-5 w-5 text-muted-foreground" />
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <MoreVertical className="h-4 w-4" />
-                              <span className="sr-only">More options</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent
-                            align="end"
-                            className="w-[200px]"
-                          >
-                            <DropdownMenuItem>
-                              <Reply className="h-4 w-4 mr-2" />
-                              Reply
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Forward className="h-4 w-4 mr-2" />
-                              Forward
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Archive className="h-4 w-4 mr-2" />
-                              Archive
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Share2 className="h-4 w-4 mr-2" />
-                              Share
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Printer className="h-4 w-4 mr-2" />
-                              Print
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Download className="h-4 w-4 mr-2" />
-                              Download
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-500">
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
                     </div>
-                  </CardContent>
-                </Link>
+
+                    <div className="flex items-center gap-3">
+                      <AlertTriangle
+                        onClick={() => handleAddActions(email, "is_alert")}
+                        className={`h-4 w-4 cursor-pointer text-muted-foreground 
+                              ${
+                                email?.is_alert
+                                  ? "border-secondary fill-yellow-500"
+                                  : ""
+                              }
+                              `}
+                      />
+                      <Bell
+                        // onClick={() => handleAddActions(email, "bell")}
+                        className="h-4 w-4 cursor-pointer text-muted-foreground"
+                      />
+                      <MessageSquare className="h-4 w-4 cursor-pointer text-muted-foreground" />
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreVertical className="h-4 w-4" />
+                            <span className="sr-only">More options</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-[200px]">
+                          <DropdownMenuItem>
+                            <Reply className="h-4 w-4 mr-2" />
+                            Reply
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <ReplyAll className="h-4 w-4 mr-2" />
+                            Reply All
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Forward className="h-4 w-4 mr-2" />
+                            Forward
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Archive className="h-4 w-4 mr-2" />
+                            Archive
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Share2 className="h-4 w-4 mr-2" />
+                            Share
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Printer className="h-4 w-4 mr-2" />
+                            Print
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Download className="h-4 w-4 mr-2" />
+                            Download
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-red-500">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                </CardContent>
               </Card>
             );
           })}

@@ -41,3 +41,5 @@ export const NEXT_PUBLIC_API_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYXBpX3VzZXIifQ.Ks_9ISeorCCS73q1WKEjZHu9kRx107eOx5VcImPh9U8";
 
 export const EMAIL_LIST_API = "https://amogademo-postgrest.morr.biz/email_list";
+export const CREATE_IMAP_DETAILS_URL =
+  "https://amogademo-postgrest.morr.biz/user_catalog_data";
