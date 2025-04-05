@@ -627,10 +627,12 @@ const NewEmail = ({
                     {new Date(
                       displayedEmail?.created_date
                     ).toLocaleDateString()}
-                    {/* {" - "} */}
-                    {/* {data?.created_date &&
-                      formatDistanceToNow(new Date(data?.created_date))}{" "}
-                    ago */}
+                    {" - "}
+                    {displayedEmail?.created_date &&
+                      formatDistanceToNow(
+                        new Date(displayedEmail?.created_date)
+                      )}{" "}
+                    ago
                   </span>
                 </div>
                 <div className="flex mt-2.5 gap-3 items-center">
