@@ -60,6 +60,7 @@ const EmailList = () => {
     );
     const filterEmails = filterUserEmails.filter(
       (email: any) => email?.template !== true
+      // && !email?.replied_to_email_id
     );
 
     setEmails(filterEmails);
@@ -255,14 +256,18 @@ const EmailList = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-[200px]">
-                          <DropdownMenuItem>
-                            <Reply className="h-4 w-4 mr-2" />
-                            Reply
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <ReplyAll className="h-4 w-4 mr-2" />
-                            Reply All
-                          </DropdownMenuItem>
+                          <Link href={`/Email/reply/${email.email_list_id}`}>
+                            <DropdownMenuItem>
+                              <Reply className="h-4 w-4 mr-2" />
+                              Reply
+                            </DropdownMenuItem>
+                          </Link>
+                          <Link href={`/Email/replyAll/${email.email_list_id}`}>
+                            <DropdownMenuItem>
+                              <ReplyAll className="h-4 w-4 mr-2" />
+                              Reply All
+                            </DropdownMenuItem>
+                          </Link>
                           <DropdownMenuItem>
                             <Forward className="h-4 w-4 mr-2" />
                             Forward
