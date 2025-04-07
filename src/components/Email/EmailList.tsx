@@ -364,11 +364,84 @@ const EmailList = () => {
                               }
                               `}
                           />
+                          <AlertTriangle
+                            onClick={() => handleAddActions(email, "is_alert")}
+                            className={`h-4 w-4 cursor-pointer text-muted-foreground 
+                              ${
+                                email?.is_alert
+                                  ? "border-secondary fill-yellow-500"
+                                  : ""
+                              }
+                              `}
+                          />
+                          <Bell
+                            // onClick={() => handleAddActions(email, "is_alert")}
+                            className="h-4 w-4 cursor-pointer text-muted-foreground"
+                          />
+                          <MessageSquare className="h-4 w-4 cursor-pointer text-muted-foreground" />
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                                <span className="sr-only">More options</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                              align="end"
+                              className="w-[200px]"
+                            >
+                              <Link
+                                href={`/Email/reply/${email.email_list_id}`}
+                              >
+                                <DropdownMenuItem>
+                                  <Reply className="h-4 w-4 mr-2" />
+                                  Reply
+                                </DropdownMenuItem>
+                              </Link>
+                              <Link
+                                href={`/Email/replyAll/${email.email_list_id}`}
+                              >
+                                <DropdownMenuItem>
+                                  <ReplyAll className="h-4 w-4 mr-2" />
+                                  Reply All
+                                </DropdownMenuItem>
+                              </Link>
+                              <DropdownMenuItem>
+                                <Forward className="h-4 w-4 mr-2" />
+                                Forward
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Archive className="h-4 w-4 mr-2" />
+                                Archive
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Share2 className="h-4 w-4 mr-2" />
+                                Share
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Printer className="h-4 w-4 mr-2" />
+                                Print
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <Download className="h-4 w-4 mr-2" />
+                                Download
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="text-red-500">
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    {/* <div className="flex items-center gap-3">
                       <AlertTriangle
                         onClick={() => handleAddActions(email, "is_alert")}
                         className={`h-4 w-4 cursor-pointer text-muted-foreground 
@@ -435,7 +508,7 @@ const EmailList = () => {
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
-                    </div>
+                    </div> */}
                   </div>
                 </CardContent>
               </Card>

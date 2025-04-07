@@ -25,6 +25,8 @@ import {
 import { Textarea } from "../ui/textarea";
 import {
   AlertTriangle,
+  Archive,
+  Bell,
   Bold,
   Bookmark,
   ChevronLeft,
@@ -35,6 +37,7 @@ import {
   Italic,
   List,
   ListOrdered,
+  MessageSquare,
   Paperclip,
   Reply,
   ReplyAll,
@@ -52,6 +55,7 @@ import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 import Link from "next/link";
 import { Badge } from "../ui/badge";
 import { renderSafeHtml } from "@/utils/renderSafeHtml";
+import { FaReadme } from "react-icons/fa6";
 
 interface NewEmailProps {
   id?: string;
@@ -697,6 +701,26 @@ const NewEmail = ({
                               }
                               `}
                   />
+                  <Archive
+                    onClick={() => handleAddActions(data, "is_archive")}
+                    className={`h-4 w-4 cursor-pointer text-muted-foreground 
+                              ${
+                                displayedEmail?.is_archive
+                                  ? "border-secondary fill-green-500"
+                                  : ""
+                              }
+                              `}
+                  />
+                  <FaReadme
+                    onClick={() => handleAddActions(data, "is_read")}
+                    className={`h-4 w-4 cursor-pointer text-muted-foreground 
+                              ${
+                                displayedEmail?.is_read
+                                  ? "border-secondary fill-green-500"
+                                  : ""
+                              }
+                              `}
+                  />
                   <AlertTriangle
                     onClick={() => handleAddActions(data, "is_alert")}
                     className={`h-4 w-4 cursor-pointer text-muted-foreground 
@@ -705,6 +729,18 @@ const NewEmail = ({
                                   ? "border-secondary fill-yellow-500"
                                   : ""
                               }
+                              `}
+                  />
+                  <Bell
+                    // onClick={() => handleAddActions(data, "is_alert")}
+                    className={`h-4 w-4 cursor-pointer text-muted-foreground 
+                              
+                              `}
+                  />
+                  <MessageSquare
+                    // onClick={() => handleAddActions(data, "is_alert")}
+                    className={`h-4 w-4 cursor-pointer text-muted-foreground 
+                              
                               `}
                   />
                 </div>
