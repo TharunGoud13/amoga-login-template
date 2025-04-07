@@ -51,6 +51,7 @@ import { Avatar, AvatarFallback } from "../ui/avatar";
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
 import Link from "next/link";
 import { Badge } from "../ui/badge";
+import { renderSafeHtml } from "@/utils/renderSafeHtml";
 
 interface NewEmailProps {
   id?: string;
@@ -91,6 +92,8 @@ const NewEmail = ({
   const [viewingReply, setViewingReply] = useState(false);
   const router = useRouter();
   const randomId = Math.random().toString().slice(-4);
+
+  console.log("message------", message);
 
   useEffect(() => {
     const fetchRepliedData = async () => {
@@ -939,12 +942,17 @@ const NewEmail = ({
                     </Button>
                   </div>
 
-                  <Textarea
-                    value={message}
-                    readOnly={isView}
-                    onChange={(e) => setMessage(e.target.value)}
-                    className="p-4 resize-none min-h-[300px] prose max-w-none focus:outline-none"
-                  />
+                  {isView ? (
+                    <div className="p-4 min-h-[300px] prose max-w-none">
+                      {renderSafeHtml(message)}
+                    </div>
+                  ) : (
+                    <Textarea
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      className="p-4 resize-none min-h-[300px] prose max-w-none focus:outline-none"
+                    />
+                  )}
                 </div>
               </div>
               <div
