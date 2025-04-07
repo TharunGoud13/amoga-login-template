@@ -8,15 +8,11 @@ function decodeHtmlEntities(html: string) {
 }
 
 export const renderSafeHtml = (html: string) => {
-  console.log("html-----", html);
   if (typeof window === undefined) return null;
 
   const decodedHtml = decodeHtmlEntities(html);
-  console.log("decodedHtml-----", decodedHtml);
   const cleanHtml = DOMPurify.sanitize(decodedHtml, {
     USE_PROFILES: { html: true },
   });
-  console.log("cleanHtml-----", cleanHtml);
-  console.log("parse-----", parse(cleanHtml));
   return parse(cleanHtml);
 };

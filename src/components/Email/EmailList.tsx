@@ -1,5 +1,6 @@
 "use client";
 import {
+  AlertCircle,
   AlertTriangle,
   Archive,
   Bell,
@@ -7,10 +8,14 @@ import {
   CheckSquare,
   Download,
   EllipsisVertical,
+  FileCode,
+  FileText,
   Filter,
   Flag,
   Forward,
   HelpCircle,
+  Inbox,
+  MailOpen,
   MessageSquare,
   MoreVertical,
   Plus,
@@ -19,6 +24,7 @@ import {
   Reply,
   ReplyAll,
   Search,
+  Send,
   Settings,
   Share2,
   Sliders,
@@ -43,11 +49,14 @@ import {
 import { Button } from "../ui/button";
 import { useCustomSession } from "@/utils/session";
 import { toast } from "../ui/use-toast";
+import { FaReadme } from "react-icons/fa6";
 
 const EmailList = () => {
   const [emails, setEmails] = useState<string[]>([]);
+  const [allEmails, setAllEmails] = useState<string[]>([]);
   const [search, setSearch] = useState("");
   const session = useCustomSession();
+  const [selectedFilter, setSelectedFilter] = useState("Inbox");
 
   useEffect(() => {
     fetchEmails();
@@ -62,13 +71,13 @@ const EmailList = () => {
       (email: any) => email?.template !== true
       // && !email?.replied_to_email_id
     );
+    setAllEmails(response.data);
 
     setEmails(filterEmails);
+    // handleFilter(selectedFilter);
   };
 
   const handleAddActions = async (email: any, action: string) => {
-    console.log("email------", email?.email_list_id);
-    console.log("action------", action);
     try {
       const response = await axiosInstance.patch(
         `${EMAIL_LIST_API}?email_list_id=eq.${email?.email_list_id}`,
@@ -77,13 +86,80 @@ const EmailList = () => {
         }
       );
       fetchEmails();
-      console.log("response------", response);
     } catch (error) {
       console.log("error------", error);
       toast({
         description: "Something went wrong",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleFilter = (item: string) => {
+    setSelectedFilter(item);
+    console.log("item------", item);
+    console.log("emails------", emails);
+
+    const response = allEmails.filter((email: any) => {
+      switch (item) {
+        case "Inbox":
+          return email?.to_user_email.includes(session?.user?.email);
+        case "Sent":
+          return email?.from_user_email.includes(session?.user?.email);
+        case "Important":
+          return (
+            email?.to_user_email.includes(session?.user?.email) &&
+            email?.is_important
+          );
+        case "Favorites":
+          return (
+            email?.to_user_email.includes(session?.user?.email) &&
+            email?.is_starred
+          );
+        case "Alerts":
+          return (
+            email?.to_user_email.includes(session?.user?.email) &&
+            email?.is_alert
+          );
+        case "Draft":
+          return (
+            email?.to_user_email.includes(session?.user?.email) &&
+            email?.is_draft
+          );
+        case "Archive":
+          return (
+            email?.to_user_email.includes(session?.user?.email) &&
+            email?.is_archive
+          );
+        case "Templates":
+          return (
+            email?.to_user_email.includes(session?.user?.email) &&
+            email?.template
+          );
+        case "Unread":
+          return (
+            email?.to_user_email.includes(session?.user?.email) &&
+            !email?.is_read
+          );
+        default:
+          return true;
+      }
+    });
+    setEmails(response);
+  };
+
+  const handleEmailClick = async (email: any) => {
+    console.log("email------", email);
+    try {
+      const response = await axiosInstance.patch(
+        `${EMAIL_LIST_API}?email_list_id=eq.${email?.email_list_id}`,
+        {
+          is_read: true,
+        }
+      );
+      fetchEmails();
+    } catch (error) {
+      console.log("error------", error);
     }
   };
 
@@ -101,7 +177,49 @@ const EmailList = () => {
         </div>
         <div className="flex items-center mt-4 gap-4">
           <MessageSquare className="w-5 h-5 text-muted-foreground" />
-          <Filter className="w-5 h-5 text-muted-foreground" />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Filter className="h-5 w-5 text-muted-foreground" />
+                <span className="sr-only">Filter</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {[
+                "Inbox",
+                "Sent",
+                "Important",
+                "Favorites",
+                "Alerts",
+                "Draft",
+                "Archive",
+                "Templates",
+                "Unread",
+              ].map((item) => (
+                <DropdownMenuItem
+                  key={item}
+                  onClick={() => {
+                    handleFilter(item);
+                  }}
+                >
+                  {item === "Inbox" && <Inbox className="h-4 w-4 mr-2" />}
+                  {item === "Sent" && <Send className="h-4 w-4 mr-2" />}
+                  {item === "Important" && <Flag className="h-4 w-4 mr-2" />}
+                  {item === "Favorites" && <Star className="h-4 w-4 mr-2" />}
+                  {item === "Alerts" && (
+                    <AlertTriangle className="h-4 w-4 mr-2" />
+                  )}
+                  {item === "Draft" && <FileText className="h-4 w-4 mr-2" />}
+                  {item === "Archive" && <Archive className="h-4 w-4 mr-2" />}
+                  {item === "Templates" && (
+                    <FileCode className="h-4 w-4 mr-2" />
+                  )}
+                  {item === "Unread" && <MailOpen className="h-4 w-4 mr-2" />}
+                  {item}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Link href="/Email/new">
             <Plus className="w-5 h-5 text-muted-foreground" />
           </Link>
@@ -145,7 +263,6 @@ const EmailList = () => {
         {emails
           .filter((email: any) => email.subject.toLowerCase().includes(search))
           .map((email: any) => {
-            console.log("email------", email);
             return (
               <Card key={email.email_list_id} className="space-y-2">
                 <CardContent className="flex items-center p-4  gap-2">
@@ -159,7 +276,10 @@ const EmailList = () => {
                         </Avatar>
                       </div>
                       <div className="flex flex-col">
-                        <Link href={`/Email/view/${email.email_list_id}`}>
+                        <Link
+                          href={`/Email/view/${email.email_list_id}`}
+                          onClick={() => handleEmailClick(email)}
+                        >
                           <div className="flex flex-col">
                             <span>{email?.subject}</span>
                             <span className="text-sm text-muted-foreground">
@@ -223,6 +343,27 @@ const EmailList = () => {
                               }
                               `}
                           />
+                          <Archive
+                            onClick={() =>
+                              handleAddActions(email, "is_archive")
+                            }
+                            className={`h-4 w-4 cursor-pointer text-muted-foreground 
+                              ${
+                                email?.is_archive
+                                  ? "border-secondary fill-green-500"
+                                  : ""
+                              }
+                              `}
+                          />
+                          <FaReadme
+                            className={`h-4 w-4 cursor-pointer text-muted-foreground 
+                              ${
+                                email?.is_read
+                                  ? "border-secondary fill-green-500"
+                                  : ""
+                              }
+                              `}
+                          />
                         </div>
                       </div>
                     </div>
@@ -239,7 +380,7 @@ const EmailList = () => {
                               `}
                       />
                       <Bell
-                        // onClick={() => handleAddActions(email, "bell")}
+                        // onClick={() => handleAddActions(email, "is_alert")}
                         className="h-4 w-4 cursor-pointer text-muted-foreground"
                       />
                       <MessageSquare className="h-4 w-4 cursor-pointer text-muted-foreground" />

@@ -93,8 +93,6 @@ const NewEmail = ({
   const router = useRouter();
   const randomId = Math.random().toString().slice(-4);
 
-  console.log("message------", message);
-
   useEffect(() => {
     const fetchRepliedData = async () => {
       try {
@@ -314,8 +312,6 @@ const NewEmail = ({
     fetchRepliedEmails();
   }, [id, isView]);
 
-  console.log("repliedEmails------", repliedEmails);
-
   const handlePreviousEmail = () => {
     if (currentReplyIndex > -1) {
       setCurrentReplyIndex(currentReplyIndex - 1);
@@ -406,6 +402,41 @@ const NewEmail = ({
     } else {
       toast({
         description: "Failed to save email template",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    const payload = {
+      created_user_id: session?.user?.id,
+      created_user_name: session?.user?.name,
+      created_date: new Date().toISOString(),
+      business_name: session?.user?.business_name,
+      business_number: session?.user?.business_number,
+      subject: subject,
+      sender_email: session?.user?.email,
+      sender_name: session?.user?.name,
+      sender_mobile: session?.user?.mobile,
+      to_user_email: to,
+      cc_emails: cc,
+      bcc_emails: bcc,
+      body: message,
+      from_user_email: session?.user?.email,
+      from_user_name: session?.user?.name,
+      is_draft: true,
+      email_no: randomId,
+    };
+
+    const response = await axiosInstance.post(EMAIL_LIST_API, payload);
+    if (response.status === 201) {
+      toast({
+        description: "Email draft saved successfully",
+        variant: "default",
+      });
+    } else {
+      toast({
+        description: "Failed to save email draft",
         variant: "destructive",
       });
     }
@@ -517,8 +548,6 @@ const NewEmail = ({
   };
 
   const handleAddActions = async (email: any, action: string) => {
-    console.log("email------", email?.email_list_id);
-    console.log("action------", action);
     try {
       const response = await axiosInstance.patch(
         `${EMAIL_LIST_API}?email_list_id=eq.${email?.email_list_id}`,
@@ -527,7 +556,6 @@ const NewEmail = ({
         }
       );
       fetchEmailData();
-      console.log("response------", response);
     } catch (error) {
       console.log("error------", error);
       toast({
@@ -695,7 +723,6 @@ const NewEmail = ({
                     const selectedItem = templateList.find(
                       (item: any) => item?.email_list_id == selectedId
                     );
-                    console.log("selectedItem-----", selectedItem);
                     setSelectedTemplate(selectedItem);
                   }}
                   value={selectedTemplate?.email_list_id}
@@ -1024,8 +1051,13 @@ const NewEmail = ({
                   <Button
                     variant={"outline"}
                     type="button"
+                    onClick={handleSaveDraft}
                     disabled={isLoading}
-                    className="flex items-center gap-2.5"
+                    className={`${
+                      isReply || isReplyAll || isForward
+                        ? "hidden"
+                        : "flex items-center gap-2.5"
+                    }`}
                   >
                     <Save className="h-5 w-5" />
                     Save as Draft
