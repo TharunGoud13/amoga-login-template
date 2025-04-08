@@ -379,7 +379,7 @@ const EmailList = () => {
                             className="h-4 w-4 cursor-pointer text-muted-foreground"
                           />
                           <MessageSquare className="h-4 w-4 cursor-pointer text-muted-foreground" />
-                          <DropdownMenu>
+                          {/* <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button
                                 variant="ghost"
@@ -436,13 +436,13 @@ const EmailList = () => {
                                 Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>
-                          </DropdownMenu>
+                          </DropdownMenu> */}
                         </div>
                       </div>
                     </div>
 
-                    {/* <div className="flex items-center gap-3">
-                      <AlertTriangle
+                    <div className="flex items-center gap-3">
+                      {/* <AlertTriangle
                         onClick={() => handleAddActions(email, "is_alert")}
                         className={`h-4 w-4 cursor-pointer text-muted-foreground 
                               ${
@@ -456,7 +456,7 @@ const EmailList = () => {
                         // onClick={() => handleAddActions(email, "is_alert")}
                         className="h-4 w-4 cursor-pointer text-muted-foreground"
                       />
-                      <MessageSquare className="h-4 w-4 cursor-pointer text-muted-foreground" />
+                      <MessageSquare className="h-4 w-4 cursor-pointer text-muted-foreground" /> */}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
@@ -508,7 +508,7 @@ const EmailList = () => {
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
-                    </div> */}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
