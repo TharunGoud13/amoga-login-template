@@ -65,8 +65,10 @@ const EmailList = () => {
 
   const fetchEmails = async () => {
     const response = await axiosInstance.get(EMAIL_LIST_API);
-    const filterUserEmails = response.data?.filter((email: any) =>
-      email?.to_user_email.includes(session?.user?.email)
+    const filterUserEmails = response.data?.filter(
+      (email: any) =>
+        email?.to_user_email.includes(session?.user?.email) ||
+        email?.created_user_id == session?.user?.id
     );
     const filterEmails = filterUserEmails.filter(
       (email: any) => email?.template !== true
