@@ -253,8 +253,18 @@ const EmailList = () => {
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Settings className="h-4 w-4 mr-2" />
-                Settings
+                Connect Emails
               </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Settings className="h-4 w-4 mr-2" />
+                POP Email Settings
+              </DropdownMenuItem>
+              <Link href="/Email/settings">
+                <DropdownMenuItem>
+                  <Settings className="h-4 w-4 mr-2" />
+                  Settings
+                </DropdownMenuItem>
+              </Link>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
