@@ -36,7 +36,7 @@ import React, { useEffect, useState } from "react";
 import { Input } from "../ui/input";
 import Link from "next/link";
 import axiosInstance from "@/utils/axiosInstance";
-import { EMAIL_LIST_API } from "@/constants/envConfig";
+import { CREATE_IMAP_DETAILS_URL, EMAIL_LIST_API } from "@/constants/envConfig";
 import { Card, CardContent } from "../ui/card";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { formatDistanceToNow } from "date-fns/formatDistanceToNow";
@@ -57,6 +57,7 @@ const EmailList = () => {
   const [search, setSearch] = useState("");
   const session = useCustomSession();
   const [selectedFilter, setSelectedFilter] = useState("Inbox");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     fetchEmails();
@@ -163,6 +164,56 @@ const EmailList = () => {
     }
   };
 
+  const fetchEmailsFromIMAP = async () => {
+    try {
+      setIsRefreshing(true);
+      const imapResponse = await axiosInstance.get(CREATE_IMAP_DETAILS_URL);
+      const imapData = imapResponse.data.filter(
+        (item: any) => item.business_number === session?.user?.business_number
+      );
+      console.log("imapData------", imapData);
+      if (!imapData || imapData.length === 0) {
+        toast({
+          description: "No IMAP settings found",
+          variant: "destructive",
+        });
+        setIsRefreshing(false);
+        return;
+      }
+      const response = await fetch("/api/fetch-emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          imapSettings: imapData[0]?.data_response,
+        }),
+      });
+      const data = await response.json();
+      console.log("data------", data);
+      if (response.ok) {
+        toast({
+          description: "Emails fetched successfully",
+          variant: "default",
+        });
+        fetchEmails();
+      } else {
+        toast({
+          description: "Failed to fetch emails",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.log("error------", error);
+      toast({
+        description: "Failed to fetch emails",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   return (
     <div className="w-full">
       <div className="flex gap-3 items-center w-full">
@@ -176,6 +227,11 @@ const EmailList = () => {
           />
         </div>
         <div className="flex items-center mt-4 gap-4">
+          <RefreshCw
+            onClick={fetchEmailsFromIMAP}
+            className={`w-5 h-5 cursor-pointer text-muted-foreground
+              ${isRefreshing ? "animate-spin" : ""}`}
+          />
           <MessageSquare className="w-5 h-5 text-muted-foreground" />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -292,7 +348,7 @@ const EmailList = () => {
                         >
                           <div className="flex flex-col">
                             <span>{email?.subject}</span>
-                            <span className="text-sm text-muted-foreground">
+                            <span className="text-sm max-w-[300px] line-clamp-1 text-muted-foreground">
                               {email?.body}
                             </span>
                           </div>

@@ -103,6 +103,7 @@
     "js-beautify": "^1.15.1",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.407.0",
+    "mailparser": "^3.7.2",
     "micro": "^9.4.1",
     "nanoid": "^5.0.9",
     "next": "14.2.5",
@@ -152,8 +153,10 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/imap": "^0.8.42",
     "@types/js-beautify": "^1.14.3",
     "@types/js-cookie": "^3.0.6",
+    "@types/mailparser": "^3.4.5",
     "@types/node": "^20",
     "@types/nodemailer": "^6.4.16",
     "@types/papaparse": "^5.3.14",
