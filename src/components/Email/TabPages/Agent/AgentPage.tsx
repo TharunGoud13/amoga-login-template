@@ -78,7 +78,7 @@ const AgentPage = () => {
                     {group.status}
                   </p>
                   <div className="flex items-center gap-2">
-                    <Link href={`/Chat/agents/${group.form_id}`}>
+                    <Link href={`/Email/agents/${group.form_id}`}>
                       <MessageCircle className="h-5 w-5 text-muted-foreground" />
                     </Link>
                   </div>

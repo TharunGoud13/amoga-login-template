@@ -145,7 +145,7 @@ const AgentPreview = ({ field, chatId }: { field: any; chatId?: string }) => {
           });
 
           // Redirect to the new chat URL
-          router.push(`/Chat/agents/${field?.form_id}/${newChatUuid}`);
+          router.push(`/Email/agents/${field?.form_id}/${newChatUuid}`);
         } catch (error) {
           console.error("Error creating chat:", error);
           toast({
@@ -472,9 +472,9 @@ const AgentPreview = ({ field, chatId }: { field: any; chatId?: string }) => {
           {field?.form_name}
         </h1>
 
-        <Link href={`/Chat`}>
+        <Link href={`/Email`}>
           <Button className="border-0" variant={"outline"}>
-            Back to Chat
+            Back to Email
           </Button>
         </Link>
       </div>
