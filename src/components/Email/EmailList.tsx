@@ -52,6 +52,9 @@ import { useCustomSession } from "@/utils/session";
 import { toast } from "../ui/use-toast";
 import { FaReadme } from "react-icons/fa6";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import Contacts from "./TabPages/Contacts/Contacts";
+import Groups from "./TabPages/Groups/Groups";
+import AgentPage from "./TabPages/Agent/AgentPage";
 
 const EmailList = () => {
   const [emails, setEmails] = useState<string[]>([]);
@@ -642,9 +645,15 @@ const EmailList = () => {
               })}
           </div>
         </TabsContent>
-        <TabsContent value="Contacts">Contacts</TabsContent>
-        <TabsContent value="Groups">Groups</TabsContent>
-        <TabsContent value="Agents">Agents</TabsContent>
+        <TabsContent value="Contacts">
+          <Contacts />
+        </TabsContent>
+        <TabsContent value="Groups">
+          <Groups />
+        </TabsContent>
+        <TabsContent value="Agents">
+          <AgentPage />
+        </TabsContent>
       </Tabs>
     </div>
   );

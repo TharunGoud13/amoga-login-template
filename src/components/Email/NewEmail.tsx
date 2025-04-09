@@ -13,6 +13,7 @@ import {
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import {
+  CHAT_GROUP_API,
   CREATE_IMAP_DETAILS_URL,
   EMAIL_LIST_API,
   GET_CONTACTS_API,
@@ -81,6 +82,8 @@ interface NewEmailProps {
   replyAllId?: string;
   isForward?: boolean;
   forwardId?: string;
+  selectedContactId?: string;
+  selectedGroupId?: string;
 }
 
 const NewEmail = ({
@@ -92,6 +95,8 @@ const NewEmail = ({
   replyAllId,
   isForward,
   forwardId,
+  selectedContactId,
+  selectedGroupId,
 }: NewEmailProps) => {
   const [users, setUsers] = useState([]);
   const [settingsData, setSettingsData] = useState<any>(null);
@@ -113,6 +118,51 @@ const NewEmail = ({
   const [viewingReply, setViewingReply] = useState(false);
   const router = useRouter();
   const randomId = Math.random().toString().slice(-4);
+
+  useEffect(() => {
+    if (selectedGroupId) {
+      const fetchGroupData = async () => {
+        try {
+          const response = await axiosInstance.get(
+            `${CHAT_GROUP_API}?chat_group_id=eq.${selectedGroupId}`
+          );
+          const fetchUsers = response.data[0]?.chat_group_users_json;
+
+          const userData = fetchUsers.map((item: any) => item.user_email);
+          setTo(userData);
+        } catch (error) {
+          console.log("error------", error);
+          toast({
+            description: "Failed to fetch group data",
+            variant: "destructive",
+          });
+        }
+      };
+      fetchGroupData();
+    }
+  }, [selectedGroupId]);
+
+  useEffect(() => {
+    if (selectedContactId) {
+      const fetchContactData = async () => {
+        try {
+          const response = await axiosInstance.get(
+            `${GET_CONTACTS_API}?user_catalog_id=eq.${selectedContactId}`
+          );
+          if (response.data) {
+            setTo([response.data[0]?.user_email]);
+          }
+        } catch (error) {
+          console.log("error------", error);
+          toast({
+            description: "Failed to fetch contact data",
+            variant: "destructive",
+          });
+        }
+      };
+      fetchContactData();
+    }
+  }, [selectedContactId]);
 
   useEffect(() => {
     const fetchRepliedData = async () => {
@@ -157,7 +207,7 @@ const NewEmail = ({
     const fetchSettingsData = async () => {
       try {
         const response = await axiosInstance.get(CREATE_IMAP_DETAILS_URL);
-        console.log("response----", response.data);
+
         const filteredData = response.data.filter(
           (item: any) => item.user_email === session?.user?.email
         );
@@ -172,8 +222,6 @@ const NewEmail = ({
     };
     fetchSettingsData();
   }, [session]);
-
-  console.log("settingsData----", settingsData);
 
   const fetchEmailData = async () => {
     try {
