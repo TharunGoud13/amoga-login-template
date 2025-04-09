@@ -12,7 +12,11 @@ import {
 } from "../ui/select";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
-import { EMAIL_LIST_API, GET_CONTACTS_API } from "@/constants/envConfig";
+import {
+  CREATE_IMAP_DETAILS_URL,
+  EMAIL_LIST_API,
+  GET_CONTACTS_API,
+} from "@/constants/envConfig";
 import { toast } from "../ui/use-toast";
 import {
   MultiSelector,
@@ -31,6 +35,7 @@ import {
   Bookmark,
   ChevronLeft,
   ChevronRight,
+  Download,
   Flag,
   Forward,
   Image,
@@ -38,13 +43,17 @@ import {
   List,
   ListOrdered,
   MessageSquare,
+  MoreVertical,
   Paperclip,
+  Printer,
   Reply,
   ReplyAll,
   Save,
   Send,
+  Share2,
   Star,
   Trash,
+  Trash2,
   Underline,
 } from "lucide-react";
 import { LuImage, LuLink } from "react-icons/lu";
@@ -56,6 +65,12 @@ import Link from "next/link";
 import { Badge } from "../ui/badge";
 import { renderSafeHtml } from "@/utils/renderSafeHtml";
 import { FaReadme } from "react-icons/fa6";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 interface NewEmailProps {
   id?: string;
@@ -79,11 +94,13 @@ const NewEmail = ({
   forwardId,
 }: NewEmailProps) => {
   const [users, setUsers] = useState([]);
+  const [settingsData, setSettingsData] = useState<any>(null);
   const [data, setData] = useState<any>(null);
   const [showCc, setShowCc] = useState(false);
   const [showBcc, setShowBcc] = useState(false);
   const [templateList, setTemplateList] = useState([]);
   const [subject, setSubject] = useState("");
+  const [from, setFrom] = useState<string[]>([]);
   const [to, setTo] = useState<string[]>([]);
   const [cc, setCc] = useState<string[]>([]);
   const [bcc, setBcc] = useState<string[]>([]);
@@ -133,7 +150,30 @@ const NewEmail = ({
     if (id) {
       fetchEmailData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  useEffect(() => {
+    const fetchSettingsData = async () => {
+      try {
+        const response = await axiosInstance.get(CREATE_IMAP_DETAILS_URL);
+        console.log("response----", response.data);
+        const filteredData = response.data.filter(
+          (item: any) => item.user_email === session?.user?.email
+        );
+        setSettingsData(filteredData);
+      } catch (error) {
+        console.log("error------", error);
+        toast({
+          description: "Failed to fetch settings data",
+          variant: "destructive",
+        });
+      }
+    };
+    fetchSettingsData();
+  }, [session]);
+
+  console.log("settingsData----", settingsData);
 
   const fetchEmailData = async () => {
     try {
@@ -181,7 +221,7 @@ const NewEmail = ({
       setTemplateList(filteredTemplatesList);
     };
     fetchTemplateList();
-  }, []);
+  }, [session]);
 
   useEffect(() => {
     if (selectedTemplate) {
@@ -390,8 +430,10 @@ const NewEmail = ({
       cc_emails: cc,
       bcc_emails: bcc,
       body: message,
-      from_user_email: session?.user?.email,
-      from_user_name: session?.user?.name,
+      from_user_email: from[0],
+      from_user_name: settingsData?.find(
+        (item: any) => item.data_response.user === from[0]
+      )?.data_response.name,
       template: true,
       template_name: subject,
       email_no: randomId,
@@ -426,8 +468,12 @@ const NewEmail = ({
       cc_emails: cc,
       bcc_emails: bcc,
       body: message,
-      from_user_email: session?.user?.email,
-      from_user_name: session?.user?.name,
+      from_user_email: settingsData?.find(
+        (item: any) => item.data_response.user === from[0]
+      )?.data_response.user,
+      from_user_name: settingsData?.find(
+        (item: any) => item.data_response.user === from[0]
+      )?.data_response.name,
       is_draft: true,
       email_no: randomId,
     };
@@ -461,6 +507,14 @@ const NewEmail = ({
           to_user_name: ccUser.user_name || "",
           to_business_name: ccUser.business_name || "",
           to_business_number: ccUser.business_number || "",
+          for_business_name: ccUser.business_name || "",
+          for_business_number: ccUser.business_number || "",
+          from_business_name: settingsData?.find(
+            (item: any) => item.data_response.user === from[0]
+          )?.business_name,
+          from_business_number: settingsData?.find(
+            (item: any) => item.data_response.user === from[0]
+          )?.business_number,
           to_user_mobile: ccUser.user_mobile || "",
           cc_emails: [],
           bcc_emails: [],
@@ -480,6 +534,14 @@ const NewEmail = ({
           to_user_name: bccUser.user_name || "",
           to_business_name: bccUser.business_name || "",
           to_business_number: bccUser.business_number || "",
+          for_business_name: bccUser.business_name || "",
+          for_business_number: bccUser.business_number || "",
+          from_business_name: settingsData?.find(
+            (item: any) => item.data_response.user === from[0]
+          )?.business_name,
+          from_business_number: settingsData?.find(
+            (item: any) => item.data_response.user === from[0]
+          )?.business_number,
           to_user_mobile: bccUser.user_mobile || "",
           cc_emails: [],
           bcc_emails: [],
@@ -519,15 +581,30 @@ const NewEmail = ({
       to_user_name: mainRecipient?.user_name || "",
       to_business_name: mainRecipient?.business_name || "",
       to_business_number: mainRecipient?.business_number || "",
+      for_business_name: mainRecipient?.business_name || "",
+      for_business_number: mainRecipient?.business_number || "",
+      from_business_name: settingsData?.find(
+        (item: any) => item.data_response.user === from[0]
+      )?.business_name,
+      from_business_number: settingsData?.find(
+        (item: any) => item.data_response.user === from[0]
+      )?.business_number,
       to_user_mobile: mainRecipient?.user_mobile || "",
       cc_emails: cc,
       bcc_emails: bcc,
       body: message,
-      from_user_email: session?.user?.email,
-      from_user_mobile: session?.user?.mobile,
-      from_user_name: session?.user?.name,
+      from_user_email: settingsData?.find(
+        (item: any) => item.data_response.user === from[0]
+      )?.data_response.user,
+      from_user_mobile: settingsData?.find(
+        (item: any) => item.data_response.user === from[0]
+      )?.mobile,
+      from_user_name: settingsData?.find(
+        (item: any) => item.data_response.user === from[0]
+      )?.name,
       email_no: randomId,
       replied_to_email_id: isReply ? replyId : isReplyAll ? replyAllId : null,
+      ref_email_id: isReply ? replyId : isReplyAll ? replyAllId : null,
       forwarded_from_email_id: isForward ? forwardId : null,
     };
     const response = await axiosInstance.post(EMAIL_LIST_API, payload);
@@ -670,79 +747,134 @@ const NewEmail = ({
                     ago
                   </span>
                 </div>
-                <div className="flex mt-2.5 gap-3 items-center">
-                  <Flag
-                    onClick={() => handleAddActions(data, "is_important")}
-                    className={`h-4 w-4 cursor-pointer text-muted-foreground 
+                <div className="flex items-center justify-between">
+                  <div className="flex mt-2.5 gap-3 items-center">
+                    <Flag
+                      onClick={() => handleAddActions(data, "is_important")}
+                      className={`h-4 w-4 cursor-pointer text-muted-foreground 
                               ${
                                 displayedEmail?.is_important
                                   ? "border-secondary fill-red-500"
                                   : ""
                               }
                               `}
-                  />
-                  <Star
-                    onClick={() => handleAddActions(data, "is_starred")}
-                    className={`h-4 w-4 cursor-pointer text-muted-foreground 
+                    />
+                    <Star
+                      onClick={() => handleAddActions(data, "is_starred")}
+                      className={`h-4 w-4 cursor-pointer text-muted-foreground 
                               ${
                                 displayedEmail?.is_starred
                                   ? "border-secondary fill-yellow-500"
                                   : ""
                               }
                               `}
-                  />
-                  <Bookmark
-                    onClick={() => handleAddActions(data, "is_bookmark")}
-                    className={`h-4 w-4 cursor-pointer text-muted-foreground 
+                    />
+                    <Bookmark
+                      onClick={() => handleAddActions(data, "is_bookmark")}
+                      className={`h-4 w-4 cursor-pointer text-muted-foreground 
                               ${
                                 displayedEmail?.is_bookmark
                                   ? "border-secondary fill-blue-500"
                                   : ""
                               }
                               `}
-                  />
-                  <Archive
-                    onClick={() => handleAddActions(data, "is_archive")}
-                    className={`h-4 w-4 cursor-pointer text-muted-foreground 
+                    />
+                    <Archive
+                      onClick={() => handleAddActions(data, "is_archive")}
+                      className={`h-4 w-4 cursor-pointer text-muted-foreground 
                               ${
                                 displayedEmail?.is_archive
                                   ? "border-secondary fill-green-500"
                                   : ""
                               }
                               `}
-                  />
-                  <FaReadme
-                    onClick={() => handleAddActions(data, "is_read")}
-                    className={`h-4 w-4 cursor-pointer text-muted-foreground 
+                    />
+                    <FaReadme
+                      onClick={() => handleAddActions(data, "is_read")}
+                      className={`h-4 w-4 cursor-pointer text-muted-foreground 
                               ${
                                 displayedEmail?.is_read
                                   ? "border-secondary fill-green-500"
                                   : ""
                               }
                               `}
-                  />
-                  <AlertTriangle
-                    onClick={() => handleAddActions(data, "is_alert")}
-                    className={`h-4 w-4 cursor-pointer text-muted-foreground 
+                    />
+                    <AlertTriangle
+                      onClick={() => handleAddActions(data, "is_alert")}
+                      className={`h-4 w-4 cursor-pointer text-muted-foreground 
                               ${
                                 displayedEmail?.is_alert
                                   ? "border-secondary fill-yellow-500"
                                   : ""
                               }
                               `}
-                  />
-                  <Bell
-                    // onClick={() => handleAddActions(data, "is_alert")}
-                    className={`h-4 w-4 cursor-pointer text-muted-foreground 
+                    />
+                    <Bell
+                      // onClick={() => handleAddActions(data, "is_alert")}
+                      className={`h-4 w-4 cursor-pointer text-muted-foreground 
                               
                               `}
-                  />
-                  <MessageSquare
-                    // onClick={() => handleAddActions(data, "is_alert")}
-                    className={`h-4 w-4 cursor-pointer text-muted-foreground 
+                    />
+                    <MessageSquare
+                      // onClick={() => handleAddActions(data, "is_alert")}
+                      className={`h-4 w-4 cursor-pointer text-muted-foreground 
                               
                               `}
-                  />
+                    />
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <MoreVertical className="h-4 w-4" />
+                        <span className="sr-only">More options</span>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-[200px]">
+                      <Link href={`/Email/reply/${id}`}>
+                        <DropdownMenuItem>
+                          <Reply className="h-4 w-4 mr-2" />
+                          Reply
+                        </DropdownMenuItem>
+                      </Link>
+                      <Link href={`/Email/replyAll/${id}`}>
+                        <DropdownMenuItem>
+                          <ReplyAll className="h-4 w-4 mr-2" />
+                          Reply All
+                        </DropdownMenuItem>
+                      </Link>
+                      <Link href={`/Email/forward/${id}`}>
+                        <DropdownMenuItem>
+                          <Forward className="h-4 w-4 mr-2" />
+                          Forward
+                        </DropdownMenuItem>
+                      </Link>
+                      <DropdownMenuItem>
+                        <Archive className="h-4 w-4 mr-2" />
+                        Archive
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Share2 className="h-4 w-4 mr-2" />
+                        Share
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Printer className="h-4 w-4 mr-2" />
+                        Print
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Download className="h-4 w-4 mr-2" />
+                        Download
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-red-500">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
               <div className="mt-4">
@@ -809,11 +941,23 @@ const NewEmail = ({
                     id="from"
                   />
                 ) : (
-                  <Select>
+                  <Select
+                    onValueChange={(value) => setFrom([value])}
+                    value={from[0]}
+                  >
                     <SelectTrigger disabled={isView} id="from">
                       <SelectValue placeholder="Select a contact" />
                     </SelectTrigger>
-                    {/* <SelectContent></SelectContent> */}
+                    <SelectContent>
+                      {settingsData?.map((item: any) => (
+                        <SelectItem
+                          key={item.user_catalog_data_id}
+                          value={item.data_response.user}
+                        >
+                          {item.data_response.user}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                 )}
               </div>
@@ -1099,7 +1243,13 @@ const NewEmail = ({
                     Save as Draft
                   </Button>
                   <Button
-                    disabled={isLoading || !to?.length || !subject || !message}
+                    disabled={
+                      isLoading ||
+                      !to?.length ||
+                      !subject ||
+                      !message ||
+                      !from[0]
+                    }
                     className="flex items-center gap-2.5"
                   >
                     <Send className="h-5 w-5" />
