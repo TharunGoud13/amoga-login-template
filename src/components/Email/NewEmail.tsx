@@ -34,6 +34,7 @@ import {
   Bell,
   Bold,
   Bookmark,
+  Bot,
   ChevronLeft,
   ChevronRight,
   Download,
@@ -56,6 +57,7 @@ import {
   Trash,
   Trash2,
   Underline,
+  Workflow,
 } from "lucide-react";
 import { LuImage, LuLink } from "react-icons/lu";
 import axiosInstance from "@/utils/axiosInstance";
@@ -72,6 +74,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { useEmailAgentContext } from "@/contexts/EmailAgentContext";
 
 interface NewEmailProps {
   id?: string;
@@ -118,6 +121,14 @@ const NewEmail = ({
   const [viewingReply, setViewingReply] = useState(false);
   const router = useRouter();
   const randomId = Math.random().toString().slice(-4);
+
+  const { emailContent } = useEmailAgentContext();
+
+  useEffect(() => {
+    if (emailContent) {
+      setMessage(emailContent);
+    }
+  }, [emailContent]);
 
   useEffect(() => {
     if (selectedGroupId) {
@@ -1116,8 +1127,18 @@ const NewEmail = ({
                   </MultiSelector>
                 </div>
               )}
-              <div>
-                <Label>Message</Label>
+              <div className="mt-4">
+                <div className="flex justify-between items-center">
+                  <Label>Message</Label>
+                  {!isView && !isForward && (
+                    <div className="flex gap-2.5">
+                      <Link href={"/Email/email-agent"}>
+                        <Bot className="h-5 w-5 cursor-pointer" />
+                      </Link>
+                      <Workflow className="h-5 w-5 cursor-pointer" />
+                    </div>
+                  )}
+                </div>
                 <div className="border rounded-md overflow-hidden mt-1">
                   {/* Toolbar */}
                   <div className="flex items-center p-2 border-b bg-gray-50">
