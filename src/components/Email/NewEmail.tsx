@@ -205,6 +205,7 @@ const NewEmail = ({
           if (forwardId) {
             setSubject(response.data[0]?.subject);
             setMessage(response.data[0]?.body);
+            setFileData(response.data[0]?.email_file_json);
           }
         }
       } catch (error) {
@@ -637,6 +638,7 @@ const NewEmail = ({
     setBcc([]);
     setMessage("");
     setEmailContent("");
+    setFileData([]);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -1362,17 +1364,15 @@ const NewEmail = ({
                               onClick={() => handleDownload(file)}
                               className="h-4 w-4 cursor-pointer"
                             />
-                            <Eye
-                              className="h-4 w-4 cursor-pointer"
-                              onClick={() => {
-                                window.open(
-                                  `/Email/preview/${encodeURIComponent(
-                                    file?.url
-                                  )}`,
-                                  "_blank"
-                                );
-                              }}
-                            />
+                            {isView && (
+                              <Link
+                                href={`/Email/preview/${id}/viewFile/${encodeURIComponent(
+                                  file?.url
+                                )}`}
+                              >
+                                <Eye className="h-4 w-4 cursor-pointer" />
+                              </Link>
+                            )}
                             {!isView && (
                               <X
                                 className="h-4 w-4 cursor-pointer"

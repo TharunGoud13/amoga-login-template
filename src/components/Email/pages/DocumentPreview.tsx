@@ -16,7 +16,7 @@ interface FilePreviewProps {
   }[];
 }
 
-const DocumentPreview = ({ url }: { url: string }) => {
+const DocumentPreview = ({ id, url }: { id: string; url: string }) => {
   const router = useRouter();
   const decodedUrl = decodeURIComponent(url);
   console.log("decodedUrl", decodedUrl);
@@ -34,10 +34,10 @@ const DocumentPreview = ({ url }: { url: string }) => {
         <Link href="/Email">
           <h1 className="flex text-xl font-semibold items-center gap-2">
             <Bot className="w-5 h-5 text-muted-foreground" />
-            Email
+            Email Document View
           </h1>
         </Link>
-        <Link href="/Email">
+        <Link href={`/Email/view/${id}`}>
           <Button variant="outline" className="border-0">
             Back to Email
           </Button>
