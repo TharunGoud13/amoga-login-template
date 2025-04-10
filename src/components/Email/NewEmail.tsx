@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "../ui/card";
@@ -38,6 +38,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  Eye,
   Flag,
   Forward,
   Image,
@@ -59,7 +60,7 @@ import {
   Underline,
   Workflow,
 } from "lucide-react";
-import { LuImage, LuLink } from "react-icons/lu";
+import { LuImage, LuLink, LuPaperclip } from "react-icons/lu";
 import axiosInstance from "@/utils/axiosInstance";
 import { useCustomSession } from "@/utils/session";
 import { Avatar, AvatarFallback } from "../ui/avatar";
@@ -118,11 +119,15 @@ const NewEmail = ({
   const session = useCustomSession();
   const [repliedEmails, setRepliedEmails] = useState<any[]>([]);
   const [currentReplyIndex, setCurrentReplyIndex] = useState(-1);
+  const [fileData, setFileData] = useState<any[]>([]);
+  const [fileUrl, setFileUrl] = useState("");
   const [viewingReply, setViewingReply] = useState(false);
   const router = useRouter();
   const randomId = Math.random().toString().slice(-4);
+  const [fileUpload, setFileUpload] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const { emailContent } = useEmailAgentContext();
+  const { emailContent, setEmailContent } = useEmailAgentContext();
 
   useEffect(() => {
     if (emailContent) {
@@ -295,10 +300,14 @@ const NewEmail = ({
       if (selectedTemplate?.bcc_emails?.length > 0) {
         setShowBcc(true);
       }
+      if (selectedTemplate?.email_file_json?.length > 0) {
+        setFileData(selectedTemplate?.email_file_json);
+      }
     }
   }, [selectedTemplate]);
 
   useEffect(() => {
+    console.log("data----", data);
     if (data) {
       setSubject(data?.subject);
       setTo(data?.to_user_email);
@@ -310,6 +319,9 @@ const NewEmail = ({
       }
       if (data?.bcc_emails?.length > 0) {
         setShowBcc(true);
+      }
+      if (data?.email_file_json?.length > 0) {
+        setFileData(data?.email_file_json);
       }
     }
   }, [data, isView]);
@@ -436,6 +448,8 @@ const NewEmail = ({
     }
   };
 
+  console.log("fileData----", fileData);
+
   const displayedEmail = useMemo(() => {
     if (
       viewingReply &&
@@ -504,6 +518,7 @@ const NewEmail = ({
         description: "Email template saved successfully",
         variant: "default",
       });
+      setEmailContent("");
     } else {
       toast({
         description: "Failed to save email template",
@@ -535,6 +550,7 @@ const NewEmail = ({
       )?.data_response.name,
       is_draft: true,
       email_no: randomId,
+      email_file_json: fileData,
     };
 
     const response = await axiosInstance.post(EMAIL_LIST_API, payload);
@@ -543,6 +559,7 @@ const NewEmail = ({
         description: "Email draft saved successfully",
         variant: "default",
       });
+      setEmailContent("");
     } else {
       toast({
         description: "Failed to save email draft",
@@ -617,6 +634,7 @@ const NewEmail = ({
     setCc([]);
     setBcc([]);
     setMessage("");
+    setEmailContent("");
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -665,6 +683,7 @@ const NewEmail = ({
       replied_to_email_id: isReply ? replyId : isReplyAll ? replyAllId : null,
       ref_email_id: isReply ? replyId : isReplyAll ? replyAllId : null,
       forwarded_from_email_id: isForward ? forwardId : null,
+      email_file_json: fileData,
     };
     const response = await axiosInstance.post(EMAIL_LIST_API, payload);
     if (response.status === 201) {
@@ -682,6 +701,71 @@ const NewEmail = ({
       setIsLoading(false);
       toast({
         description: "Failed to send email",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+
+    const file = e.target.files?.[0];
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+    if (file) {
+      if (file.size > MAX_FILE_SIZE) {
+        toast({
+          description: "File size exceeds 5MB limit",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+    setFileUpload(true);
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const fileData = {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          url: data.url,
+        };
+        setFileData((prev) => [...prev, fileData]);
+        setFileUrl(data.url);
+      } else {
+        toast({
+          description: "Failed to upload file",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error uploading file", error);
+    } finally {
+      setFileUpload(false);
+    }
+  };
+
+  const handleDownload = async (file: any) => {
+    const url = file?.url;
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = blobUrl;
+      a.download = file?.name;
+      a.click();
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      toast({
+        description: "Failed to download file",
         variant: "destructive",
       });
     }
@@ -1211,12 +1295,24 @@ const NewEmail = ({
                       type="button"
                       variant="ghost"
                       size="icon"
+                      onClick={() => fileRef.current?.click()}
                       className="h-8 w-8"
                       title="Attach File"
                     >
                       <Paperclip className="h-4 w-4" />
                     </Button>
+                    {fileUpload && (
+                      <span className="text-sm text-gray-500">
+                        Uploading...
+                      </span>
+                    )}
                   </div>
+                  <input
+                    type="file"
+                    ref={fileRef}
+                    onChange={handleFileChange}
+                    className="hidden"
+                  />
 
                   {isView ? (
                     <div className="p-4 min-h-[300px] prose max-w-none">
@@ -1231,6 +1327,65 @@ const NewEmail = ({
                   )}
                 </div>
               </div>
+              {fileData.length > 0 && (
+                <div className="mt-4">
+                  <Label htmlFor="attachments">Attachments</Label>
+                  <div
+                    className="flex border justify-between rounded-md p-2 items-center gap-2"
+                    id="attachments"
+                  >
+                    <div className="flex flex-col gap-2 w-full">
+                      {fileData.map((file, index) => (
+                        <div
+                          key={index}
+                          className="flex justify-between items-center gap-2.5"
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span className="bg-gray-200 p-2.5 rounded-md">
+                              {file?.type.split("/")[1].toUpperCase()}
+                            </span>
+                            <div className="flex flex-col">
+                              <span>{file?.name}</span>
+                              <span>
+                                {((file?.size / 1024 / 1024) * 100).toFixed(2)}
+                                MB
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3 mr-3">
+                            <Download
+                              onClick={() => handleDownload(file)}
+                              className="h-4 w-4 cursor-pointer"
+                            />
+                            <Eye
+                              className="h-4 w-4 cursor-pointer"
+                              onClick={() => {
+                                window.open(
+                                  `/Email/preview/${encodeURIComponent(
+                                    file?.url
+                                  )}`,
+                                  "_blank"
+                                );
+                              }}
+                            />
+                            {!isView && (
+                              <Trash
+                                className="h-4 w-4 cursor-pointer"
+                                onClick={() => {
+                                  console.log("index----", index);
+                                  setFileData(
+                                    fileData.filter((_, i) => i !== index)
+                                  );
+                                }}
+                              />
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
               <div
                 className={`${
                   isView ? "mt-4 flex gap-2.5 items-center" : "hidden"
