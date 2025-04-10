@@ -45,6 +45,7 @@ import {
   Italic,
   List,
   ListOrdered,
+  Loader2,
   MessageSquare,
   MoreVertical,
   Paperclip,
@@ -59,6 +60,7 @@ import {
   Trash2,
   Underline,
   Workflow,
+  X,
 } from "lucide-react";
 import { LuImage, LuLink, LuPaperclip } from "react-icons/lu";
 import axiosInstance from "@/utils/axiosInstance";
@@ -1291,7 +1293,7 @@ const NewEmail = ({
                     >
                       <LuImage className="h-4 w-4" />
                     </Button>
-                    <Button
+                    {/* <Button
                       type="button"
                       variant="ghost"
                       disabled={isForward}
@@ -1306,7 +1308,7 @@ const NewEmail = ({
                       <span className="text-sm text-gray-500">
                         Uploading...
                       </span>
-                    )}
+                    )} */}
                   </div>
                   <input
                     type="file"
@@ -1330,7 +1332,9 @@ const NewEmail = ({
               </div>
               {fileData.length > 0 && (
                 <div className="mt-4">
-                  <Label htmlFor="attachments">Attachments</Label>
+                  <Label htmlFor="attachments">
+                    Attachments ({fileData?.length})
+                  </Label>
                   <div
                     className="flex border justify-between rounded-md p-2 items-center gap-2"
                     id="attachments"
@@ -1370,7 +1374,7 @@ const NewEmail = ({
                               }}
                             />
                             {!isView && (
-                              <Trash
+                              <X
                                 className="h-4 w-4 cursor-pointer"
                                 onClick={() => {
                                   console.log("index----", index);
@@ -1387,6 +1391,26 @@ const NewEmail = ({
                   </div>
                 </div>
               )}
+              <div className="mt-4">
+                <Button
+                  variant={"outline"}
+                  className="w-full flex gap-2.5 items-center"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={fileUpload}
+                  type="button"
+                >
+                  {fileUpload ? (
+                    <span className="text-sm text-gray-500 flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" /> Uploading...
+                    </span>
+                  ) : (
+                    <>
+                      <Paperclip className="h-4 w-4" />
+                      Attach Files
+                    </>
+                  )}
+                </Button>
+              </div>
               <div
                 className={`${
                   isView ? "mt-4 flex gap-2.5 items-center" : "hidden"

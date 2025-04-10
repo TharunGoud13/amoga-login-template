@@ -37,14 +37,11 @@ const DocumentPreview = ({ url }: { url: string }) => {
             Email
           </h1>
         </Link>
-
-        <Button
-          variant="outline"
-          className="border-0"
-          onClick={() => router.back()}
-        >
-          Back to Email
-        </Button>
+        <Link href="/Email">
+          <Button variant="outline" className="border-0">
+            Back to Email
+          </Button>
+        </Link>
       </div>
 
       <DocumentViewer queryParams="hl=Nl" url={decodedUrl} />
