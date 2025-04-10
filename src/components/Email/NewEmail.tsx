@@ -1294,6 +1294,7 @@ const NewEmail = ({
                     <Button
                       type="button"
                       variant="ghost"
+                      disabled={isForward}
                       size="icon"
                       onClick={() => fileRef.current?.click()}
                       className="h-8 w-8"
