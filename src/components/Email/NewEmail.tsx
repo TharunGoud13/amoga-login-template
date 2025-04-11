@@ -1373,6 +1373,15 @@ const NewEmail = ({
                                 <Eye className="h-4 w-4 cursor-pointer" />
                               </Link>
                             )}
+                            {isView && (
+                              <Link
+                                href={`/Email/chat_with_doc/${id}/${encodeURIComponent(
+                                  file?.url
+                                )}`}
+                              >
+                                <Bot className="h-4 w-4 cursor-pointer" />
+                              </Link>
+                            )}
                             {!isView && (
                               <X
                                 className="h-4 w-4 cursor-pointer"
