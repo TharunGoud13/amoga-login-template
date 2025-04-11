@@ -8,6 +8,7 @@ import {
   Copy,
   Edit,
   Eye,
+  File,
   FileText,
   FileUp,
   History,
@@ -48,12 +49,17 @@ import MenuBar from "./SideBar/Menu";
 import BookmarkBar from "./SideBar/Bookmark";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { SAVE_FORM_FIELDS } from "@/constants/envConfig";
+import { EMAIL_LIST_API, SAVE_FORM_FIELDS } from "@/constants/envConfig";
 import axiosInstance from "@/utils/axiosInstance";
 import { useCustomSession } from "@/utils/session";
 
-const ChatwithDoc = ({ docId }: { docId?: string }) => {
-  const suggestions = ["Chat with Data", "Chat with Doc"];
+const ChatwithDoc = ({
+  emailId,
+  docId,
+}: {
+  emailId: string;
+  docId?: string;
+}) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
   const [openHistory, setOpenHistory] = useState<boolean>(false);
@@ -92,6 +98,21 @@ const ChatwithDoc = ({ docId }: { docId?: string }) => {
     };
     fetchMenuData();
   }, [openMenu, session]);
+
+  useEffect(() => {
+    const fetchEmailData = async () => {
+      const response = await axiosInstance.get(
+        `${EMAIL_LIST_API}?email_list_id=eq.${emailId}`
+      );
+      const data = response.data[0];
+      console.log("data------", data);
+      const documentData = data?.email_file_json?.find(
+        (item: any) => item?.id == docId
+      );
+      console.log("documentData------", documentData);
+    };
+    fetchEmailData();
+  });
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -1049,27 +1070,26 @@ const ChatwithDoc = ({ docId }: { docId?: string }) => {
 
   return (
     <div className="w-full h-full">
-      <div className="flex items-center border-b justify-between">
+      <div className="flex items-center pb-5 border-b justify-between">
         <h1 className="text-2xl font-semibold">Chat with Document</h1>
-        <Link href={`/Email/view/${docId}`}>
+        <Link href={`/Email/view/${emailId}`}>
           <Button variant="outline" className="border-0">
             Back to Email
           </Button>
         </Link>
       </div>
       <div className="flex items-center mt-5 justify-between">
-        <Link href="/Agent">
-          <h1 className="flex text-xl font-semibold items-center gap-2">
-            <Bot className="w-5 h-5 text-muted-foreground" />
-            General Assistant
-          </h1>
-        </Link>
+        <h1 className="flex text-xl font-semibold items-center gap-2">
+          <Bot className="w-5 h-5 text-muted-foreground" />
+          General Assistant
+        </h1>
+
         <div className="flex items-center justify-end gap-5">
-          <Link href="/Agent">
-            <span className="text-muted-foreground cursor-pointer">
-              <Plus className="w-5 h-5" />
-            </span>
-          </Link>
+          {/* <Link href="/Agent"> */}
+          <span className="text-muted-foreground cursor-pointer">
+            <File className="w-5 h-5" />
+          </span>
+          {/* </Link> */}
           <span
             className="text-muted-foreground cursor-pointer"
             onClick={() => setOpenHistory(true)}

@@ -39,6 +39,7 @@ import {
   ChevronRight,
   Download,
   Eye,
+  FileText,
   Flag,
   Forward,
   Image,
@@ -78,6 +79,16 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { useEmailAgentContext } from "@/contexts/EmailAgentContext";
+import { v4 as uuidv4 } from "uuid";
+import {
+  Sheet,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "../ui/sheet";
+import { Checkbox } from "../ui/checkbox";
 
 interface NewEmailProps {
   id?: string;
@@ -122,6 +133,7 @@ const NewEmail = ({
   const [repliedEmails, setRepliedEmails] = useState<any[]>([]);
   const [currentReplyIndex, setCurrentReplyIndex] = useState(-1);
   const [fileData, setFileData] = useState<any[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [fileUrl, setFileUrl] = useState("");
   const [viewingReply, setViewingReply] = useState(false);
   const router = useRouter();
@@ -310,7 +322,6 @@ const NewEmail = ({
   }, [selectedTemplate]);
 
   useEffect(() => {
-    console.log("data----", data);
     if (data) {
       setSubject(data?.subject);
       setTo(data?.to_user_email);
@@ -450,8 +461,6 @@ const NewEmail = ({
       setViewingReply(true);
     }
   };
-
-  console.log("fileData----", fileData);
 
   const displayedEmail = useMemo(() => {
     if (
@@ -736,6 +745,7 @@ const NewEmail = ({
       if (response.ok) {
         const data = await response.json();
         const fileData = {
+          id: uuidv4(),
           name: file.name,
           size: file.size,
           type: file.type,
@@ -1373,15 +1383,70 @@ const NewEmail = ({
                                 <Eye className="h-4 w-4 cursor-pointer" />
                               </Link>
                             )}
-                            {isView && (
+                            <Sheet>
+                              <SheetTrigger>
+                                {isView && (
+                                  <FileText className="h-4 w-4 cursor-pointer" />
+                                )}
+                              </SheetTrigger>
+                              <SheetContent>
+                                <SheetHeader>
+                                  <SheetTitle>Documents Uploaded</SheetTitle>
+                                </SheetHeader>
+                                <div className="flex flex-col mt-5  gap-2.5">
+                                  {fileData.map((file, index) => (
+                                    <div
+                                      key={index}
+                                      className="flex items-center gap-2.5"
+                                    >
+                                      <Checkbox
+                                        checked={selectedFiles.includes(file)}
+                                        onCheckedChange={(checked) => {
+                                          setSelectedFiles((prev: any) => {
+                                            if (checked) {
+                                              return [...prev, file];
+                                            } else {
+                                              return prev.filter(
+                                                (item: any) => item !== file
+                                              );
+                                            }
+                                          });
+                                        }}
+                                      />
+                                      <div className="flex flex-col">
+                                        <span>{file?.name}</span>
+                                        <span>
+                                          {(
+                                            (file?.size / 1024 / 1024) *
+                                            100
+                                          ).toFixed(2)}
+                                          MB
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                                <SheetFooter>
+                                  <Button
+                                    onClick={() => {
+                                      console.log(
+                                        "selectedFiles----",
+                                        selectedFiles
+                                      );
+                                    }}
+                                  >
+                                    Check
+                                  </Button>
+                                </SheetFooter>
+                              </SheetContent>
+                            </Sheet>
+                            {/* {isView && (
                               <Link
-                                href={`/Email/chat_with_doc/${id}/${encodeURIComponent(
-                                  file?.url
-                                )}`}
+                                href={`/Email/chat_with_doc/${id}/${file?.id}`}
                               >
                                 <Bot className="h-4 w-4 cursor-pointer" />
                               </Link>
-                            )}
+                            )} */}
                             {!isView && (
                               <X
                                 className="h-4 w-4 cursor-pointer"
