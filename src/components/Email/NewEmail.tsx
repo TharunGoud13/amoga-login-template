@@ -1230,7 +1230,15 @@ const NewEmail = ({
                   <Label>Message</Label>
                   {!isView && !isForward && (
                     <div className="flex gap-2.5">
-                      <Link href={"/Email/email-agent"}>
+                      <Link
+                        href={
+                          isReply
+                            ? `/Email/reply/${replyId}/email-agent`
+                            : isReplyAll
+                            ? `/Email/replyAll/${replyAllId}/email-agent`
+                            : "/Email/email-agent"
+                        }
+                      >
                         <Bot className="h-5 w-5 cursor-pointer" />
                       </Link>
                       <Workflow className="h-5 w-5 cursor-pointer" />

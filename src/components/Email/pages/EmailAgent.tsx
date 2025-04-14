@@ -12,19 +12,43 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { RefreshCcw, Send } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import { generateEmail } from "./actions";
 import { toast } from "@/components/ui/use-toast";
 import { useEmailAgentContext } from "@/contexts/EmailAgentContext";
+import { Input } from "@/components/ui/input";
+import axiosInstance from "@/utils/axiosInstance";
+import { EMAIL_LIST_API } from "@/constants/envConfig";
 
-const EmailAgent = () => {
+const EmailAgent = ({ id }: { id?: string }) => {
   const [prompt, setPrompt] = useState("");
   const [generatedEmail, setGeneratedEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [subject, setSubject] = useState("");
+  const [body, setBody] = useState("");
   const router = useRouter();
+  const pathname = usePathname();
 
   const { emailContent, setEmailContent } = useEmailAgentContext();
+
+  useEffect(() => {
+    if (id) {
+      try {
+        const getEmailData = async () => {
+          const response = await axiosInstance.get(
+            `${EMAIL_LIST_API}?email_list_id=eq.${id}`
+          );
+          const data = response.data;
+          setSubject(data[0]?.subject);
+          setBody(data[0]?.body);
+        };
+        getEmailData();
+      } catch (error) {
+        console.error("Error fetching email data:", error);
+      }
+    }
+  }, [id]);
 
   const handleGenerate = async () => {
     if (!prompt) return;
@@ -45,7 +69,13 @@ const EmailAgent = () => {
 
   const handleUseInComposer = () => {
     setEmailContent(generatedEmail);
-    router.push("/Email/new");
+    if (id && pathname.includes("replyAll")) {
+      router.push(`/Email/replyAll/${id}`);
+    } else if (id && pathname.includes("reply")) {
+      router.push(`/Email/reply/${id}`);
+    } else {
+      router.push("/Email/new");
+    }
   };
 
   const handleReset = () => {
@@ -66,9 +96,9 @@ const EmailAgent = () => {
             </Link>
           </div>
           <div className="mt-5">
-            <Label>Plop Templates: </Label>
+            <Label className={`${id && "hidden"}`}>Plop Templates: </Label>
             <Select>
-              <SelectTrigger>
+              <SelectTrigger className={`${id && "hidden"}`}>
                 <SelectValue placeholder="Select Agent" />
               </SelectTrigger>
               <SelectContent>
@@ -78,6 +108,29 @@ const EmailAgent = () => {
               </SelectContent>
             </Select>
           </div>
+          {id && (
+            <>
+              <div className="mt-5">
+                <Label htmlFor="subject">Subject</Label>
+                <Input
+                  id="subject"
+                  placeholder="Subject"
+                  value={subject}
+                  readOnly
+                />
+              </div>
+              <div className="mt-5">
+                <Label htmlFor="body">Body</Label>
+                <Textarea
+                  className="min-h-[200px]"
+                  id="body"
+                  placeholder="Body"
+                  value={body}
+                  readOnly
+                />
+              </div>
+            </>
+          )}
           <div className="mt-5">
             <Label>Describe the email you want to write: </Label>
             <Textarea
@@ -90,7 +143,7 @@ const EmailAgent = () => {
           <div className="mt-5 justify-end flex">
             <Button disabled={!prompt || isLoading} onClick={handleGenerate}>
               <Send className="w-4 h-4 mr-2" />{" "}
-              {isLoading ? "Generating..." : "Generate Email"}
+              {isLoading ? "Generating..." : "Generate"}
             </Button>
           </div>
           <div className="mt-5">
