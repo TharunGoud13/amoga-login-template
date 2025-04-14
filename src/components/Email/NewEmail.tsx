@@ -1383,7 +1383,7 @@ const NewEmail = ({
                                 <Eye className="h-4 w-4 cursor-pointer" />
                               </Link>
                             )}
-                            <Sheet>
+                            {/* <Sheet>
                               <SheetTrigger>
                                 {isView && (
                                   <FileText className="h-4 w-4 cursor-pointer" />
@@ -1433,25 +1433,27 @@ const NewEmail = ({
                                         "selectedFiles----",
                                         selectedFiles
                                       );
+                                      router.push(
+                                        `/Email/chat_with_doc/${id}/${file?.id}`
+                                      );
                                     }}
                                   >
                                     Check
                                   </Button>
                                 </SheetFooter>
                               </SheetContent>
-                            </Sheet>
-                            {/* {isView && (
+                            </Sheet> */}
+                            {isView && (
                               <Link
                                 href={`/Email/chat_with_doc/${id}/${file?.id}`}
                               >
                                 <Bot className="h-4 w-4 cursor-pointer" />
                               </Link>
-                            )} */}
+                            )}
                             {!isView && (
                               <X
                                 className="h-4 w-4 cursor-pointer"
                                 onClick={() => {
-                                  console.log("index----", index);
                                   setFileData(
                                     fileData.filter((_, i) => i !== index)
                                   );

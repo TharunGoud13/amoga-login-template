@@ -3,22 +3,15 @@ import {
   ArrowUp,
   Bookmark,
   Bot,
-  Check,
-  Code,
   Copy,
   Edit,
   Eye,
-  File,
   FileText,
   FileUp,
   History,
   Image,
   Loader2,
-  Menu,
   Mic,
-  Pencil,
-  Plus,
-  RefreshCcw,
   RefreshCw,
   Share2,
   Star,
@@ -32,26 +25,25 @@ import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
+  SheetTrigger,
 } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useSession } from "next-auth/react";
 import { toast } from "@/components/ui/use-toast";
-import { generateObject } from "ai";
-import { openai } from "@ai-sdk/openai";
-import { z } from "zod";
 import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import HistoryBar from "./SideBar/History";
-import MenuBar from "./SideBar/Menu";
 import BookmarkBar from "./SideBar/Bookmark";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { EMAIL_LIST_API, SAVE_FORM_FIELDS } from "@/constants/envConfig";
+import { EMAIL_LIST_API } from "@/constants/envConfig";
 import axiosInstance from "@/utils/axiosInstance";
 import { useCustomSession } from "@/utils/session";
+import { Checkbox } from "@/components/ui/checkbox";
+import { generateResponse } from "./actions";
 
 const ChatwithDoc = ({
   emailId,
@@ -64,10 +56,8 @@ const ChatwithDoc = ({
   const audioInputRef = useRef<HTMLInputElement>(null);
   const [openHistory, setOpenHistory] = useState<boolean>(false);
   const [openFavorites, setOpenFavorites] = useState<boolean>(false);
-  const [openMenu, setOpenMenu] = useState<boolean>(false);
   const [prompt, setPrompt] = useState<string>("");
   const [history, setHistory] = useState<any[]>([]);
-  const [likes, setLikes] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const session = useCustomSession();
@@ -75,7 +65,6 @@ const ChatwithDoc = ({
   const router = useRouter();
   const [userChatSession, setUserChatSession] = useState<any>({});
   const [chatData, setChatData] = useState<any>(null);
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
   const [bookmarks, setBookmarks] = useState<any[]>([]);
   const [favorites, setFavorites] = useState<any[]>([]);
@@ -86,34 +75,73 @@ const ChatwithDoc = ({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
-  const [getMenuData, setMenuData] = useState<any>(null);
+  const [fileData, setFileData] = useState<any[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+  const [extractedData, setExtractedData] = useState<any>(null);
+
+  const fileType = fileData.length > 0 ? fileData[0].type : null;
 
   useEffect(() => {
-    const fetchMenuData = async () => {
-      const response = await axiosInstance.get(SAVE_FORM_FIELDS);
-      const filteredData = response.data.filter((form: any) =>
-        form?.users_json?.includes(session?.user?.email)
-      );
-      setMenuData(filteredData);
-    };
-    fetchMenuData();
-  }, [openMenu, session]);
+    if (fileData.length > 0) {
+      const extractFileData = async () => {
+        let endpoint = "";
 
+        if (fileType === "application/pdf") {
+          endpoint = `${process.env.NEXT_PUBLIC_PYTHON_API}/pdf-upload`;
+        } else if (fileType === "text/csv") {
+          endpoint = `${process.env.NEXT_PUBLIC_PYTHON_API}/csv-upload`;
+        } else if (
+          fileType ===
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+          fileType === "application/vnd.ms-excel"
+        ) {
+          // For xlsx and xls files
+          endpoint = `${process.env.NEXT_PUBLIC_PYTHON_API}/xlsx-upload`;
+        } else if (
+          fileType ===
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+          fileType === "application/msword"
+        ) {
+          // For docx and doc files
+          endpoint = `${process.env.NEXT_PUBLIC_PYTHON_API}/doc-upload`;
+        } else if (fileType === "text/plain") {
+          // Default fallback
+          endpoint = `${process.env.NEXT_PUBLIC_PYTHON_API}/text-upload`;
+        }
+
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            url: fileData[0].url,
+          }),
+        });
+
+        const data = await response.text();
+        setExtractedData(data);
+      };
+      extractFileData();
+    }
+  }, [fileData, fileType]);
+
+  // fetch email data and documents data for that email
   useEffect(() => {
     const fetchEmailData = async () => {
       const response = await axiosInstance.get(
         `${EMAIL_LIST_API}?email_list_id=eq.${emailId}`
       );
       const data = response.data[0];
-      console.log("data------", data);
       const documentData = data?.email_file_json?.find(
         (item: any) => item?.id == docId
       );
-      console.log("documentData------", documentData);
+      setFileData([documentData]);
     };
     fetchEmailData();
-  });
+  }, [docId, emailId]);
 
+  // creating User data in User table, based on session user details
   useEffect(() => {
     const fetchUsers = async () => {
       const response = await fetch("https://amogaagents.morr.biz/User", {
@@ -150,6 +178,7 @@ const ChatwithDoc = ({
     fetchUsers();
   }, [session]);
 
+  // fetch history data from Chat table and it fetches all User history from Agent as well
   const fetchHistory = async (userChatSession: any, setHistory: any) => {
     const response = await fetch("https://amogaagents.morr.biz/Chat", {
       method: "GET",
@@ -178,6 +207,7 @@ const ChatwithDoc = ({
     }
   }, [userChatSession, openHistory]);
 
+  // fetch bookmarks from all data, to show bookmark icon in history
   useEffect(() => {
     const fetchBookmarks = async () => {
       if (!userChatSession?.id) return;
@@ -222,6 +252,7 @@ const ChatwithDoc = ({
     }
   }, [openFavorites, userChatSession, refreshBookmarkState]);
 
+  // fetch favorites from all data
   useEffect(() => {
     const fetchFavorites = async () => {
       if (!userChatSession?.id) return;
@@ -581,14 +612,12 @@ const ChatwithDoc = ({
 
     try {
       // Get AI response
-      const response = await fetch("/api/generate", {
+      const response = await fetch("/api/chat-with-doc", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prompt,
-          fileUrl: fileUrl || null,
-          audioUrl: audioUrl || null,
-          chat_id: currentChatId,
+          documentData: extractedData || "",
         }),
       });
 
@@ -669,7 +698,7 @@ const ChatwithDoc = ({
 
       // If this was a new chat, redirect to the chat page with the new chatId
       if (!docId) {
-        router.push(`/Agent/${currentChatId}`);
+        router.push(`/Email/view/${emailId}`);
       }
 
       setPrompt("");
@@ -687,49 +716,6 @@ const ChatwithDoc = ({
     } catch (error) {
       toast({ description: "Error fetching response", variant: "destructive" });
       setIsLoading(false);
-    }
-  };
-
-  // Add this function to handle title updates
-  const handleUpdateTitle = async () => {
-    if (!docId || !editedTitle.trim()) return;
-
-    try {
-      const response = await fetch(
-        `https://amogaagents.morr.biz/Chat?id=eq.${docId}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-          },
-          body: JSON.stringify({
-            title: editedTitle,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to update chat title");
-      }
-
-      // Update local state to reflect the change
-      if (chatData && chatData.length > 0) {
-        setChatData([{ ...chatData[0], title: editedTitle }]);
-      }
-
-      toast({
-        description: "Chat title updated successfully",
-      });
-
-      // Exit edit mode
-      setIsEditingTitle(false);
-    } catch (error) {
-      console.error("Error updating chat title:", error);
-      toast({
-        description: "Failed to update chat title",
-        variant: "destructive",
-      });
     }
   };
 
@@ -810,57 +796,6 @@ const ChatwithDoc = ({
       });
     }
   };
-
-  // const handleBookmark = async (message: any) => {
-  //   try {
-  //     const newBookmarkStatus = !message.bookmark;
-
-  //     // Update the message in the local state first for immediate UI feedback
-  //     setMessages((prev) =>
-  //       prev.map((msg) =>
-  //         msg.id === message.id ? { ...msg, bookmark: newBookmarkStatus } : msg
-  //       )
-  //     );
-
-  //     const response = await fetch(
-  //       `https://amogaagents.morr.biz/Message?id=eq.${message.id}`,
-  //       {
-  //         method: "PATCH",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           Prefer: "return=representation",
-  //           Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-  //         },
-  //         body: JSON.stringify({
-  //           bookmark: newBookmarkStatus,
-  //         }),
-  //       }
-  //     );
-
-  //     if (!response.ok) {
-  //       toast({
-  //         description: "Failed to update bookmark status",
-  //         variant: "destructive",
-  //       });
-  //       return;
-  //     }
-
-  //     // Trigger a refresh of the bookmarks list
-  //     setRefreshBookmarkState((prev) => !prev);
-
-  //     toast({
-  //       description: newBookmarkStatus
-  //         ? "Message bookmarked"
-  //         : "Bookmark removed",
-  //     });
-  //   } catch (error) {
-  //     console.error("Error updating bookmark:", error);
-  //     toast({
-  //       description: "Failed to update bookmark",
-  //       variant: "destructive",
-  //     });
-  //   }
-  // };
 
   const handleFavorite = async (message: any) => {
     try {
@@ -1009,7 +944,6 @@ const ChatwithDoc = ({
   };
 
   const handleLike = async (message: any, type: string) => {
-    console.log("feedback-----", message, type);
     try {
       let feedback;
       if (type === "like") {
@@ -1081,15 +1015,56 @@ const ChatwithDoc = ({
       <div className="flex items-center mt-5 justify-between">
         <h1 className="flex text-xl font-semibold items-center gap-2">
           <Bot className="w-5 h-5 text-muted-foreground" />
-          General Assistant
+          {fileData?.[0]?.name}
         </h1>
 
         <div className="flex items-center justify-end gap-5">
-          {/* <Link href="/Agent"> */}
           <span className="text-muted-foreground cursor-pointer">
-            <File className="w-5 h-5" />
+            <Sheet>
+              <SheetTrigger>
+                <FileText className="w-5 mt-2 h-5" />
+              </SheetTrigger>
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>Documents Uploaded</SheetTitle>
+                </SheetHeader>
+                <div className="flex flex-col mt-5  gap-2.5">
+                  {fileData.map((file: any, index) => (
+                    <div key={index} className="flex items-center gap-2.5">
+                      <Checkbox
+                        checked={selectedFiles.includes(file)}
+                        onCheckedChange={(checked) => {
+                          setSelectedFiles((prev: any) => {
+                            if (checked) {
+                              return [...prev, file];
+                            } else {
+                              return prev.filter((item: any) => item !== file);
+                            }
+                          });
+                        }}
+                      />
+                      <div className="flex flex-col">
+                        <span>{file?.name}</span>
+                        <span>
+                          {((file?.size / 1024 / 1024) * 100).toFixed(2)}
+                          MB
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {/* <SheetFooter>
+                  <Button
+                    onClick={() => {
+                      console.log("selectedFiles----", selectedFiles);
+                    }}
+                  >
+                    Check
+                  </Button>
+                </SheetFooter> */}
+              </SheetContent>
+            </Sheet>
           </span>
-          {/* </Link> */}
           <span
             className="text-muted-foreground cursor-pointer"
             onClick={() => setOpenHistory(true)}
@@ -1102,62 +1077,22 @@ const ChatwithDoc = ({
           >
             <Star className="w-5 h-5" />
           </span>
-          <span
+          <span>
+            <Bookmark
+              className={`w-5 h-5 cursor-pointer text-muted-foreground hover:text-primary ${
+                chatData?.[0]?.bookmark ? "fill-primary text-primary" : ""
+              }`}
+              onClick={handleChatBookmark}
+            />
+          </span>
+          {/* <span
             className="text-muted-foreground cursor-pointer"
             onClick={() => setOpenMenu(true)}
           >
             <Menu className="w-5 h-5" />
-          </span>
+          </span> */}
         </div>
       </div>
-      {docId && (
-        <div className="flex items-center gap-2 mt-2">
-          <Input
-            type="text"
-            value={isEditingTitle ? editedTitle : chatData?.[0]?.title}
-            className={`border-0 w-fit max-w-[50% ] ${
-              isEditingTitle ? "border border-primary" : ""
-            }`}
-            readOnly={!isEditingTitle}
-            onChange={(e) => setEditedTitle(e.target.value)}
-            onFocus={() => {
-              if (isEditingTitle && !editedTitle && chatData?.[0]?.title) {
-                setEditedTitle(chatData[0].title);
-              }
-            }}
-          />
-          {isEditingTitle ? (
-            <div className="flex items-center gap-2">
-              <Check
-                className="w-5 h-5 cursor-pointer"
-                onClick={handleUpdateTitle}
-              />
-              <X
-                className="w-5 h-5 cursor-pointer"
-                onClick={() => {
-                  setIsEditingTitle(false);
-                  setEditedTitle("");
-                }}
-              />
-            </div>
-          ) : (
-            <Edit
-              className="w-5 h-5 cursor-pointer text-muted-foreground hover:text-primary"
-              onClick={() => {
-                setIsEditingTitle(true);
-                setEditedTitle(chatData?.[0]?.title || "");
-              }}
-            />
-          )}
-          <Bookmark
-            className={`w-5 h-5 cursor-pointer text-muted-foreground hover:text-primary ${
-              chatData?.[0]?.bookmark ? "fill-primary text-primary" : ""
-            }`}
-            onClick={handleChatBookmark}
-          />
-        </div>
-      )}
-
       <HistoryBar
         open={openHistory}
         setOpen={setOpenHistory}
@@ -1174,13 +1109,7 @@ const ChatwithDoc = ({
         setRefreshState={setRefreshBookmarkState}
         title="Favorites"
       />
-      <MenuBar
-        open={openMenu}
-        setOpen={setOpenMenu}
-        data={getMenuData}
-        setDeleteHistory={setDeleteHistory}
-        title="Menu"
-      />
+
       <div className="mt-4">
         <ScrollArea className="h-[calc(70vh-100px)] w-full relative">
           <div className="flex flex-col gap-4 w-full md:p-4">
@@ -1230,14 +1159,6 @@ const ChatwithDoc = ({
                           />
                           <RefreshCw className="w-5 h-5 cursor-pointer text-muted-foreground" />
                           <Share2 className="w-5 h-5 cursor-pointer text-muted-foreground" />
-                          {/* <Bookmark
-                            className={`w-5 h-5 cursor-pointer text-muted-foreground ${
-                              message.bookmark
-                                ? "fill-primary border-primary"
-                                : ""
-                            }`}
-                            onClick={() => handleBookmark(message)}
-                          /> */}
                           <Edit className="w-5 h-5 cursor-pointer text-muted-foreground" />
                         </div>
                         <div className="flex items-center  gap-5 justify-end w-full">
@@ -1310,10 +1231,7 @@ const ChatwithDoc = ({
                     </Button>
                   </div>
                 )}
-                {/* <FileUp
-                    onClick={() => fileInputRef.current?.click()}
-                    className="w-5 h-5"
-                  /> */}
+
                 <input
                   type="file"
                   onChange={handleFileChange}
@@ -1371,17 +1289,6 @@ const ChatwithDoc = ({
               </div>
             </div>
           </div>
-          {/* <div className="mt-4">
-            <div className="flex items-center gap-2">
-              {suggestions.map((suggestion: string, index: number) => (
-                <div key={index}>
-                  <Button className="rounded-full" variant="outline">
-                    {suggestion}
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </div> */}
         </form>
       </div>
     </div>

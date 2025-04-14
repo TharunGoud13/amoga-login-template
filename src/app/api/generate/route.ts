@@ -29,7 +29,7 @@ export async function POST(request: Request) {
           Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         },
         body: JSON.stringify({
-          model: "gpt-4", // or whichever model you prefer
+          model: "gpt-3.5-turbo", // or whichever model you prefer
           messages: [
             {
               role: "system",
