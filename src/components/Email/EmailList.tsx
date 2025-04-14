@@ -89,7 +89,6 @@ const EmailList = () => {
           new Date(b.created_date).getTime() -
           new Date(a.created_date).getTime()
       );
-      console.log("sortedEmails------", sortedEmails);
 
       setEmails(sortedEmails);
     } catch (error) {
@@ -123,8 +122,6 @@ const EmailList = () => {
 
   const handleFilter = (item: string) => {
     setSelectedFilter(item);
-    console.log("item------", item);
-    console.log("emails------", emails);
 
     const response = allEmails.filter((email: any) => {
       switch (item) {
@@ -175,7 +172,6 @@ const EmailList = () => {
   };
 
   const handleEmailClick = async (email: any) => {
-    console.log("email------", email);
     try {
       const response = await axiosInstance.patch(
         `${EMAIL_LIST_API}?email_list_id=eq.${email?.email_list_id}`,
@@ -196,7 +192,7 @@ const EmailList = () => {
       const imapData = imapResponse.data.filter(
         (item: any) => item.business_number === session?.user?.business_number
       );
-      console.log("imapData------", imapData);
+
       if (!imapData || imapData.length === 0) {
         toast({
           description: "No IMAP settings found",
@@ -215,7 +211,7 @@ const EmailList = () => {
         }),
       });
       const data = await response.json();
-      console.log("data------", data);
+
       if (response.ok) {
         toast({
           description: "Emails fetched successfully",

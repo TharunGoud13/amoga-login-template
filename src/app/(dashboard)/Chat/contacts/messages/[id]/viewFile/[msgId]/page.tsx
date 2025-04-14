@@ -17,9 +17,7 @@ const Page = ({ params }: { params: { id: string; msgId: string } }) => {
           `${CHAT_MESSAGE_API}?id=eq.${msgId}`
         );
         setData(response.data);
-        console.log("data.....", response.data);
       } catch (error) {
-        console.error("Error fetching message data:", error);
         toast.error("Error fetching message data");
       }
     };

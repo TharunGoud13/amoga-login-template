@@ -44,7 +44,7 @@ const NewSettings = ({
             `${CREATE_IMAP_DETAILS_URL}?user_catalog_data_id=eq.${id}`
           );
           const data = response.data[0];
-          console.log("data----", data);
+
           if (isEdit || isView) {
             setSettingsData({
               user: data?.data_response?.user,

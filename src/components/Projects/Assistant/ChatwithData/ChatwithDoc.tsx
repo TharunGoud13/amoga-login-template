@@ -162,10 +162,6 @@ const ChatwithData = ({
   const [chartConfig, setChartConfig] = useState<Config | null>(null);
   const [activeQuery, setActiveQuery] = useState("");
 
-  console.log("results----", results);
-
-  console.log("projectData----", projectData);
-
   useEffect(() => {
     if (messages?.length === 0) {
       setMessages([
@@ -180,8 +176,6 @@ const ChatwithData = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  console.log("messages----", messages);
 
   useEffect(() => {
     const fetchUsers = async () => {

@@ -15,12 +15,10 @@ const Page = ({ params }: { params: { id: string; chatId: string } }) => {
       const response = await axiosInstance.get(
         `${SAVE_FORM_FIELDS}?form_id=eq.${id}`
       );
-      console.log("response.data----", response.data);
       setChatData(response.data[0]);
     };
     fetchChatData();
   }, [id]);
-  console.log("chatData----", chatData);
   return (
     <div className="min-h-[calc(90vh-200px)] overflow-hidden h-full max-w-[800px] mx-auto p-4 w-full">
       <ChatEditor field={chatData} chatId={chatId} />

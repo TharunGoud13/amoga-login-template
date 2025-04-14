@@ -49,7 +49,7 @@ const Settings = () => {
     const fetchSettings = async () => {
       setIsLoading(true);
       const response = await axiosInstance.get(CREATE_IMAP_DETAILS_URL);
-      console.log("response----", response);
+
       const data = response.data;
       const filteredData = data.filter(
         (item: any) => item.business_number == session?.user?.business_number
@@ -67,8 +67,6 @@ const Settings = () => {
     };
     fetchSettings();
   }, [session]);
-
-  console.log("data----", data);
 
   return (
     <div>
