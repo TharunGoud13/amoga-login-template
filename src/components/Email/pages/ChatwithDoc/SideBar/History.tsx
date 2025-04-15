@@ -10,6 +10,7 @@ import {
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
 import { useState } from "react";
+import Link from "next/link";
 
 interface Props {
   open: boolean;
@@ -119,9 +120,11 @@ const HistoryBar = ({
                         <Bookmark className="h-5 w-5 fill-primary text-primary" />
                       )}
 
-                      <p onClick={() => handleClick(prompt.id)}>
+                      <Link
+                        href={`/Email/chat_with_doc/${prompt.email_id}/${prompt.doc_id}/${prompt.id}`}
+                      >
                         {prompt.title}
-                      </p>
+                      </Link>
                     </div>
                     <Trash
                       className="h-5 w-5 text-muted-foreground"

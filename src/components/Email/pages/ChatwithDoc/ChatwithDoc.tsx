@@ -48,9 +48,11 @@ import { generateResponse } from "./actions";
 const ChatwithDoc = ({
   emailId,
   docId,
+  chatId,
 }: {
   emailId: string;
   docId?: string;
+  chatId?: string;
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioInputRef = useRef<HTMLInputElement>(null);
@@ -196,7 +198,9 @@ const ChatwithDoc = ({
     }
     const data = await response.json();
     const filteredData = data.filter(
-      (item: any) => item.user_id == userChatSession?.id
+      (item: any) =>
+        item.user_id == userChatSession?.id &&
+        item?.chat_group == "Chat with Doc"
     );
     setHistory(filteredData);
   };
@@ -205,7 +209,7 @@ const ChatwithDoc = ({
     if (userChatSession) {
       fetchHistory(userChatSession, setHistory);
     }
-  }, [userChatSession, openHistory]);
+  }, [userChatSession, openHistory, emailId, docId]);
 
   // fetch bookmarks from all data, to show bookmark icon in history
   useEffect(() => {
@@ -259,7 +263,7 @@ const ChatwithDoc = ({
 
       try {
         const response = await fetch(
-          "https://amogaagents.morr.biz/Message?favorite=eq.true",
+          "https://amogaagents.morr.biz/Message?favorite=eq.true&chat_group=eq.Chat with Doc",
           {
             method: "GET",
             headers: {
@@ -298,10 +302,10 @@ const ChatwithDoc = ({
   }, [openFavorites, userChatSession, refreshBookmarkState]);
 
   useEffect(() => {
-    if (docId) {
+    if (chatId) {
       const fetchMessages = async () => {
         const response = await fetch(
-          `https://amogaagents.morr.biz/Message?chatId=eq.${docId}`,
+          `https://amogaagents.morr.biz/Message?chatId=eq.${chatId}`,
           {
             method: "GET",
             headers: {
@@ -338,7 +342,7 @@ const ChatwithDoc = ({
       };
       fetchMessages();
     }
-  }, [docId]);
+  }, [chatId]);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -369,10 +373,34 @@ const ChatwithDoc = ({
   }, [messages]);
 
   useEffect(() => {
+    const checkExistingChat = async () => {
+      try {
+        const response = await fetch(
+          `https://amogaagents.morr.biz/Chat?email_id=eq.${emailId}&doc_id=eq.${docId}&user_id=eq.${userChatSession?.id}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+            },
+          }
+        );
+        const data = await response.json();
+        if (data.length > 0) {
+          router.push(`/Email/chat_with_doc/${emailId}/${docId}/${data[0].id}`);
+        }
+      } catch (error) {
+        console.error("Error checking existing chat:", error);
+      }
+    };
+    checkExistingChat();
+  }, [emailId, docId, router, userChatSession]);
+
+  useEffect(() => {
     const getChatData = async () => {
-      if (!docId) return;
+      if (!chatId) return;
       const response = await fetch(
-        `https://amogaagents.morr.biz/Chat?id=eq.${docId}`,
+        `https://amogaagents.morr.biz/Chat?id=eq.${chatId}`,
         {
           method: "GET",
           headers: {
@@ -385,7 +413,7 @@ const ChatwithDoc = ({
       setChatData(data);
     };
     getChatData();
-  }, [docId]);
+  }, [chatId]);
 
   const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
@@ -468,12 +496,12 @@ const ChatwithDoc = ({
     // Generate a UUID for the new chat
     const newChatUuid = uuidv4();
     // Use existing chatId or the new one
-    const currentChatId = docId || newChatUuid;
+    const currentChatId = chatId || newChatUuid;
 
     // Create a message ID for the user message
     const userMessageId = uuidv4();
 
-    if (!docId) {
+    if (!chatId) {
       // Create a new chat
       const chatResponse = await fetch("https://amogaagents.morr.biz/Chat", {
         method: "POST",
@@ -487,6 +515,10 @@ const ChatwithDoc = ({
           id: newChatUuid,
           title: `New Chat`,
           status: "active",
+          email_id: emailId,
+          doc_id: docId,
+          chat_id: chatId,
+          chat_group: "Chat with Doc",
         }),
       });
 
@@ -697,8 +729,10 @@ const ChatwithDoc = ({
       }
 
       // If this was a new chat, redirect to the chat page with the new chatId
-      if (!docId) {
-        router.push(`/Email/view/${emailId}`);
+      if (!chatId) {
+        router.push(
+          `/Email/chat_with_doc/${emailId}/${docId}/${currentChatId}`
+        );
       }
 
       setPrompt("");
@@ -819,6 +853,7 @@ const ChatwithDoc = ({
           },
           body: JSON.stringify({
             favorite: newFavoriteStatus,
+            chat_group: "Chat with Doc",
           }),
         }
       );
@@ -904,7 +939,7 @@ const ChatwithDoc = ({
       }
 
       const response = await fetch(
-        `https://amogaagents.morr.biz/Chat?id=eq.${docId}`,
+        `https://amogaagents.morr.biz/Chat?id=eq.${chatId}`,
         {
           method: "PATCH",
           headers: {

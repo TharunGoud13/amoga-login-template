@@ -45,7 +45,7 @@ const BookmarkBar = ({
   }, [favorites]);
 
   const handleClick = (chatId: string) => {
-    router.push(`/Agent/${chatId}`);
+    // router.push(`/Agent/${chatId}`);
     setOpen(false);
   };
 
