@@ -854,6 +854,8 @@ const ChatwithDoc = ({
           body: JSON.stringify({
             favorite: newFavoriteStatus,
             chat_group: "Chat with Doc",
+            email_id: emailId,
+            doc_id: docId,
           }),
         }
       );

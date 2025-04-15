@@ -10,6 +10,7 @@ import {
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 interface Props {
   open: boolean;
@@ -138,6 +139,8 @@ const BookmarkBar = ({
     item.content?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  console.log("filteredItems-------", filteredItems);
+
   return (
     <div>
       <Sheet open={open} onOpenChange={(open) => setOpen(open ? true : false)}>
@@ -187,12 +190,13 @@ const BookmarkBar = ({
                         }
                       />
                     </div>
-                    <p
+                    <Link
+                      href={`/Email/chat_with_doc/${item.email_id}/${item.doc_id}/${item.chatId}`}
                       className="mt-2 line-clamp-3 text-sm cursor-pointer"
                       onClick={() => handleClick(item.chatId)}
                     >
                       {item.content}
-                    </p>
+                    </Link>
                   </div>
                 ))}
               </div>
