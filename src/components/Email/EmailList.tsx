@@ -77,7 +77,8 @@ const EmailList = () => {
       const filterUserEmails = response.data?.filter(
         (email: any) =>
           email?.to_user_email.includes(session?.user?.email) ||
-          email?.created_user_id == session?.user?.id
+          (email?.created_user_id == session?.user?.id &&
+            email?.is_sync === true)
       );
       const filterEmails = filterUserEmails.filter(
         (email: any) => email?.template !== true
@@ -126,9 +127,17 @@ const EmailList = () => {
     const response = allEmails.filter((email: any) => {
       switch (item) {
         case "Inbox":
-          return email?.to_user_email.includes(session?.user?.email);
+          return (
+            email?.to_user_email.includes(session?.user?.email) ||
+            (email?.created_user_id == session?.user?.id &&
+              email?.is_sync === true)
+          );
         case "Sent":
-          return email?.from_user_email.includes(session?.user?.email);
+          return (
+            email?.from_user_email.includes(session?.user?.email) ||
+            (email?.created_user_id == session?.user?.id &&
+              email?.is_sync !== true)
+          );
         case "Important":
           return (
             email?.to_user_email.includes(session?.user?.email) &&
@@ -168,7 +177,11 @@ const EmailList = () => {
           return true;
       }
     });
-    setEmails(response);
+    const sortedEmails = response.sort(
+      (a: any, b: any) =>
+        new Date(b.created_date).getTime() - new Date(a.created_date).getTime()
+    );
+    setEmails(sortedEmails);
   };
 
   const handleEmailClick = async (email: any) => {

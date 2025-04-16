@@ -303,6 +303,7 @@ export async function POST(req: NextRequest) {
           created_date: email.created_date,
           business_name: session?.user?.business_name || "",
           email_message: email.body, // Duplicate body to email_message field
+          is_sync: true,
         }));
 
         console.log("Saving emails to database:", preparedEmails.length);
