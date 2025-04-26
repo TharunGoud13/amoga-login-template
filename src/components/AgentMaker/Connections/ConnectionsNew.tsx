@@ -29,6 +29,9 @@ import {
   Lock,
   Server,
   Trash2,
+  Globe2,
+  Database,
+  FileText,
 } from "lucide-react";
 import Link from "next/link";
 import { Loader } from "lucide-react";
@@ -36,6 +39,15 @@ import { useToast } from "@/components/ui/use-toast";
 import { ADD_CONNECTIONS, NEXT_PUBLIC_API_KEY } from "@/constants/envConfig";
 import { Session } from "../../doc-template/DocTemplate";
 import axiosInstance from "@/utils/axiosInstance";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type Connection = {
   id: string;
@@ -63,6 +75,8 @@ const ConnectionsNew = () => {
   const session: Session | null = sessionData
     ? (sessionData as unknown as Session)
     : null;
+
+  console.log("data---", data);
 
   const [newConnection, setNewConnection] = useState<Partial<Connection>>({
     status: "inactive",
@@ -111,6 +125,7 @@ const ConnectionsNew = () => {
 
   useEffect(() => {
     fetchConnections();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleInputChange = (
@@ -270,163 +285,58 @@ const ConnectionsNew = () => {
             className="pl-10 text-md"
           />
         </div>
-        <Link href="/AgentMaker/connections/new">
-          <Button
-            size={"icon"}
-            onClick={() => {
-              setIsEditing(false);
-              setNewConnection({
-                status: "inactive",
-                created_date: new Date().toISOString().split("T")[0],
-                test_status: "pending",
-                api_method: "GET",
-                test_data: '{\n  "key": "value"\n}',
-              });
-            }}
-          >
-            <Plus className="h-5 w-5" />
-          </Button>
-        </Link>
-
-        {/* <DialogContent className="w-full max-w-[800px]">
-            <Card className="border-none">
-              <CardHeader>
-                <CardTitle>
-                  {isEditing ? "Edit Connection" : "Add New Connection"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="connection_name">Connection Name</Label>
-                      <Input
-                        id="connection_name"
-                        name="connection_name"
-                        value={newConnection.connection_name || ""}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="connection_type">Connection Type</Label>
-                      <Select
-                        value={newConnection.connection_type || ""}
-                        onValueChange={(value) =>
-                          handleSelectChange("connection_type", value)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="API">API</SelectItem>
-                          <SelectItem value="Database">Database</SelectItem>
-                          <SelectItem value="OAuth">OAuth</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="api_method">API Method</Label>
-                      <Select
-                        value={newConnection.api_method || "GET"}
-                        onValueChange={(value) =>
-                          handleSelectChange("api_method", value)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select method" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="GET">GET</SelectItem>
-                          <SelectItem value="POST">POST</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="status">Status</Label>
-                      <Select
-                        value={newConnection.status || "inactive"}
-                        onValueChange={(value) =>
-                          handleSelectChange("status", value)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="inactive">Inactive</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="col-span-2 space-y-2">
-                      <Label htmlFor="api_url">API URL</Label>
-                      <Input
-                        id="api_url"
-                        name="api_url"
-                        value={newConnection.api_url || ""}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="key">Key</Label>
-                      <Input
-                        id="key"
-                        name="key"
-                        value={newConnection.key || ""}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="secret">Secret</Label>
-                      <Input
-                        id="secret"
-                        name="secret"
-                        type="password"
-                        value={newConnection.secret || ""}
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </div>
-                    {newConnection.api_method === "POST" && (
-                      <div className="col-span-2 space-y-2">
-                        <Label htmlFor="test_data">Test Data (JSON)</Label>
-                        <Textarea
-                          id="test_data"
-                          name="test_data"
-                          value={newConnection.test_data || ""}
-                          onChange={handleInputChange}
-                          className="min-h-[100px] font-mono"
-                          placeholder="Enter JSON data for POST request"
-                          required
-                        />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <Button type="submit">
-                      {isEditing
-                        ? "Update Connection"
-                        : isLoading
-                        ? "Adding Connection..."
-                        : "Add Connection"}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => handleTestConnection(newConnection)}
-                    >
-                      Test Connection
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          </DialogContent>
-        </Dialog> */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size={"icon"}
+              onClick={() => {
+                setIsEditing(false);
+                setNewConnection({
+                  status: "inactive",
+                  created_date: new Date().toISOString().split("T")[0],
+                  test_status: "pending",
+                  api_method: "GET",
+                  test_data: '{\n  "key": "value"\n}',
+                });
+              }}
+            >
+              <Plus className="h-5 w-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>Add Connection</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem>
+                <Link
+                  href="/AgentMaker/connections/api"
+                  className="flex items-center"
+                >
+                  <Globe className="w-5 h-5 text-muted-foreground mr-2" />
+                  <span>Connect API</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link
+                  href="/AgentMaker/connections/database"
+                  className="flex items-center"
+                >
+                  <Database className="w-5 h-5 text-muted-foreground mr-2" />
+                  <span>Connect Database</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link
+                  href="/AgentMaker/connections/document"
+                  className="flex items-center"
+                >
+                  <FileText className="w-5 h-5 text-muted-foreground mr-2" />
+                  <span>Connect Document</span>
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {isLoading ? (
@@ -435,82 +345,80 @@ const ConnectionsNew = () => {
         </div>
       ) : (
         <div className="grid gap-4 w-full">
-          {filteredData.map((item) => (
-            <Card key={item.id} className="relative overflow-hidden">
-              <CardContent className="p-6">
-                <div className="flex flex-col gap-4">
-                  {/* Content Section */}
+          {filteredData.map((item: any) => {
+            const connectionJsonField = `${item.connection_group}_connection_json`;
+            console.log("connectionJsonField---", connectionJsonField);
+            const connectionData = item[connectionJsonField];
+            console.log("connectionData---", connectionData);
+            return (
+              <Card key={item.id} className="relative overflow-hidden">
+                <CardContent className="p-6">
                   <div className="flex flex-col gap-4">
-                    {/* Name and Type */}
-                    <h2 className="font-semibold text-xl">
-                      {item.connection_name}
-                    </h2>
+                    {/* Content Section */}
+                    <div className="flex flex-col gap-4">
+                      {/* Name and Type */}
+                      <h2 className="font-semibold text-xl">
+                        {connectionData?.connection_name}
+                      </h2>
 
-                    {/* Connection Type */}
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Globe className="h-5 w-5" />
-                      <span>Type: {item.connection_type}</span>
-                    </div>
+                      {/* API Method */}
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Server className="h-5 w-5" />
+                        <span>Status: {connectionData?.status}</span>
+                      </div>
 
-                    {/* API Method */}
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Server className="h-5 w-5" />
-                      <span>Method: {item.api_method}</span>
-                    </div>
+                      {/* API URL */}
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <LinkIcon className="h-5 w-5" />
+                        <span className="truncate">
+                          Connection Group: {item?.connection_group}
+                        </span>
+                      </div>
 
-                    {/* API URL */}
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <LinkIcon className="h-5 w-5" />
-                      <span className="truncate">URL: {item.api_url}</span>
-                    </div>
-
-                    {/* Key */}
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Key className="h-5 w-5" />
-                      <span>Key: {item.key}</span>
-                    </div>
-
-                    {/* Created Date */}
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar className="h-5 w-5" />
-                      <span>Created: {formatDate(item.created_date)}</span>
-                    </div>
-
-                    {/* Test Status and Actions */}
-                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-muted-foreground">
                         <Activity className="h-5 w-5" />
                         <span>Test Status: </span>
-                        <p>{item.test_status}</p>
+                        <p>{connectionData?.test_status}</p>
                       </div>
 
-                      {/* Actions */}
-                      <div className="flex items-center gap-3">
-                        <Link href={`/AgentMaker/connections/edit/${item.id}`}>
+                      {/* Created Date */}
+
+                      {/* Test Status and Actions */}
+                      <div className="flex items-center justify-between">
+                        {/* Actions */}
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Calendar className="h-5 w-5" />
+                          <span>Created: {formatDate(item?.created_date)}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Link
+                            href={`/AgentMaker/connections/edit/${item.id}/${item.connection_group}`}
+                          >
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleEdit(item)}
+                            >
+                              <Edit className="h-5 w-5 text-muted-foreground hover:text-foreground" />
+                            </Button>
+                          </Link>
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => handleEdit(item)}
+                            onClick={() =>
+                              handleDelete(item.id, fetchConnections)
+                            }
                           >
-                            <Edit className="h-5 w-5 text-muted-foreground hover:text-foreground" />
+                            <Trash2 className="h-5 w-5 text-muted-foreground hover:text-foreground" />
                           </Button>
-                        </Link>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() =>
-                            handleDelete(item.id, fetchConnections)
-                          }
-                        >
-                          <Trash2 className="h-5 w-5 text-muted-foreground hover:text-foreground" />
-                        </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

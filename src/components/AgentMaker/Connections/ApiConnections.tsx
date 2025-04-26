@@ -9,14 +9,20 @@ import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader } from "lucide-react";
+import { CirclePlay, Loader, Save } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { ADD_CONNECTIONS, NEXT_PUBLIC_API_KEY } from "@/constants/envConfig";
 import axiosInstance from "@/utils/axiosInstance";
+import Link from "next/link";
+import { useCustomSession } from "@/utils/session";
+import { useSession } from "next-auth/react";
+import { Badge } from "@/components/ui/badge";
+import { Session } from "../../doc-template/DocTemplate";
 
 type Connection = {
   id: string;
@@ -30,68 +36,49 @@ type Connection = {
   secret: string;
   test_status: "passed" | "failed" | "pending";
   test_data?: string;
+  connection_scope?: string;
 };
 
-const NewConnections = ({
-  isEditing = false,
-  connectionId = "",
-}: {
+interface ApiConnectionsProps {
   isEditing?: boolean;
   connectionId?: string;
-}) => {
+  initialData?: any;
+}
+
+const ApiConnections = ({
+  isEditing = false,
+  connectionId,
+  initialData,
+}: ApiConnectionsProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
+  const { data: sessionData } = useSession();
+  const session: Session | null = sessionData
+    ? (sessionData as unknown as Session)
+    : null;
 
-  const [connection, setConnection] = useState<Partial<Connection>>({
+  const [testStatus, setTestStatus] = useState(false);
+
+  console.log("testStatus---", testStatus);
+
+  const [connection, setConnection] = useState<Connection>({
     status: "inactive",
     created_date: new Date().toISOString().split("T")[0],
-    test_status: "pending",
+    connection_name: "",
     api_method: "GET",
+    api_url: "",
+    key: "",
+    secret: "",
+    test_status: "pending",
     test_data: '{\n  "key": "value"\n}',
+    ...initialData,
   });
 
   useEffect(() => {
-    if (isEditing && connectionId) {
-      fetchConnection(connectionId);
+    if (initialData) {
+      setConnection(initialData);
     }
-  }, [isEditing, connectionId]);
-
-  const fetchConnection = async (id: string) => {
-    setIsLoading(true);
-    try {
-      const myHeaders = new Headers();
-      myHeaders.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
-      const requestOptions = {
-        method: "GET",
-        headers: myHeaders,
-      };
-      const response = await fetch(
-        `${ADD_CONNECTIONS}?id=eq.${id}`,
-        requestOptions
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch connection");
-      }
-      const connections: Connection[] = await response.json();
-      if (connections.length > 0) {
-        setConnection(connections[0]);
-      } else {
-        toast({
-          description: "Connection not found",
-          variant: "destructive",
-        });
-        // router.push("/AgentMaker/connections");
-      }
-    } catch (error) {
-      console.error("Error fetching connection:", error);
-      toast({
-        description: "Failed to fetch connection details",
-        variant: "destructive",
-      });
-    }
-    setIsLoading(false);
-  };
+  }, [initialData]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -101,47 +88,6 @@ const NewConnections = ({
 
   const handleSelectChange = (name: string, value: string) => {
     setConnection({ ...connection, [name]: value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      const myHeaders = new Headers();
-      myHeaders.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
-      myHeaders.append("Content-Type", "application/json");
-
-      const { test_data, ...connectionData } = connection;
-
-      const url = isEditing
-        ? `${ADD_CONNECTIONS}?id=eq.${connection?.id}`
-        : ADD_CONNECTIONS;
-      const method = isEditing ? "PUT" : "POST";
-      const requestOptions = {
-        method: method,
-        headers: myHeaders,
-        body: JSON.stringify(connectionData),
-      };
-
-      const response = await fetch(url, requestOptions);
-      if (!response.ok) {
-        throw new Error("Failed to save connection");
-      }
-
-      toast({
-        description: `Connection ${
-          isEditing ? "updated" : "added"
-        } successfully`,
-        variant: "default",
-      });
-      setIsLoading(false);
-    } catch (error) {
-      setIsLoading(false);
-      toast({
-        description: `Failed to ${isEditing ? "edit" : "add"} connection`,
-        variant: "destructive",
-      });
-    }
   };
 
   const handleTestConnection = async () => {
@@ -175,6 +121,7 @@ const NewConnections = ({
         try {
           const parsedData = JSON.parse(connection.test_data);
           requestOptions.body = JSON.stringify(parsedData);
+          setTestStatus(true);
         } catch (e) {
           toast({
             description: "Invalid JSON data format",
@@ -185,6 +132,7 @@ const NewConnections = ({
       }
 
       const response = await fetch(connection.api_url, requestOptions);
+      console.log("response----", response);
 
       if (!response.ok) {
         setConnection({ ...connection, test_status: "failed" });
@@ -193,6 +141,7 @@ const NewConnections = ({
       }
 
       await response.json();
+      setTestStatus(true);
       setConnection({ ...connection, test_status: "passed" });
       toast({
         description: "Connection test passed successfully",
@@ -207,13 +156,75 @@ const NewConnections = ({
     }
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      const myHeaders = new Headers();
+      myHeaders.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
+      myHeaders.append("Content-Type", "application/json");
+
+      const { test_data, connection_scope, ...connectionData } = connection;
+
+      console.log("connectionData-----", connectionData);
+
+      const payload = {
+        api_connection_json: connection,
+        connection_scope: connection_scope,
+        created_date: new Date().toISOString(),
+        created_user_id: session?.user?.id,
+        created_user_name: session?.user?.name,
+        business_name: session?.user?.business_name,
+        business_number: session?.user?.business_number,
+        test_status: testStatus,
+        connection_group: "api",
+      };
+
+      const url = isEditing
+        ? `${ADD_CONNECTIONS}?id=eq.${connection?.id}`
+        : ADD_CONNECTIONS;
+      const method = isEditing ? "PATCH" : "POST";
+      const requestOptions = {
+        method: method,
+        headers: myHeaders,
+        body: JSON.stringify(payload),
+      };
+
+      const response = await fetch(url, requestOptions);
+      if (!response.ok) {
+        throw new Error("Failed to save connection");
+      }
+
+      toast({
+        description: `Connection ${
+          isEditing ? "updated" : "added"
+        } successfully`,
+        variant: "default",
+      });
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      toast({
+        description: `Failed to ${isEditing ? "edit" : "add"} connection`,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div>
       <Card>
         <CardHeader>
-          <CardTitle>
-            {isEditing ? "Edit Connection" : "Add New Connection"}
-          </CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle>
+              {isEditing ? "Edit Connection" : "Add New API Connection"}
+            </CardTitle>
+            <Link href="/AgentMaker">
+              <Button className="border-0" variant={"outline"}>
+                Back to Agent Maker
+              </Button>
+            </Link>
+          </div>
         </CardHeader>
         <CardContent>
           {isLoading && isEditing ? (
@@ -222,7 +233,7 @@ const NewConnections = ({
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2.5">
                 <div className="space-y-2">
                   <Label htmlFor="connection_name">Connection Name</Label>
                   <Input
@@ -233,7 +244,7 @@ const NewConnections = ({
                     required
                   />
                 </div>
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <Label htmlFor="connection_type">Connection Type</Label>
                   <Select
                     value={connection.connection_type || ""}
@@ -250,7 +261,7 @@ const NewConnections = ({
                       <SelectItem value="OAuth">OAuth</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </div> */}
                 <div className="space-y-2">
                   <Label htmlFor="api_method">API Method</Label>
                   <Select
@@ -330,35 +341,68 @@ const NewConnections = ({
                     />
                   </div>
                 )}
+                <div className="mt-5">
+                  <Label htmlFor="connection_scope">Connection Scope</Label>
+                  <Select
+                    value={connection.connection_scope}
+                    onValueChange={(value) => {
+                      setConnection({
+                        ...connection,
+                        connection_scope: value,
+                      });
+                    }}
+                  >
+                    <SelectTrigger id="connection_scope">
+                      <SelectValue placeholder="Select Connection Scope" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="All Agents">All Agents</SelectItem>
+                        <SelectItem value="Agents">Agents</SelectItem>
+                        <SelectItem value="Agent">Agent</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="flex justify-between items-center">
-                <div className="space-x-2">
-                  <Button type="submit" disabled={isLoading}>
-                    {isLoading ? (
-                      <>
-                        <Loader className="mr-2 h-4 w-4 animate-spin" />
-                        {isEditing ? "Updating..." : "Adding..."}
-                      </>
-                    ) : isEditing ? (
-                      "Update Connection"
-                    ) : (
-                      "Add Connection"
-                    )}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => router.push("/AgentMaker/connections")}
-                  >
-                    Cancel
-                  </Button>
-                </div>
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleTestConnection}
+                  disabled={
+                    isLoading ||
+                    !connection.api_url ||
+                    !connection.key ||
+                    !connection.secret
+                  }
                 >
+                  <CirclePlay className="h-5 w-5 mr-2 " />
                   Test Connection
+                </Button>
+                <div className="space-x-2"></div>
+
+                <Button
+                  type="submit"
+                  disabled={
+                    isLoading ||
+                    !connection.api_url ||
+                    !connection.key ||
+                    !connection.secret ||
+                    !connection.connection_name
+                  }
+                >
+                  <Save className="mr-2 h-5 w-5" />
+                  {isLoading ? (
+                    <>
+                      <Loader className="mr-2 h-4 w-4 animate-spin" />
+                      {isEditing ? "Updating..." : "Adding..."}
+                    </>
+                  ) : isEditing ? (
+                    "Update Connection"
+                  ) : (
+                    "Save"
+                  )}
                 </Button>
               </div>
             </form>
@@ -369,4 +413,4 @@ const NewConnections = ({
   );
 };
 
-export default NewConnections;
+export default ApiConnections;
