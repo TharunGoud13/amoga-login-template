@@ -30,7 +30,15 @@ import { ADD_CONNECTIONS, NEXT_PUBLIC_API_KEY } from "@/constants/envConfig";
 import axiosInstance from "@/utils/axiosInstance";
 import { useCustomSession } from "@/utils/session";
 import axios from "axios";
-import { Filter, Loader, Play, PlayCircle, Save, Table } from "lucide-react";
+import {
+  Database,
+  Filter,
+  Loader,
+  Play,
+  PlayCircle,
+  Save,
+  Table,
+} from "lucide-react";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
@@ -470,8 +478,8 @@ const DBConnections = ({
               <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogTrigger asChild>
                   <Button type="button" variant="outline" disabled={isLoading}>
-                    <Filter className="h-5 w-5 mr-2" />
-                    Set Scope
+                    <Database className="h-5 w-5 mr-2" />
+                    Set Table Scope
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -499,6 +507,10 @@ const DBConnections = ({
                 </DialogContent>
               </Dialog>
             </div>
+            <Button variant={"outline"} type="button" disabled>
+              <Filter className="h-5 w-5 mr-2" />
+              Set Field Scope
+            </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading ? (
                 <>
