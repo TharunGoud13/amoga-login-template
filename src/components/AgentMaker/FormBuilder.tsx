@@ -13,6 +13,7 @@ import { ConnectionTable } from "./connections";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import {
+  ADD_CONNECTIONS,
   NEXT_PUBLIC_API_KEY,
   SAVE_FORM_DATA,
   SAVE_FORM_FIELDS,
@@ -33,6 +34,7 @@ import { ScrollArea } from "../ui/scroll-area";
 import { ChatWithDB } from "./ChatWithData";
 import AgentsList from "./AgentsList";
 import ConnectionsNew from "./Connections/ConnectionsNew";
+import axiosInstance from "@/utils/axiosInstance";
 
 export interface Session {
   user: {
@@ -77,6 +79,9 @@ export default function AgentBuilder() {
   const [successMsg, setSuccessMsg] = React.useState("");
   const [redirectUrl, setRedirectUrl] = React.useState("");
   const [selectedUsers, setSelectedUsers] = React.useState<string[]>([]);
+  const [connectionJson, setConnectionJson] = React.useState("");
+
+  console.log("connectionJson----", Boolean(connectionJson));
 
   const currentPath = path.includes("edit");
   const currentId = path.split("/").at(-1);
@@ -289,6 +294,7 @@ export default function AgentBuilder() {
     }
 
     const formCode = `Agent_${Math.random().toString().slice(-4)}`;
+    const formUuid = uuidv4();
 
     const payload = {
       status: formStatus,
@@ -302,6 +308,8 @@ export default function AgentBuilder() {
       version_no: 1,
       form_group: "Agents",
       form_code: formCode,
+      form_uuid: formUuid,
+      agent_uuid: formUuid,
       data_api_url: apiEndpoint,
       content: contentData,
       form_success_url: redirectUrl,
@@ -356,8 +364,8 @@ export default function AgentBuilder() {
         variant: activeFormFields.map((field: any) => field.variant_code),
         description: activeFormFields.map((field: any) => field.description),
         users_json: selectedUsers,
-
-        // String values
+        form_uuid: formUuid,
+        agent_uuid: formUuid,
         upload_placeholder:
           activeFormFields.length > 0
             ? activeFormFields[0].placeholder_file_upload_url || ""
@@ -430,6 +438,28 @@ export default function AgentBuilder() {
       } else {
         setIsLoading(false);
         toast({ description: "Failed to save form", variant: "destructive" });
+      }
+
+      if (connectionJson) {
+        const response = await axiosInstance.post(ADD_CONNECTIONS, {
+          agents_connection_scope: JSON.parse(connectionJson),
+          agent_name: formInput,
+          agent_number: formCode,
+          created_date: formatDateToCustomFormat(date),
+          agent_uuid: formUuid,
+          created_user_id: session?.user?.id,
+          created_user_name: session?.user?.name,
+          business_number: session?.user?.business_number,
+          business_name: session?.user?.business_name,
+        });
+
+        if (response.data.error) {
+          toast({
+            description: "Failed to save connection",
+            variant: "destructive",
+          });
+        }
+        setConnectionJson("");
       }
 
       setFormFields([]);
@@ -864,6 +894,8 @@ export default function AgentBuilder() {
           setRedirectActionUrl={setRedirectUrl}
           formInput={formInput}
           setUsersSelected={setSelectedUsers}
+          setConnectionJson={setConnectionJson}
+          connectionJson={connectionJson}
         />
       </Tabs>
     </section>

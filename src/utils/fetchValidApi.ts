@@ -12,10 +12,11 @@ export const fetchValidApi = async () => {
     const response = await fetch(ADD_CONNECTIONS, requestOptions);
 
     const result = await response.json();
-    const validApis = result.filter(
-      (item: any) => item?.test_status === "passed"
-    );
-    return validApis;
+    // const validApis = result.filter(
+    //   (item: any) => item?.test_status === "passed"
+    // );
+    // return validApis;
+    return result;
   } catch (error) {
     return [];
   }

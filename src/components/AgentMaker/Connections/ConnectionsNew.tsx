@@ -76,8 +76,6 @@ const ConnectionsNew = () => {
     ? (sessionData as unknown as Session)
     : null;
 
-  console.log("data---", data);
-
   const [newConnection, setNewConnection] = useState<Partial<Connection>>({
     status: "inactive",
     created_date: new Date().toISOString().split("T")[0],
@@ -128,12 +126,6 @@ const ConnectionsNew = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setNewConnection({ ...newConnection, [e.target.name]: e.target.value });
-  };
-
   const handleEdit = (item: Connection) => {
     setIsDialogOpen(true);
     setIsEditing(true);
@@ -141,7 +133,6 @@ const ConnectionsNew = () => {
   };
 
   const handleDelete = async (id: string, fetchConnections: () => void) => {
-    console.log("id----", id);
     const response = await axiosInstance.delete(
       `${ADD_CONNECTIONS}?id=eq.${id}`
     );
@@ -150,116 +141,6 @@ const ConnectionsNew = () => {
       toast({
         description: "Connection deleted successfully",
         variant: "default",
-      });
-    }
-  };
-
-  const handleSelectChange = (name: string, value: string) => {
-    setNewConnection({ ...newConnection, [name]: value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      const myHeaders = new Headers();
-      myHeaders.append("Authorization", `Bearer ${NEXT_PUBLIC_API_KEY}`);
-      myHeaders.append("Content-Type", "application/json");
-
-      const { test_data, ...connectionData } = newConnection;
-
-      const url = isEditing
-        ? `${ADD_CONNECTIONS}?id=eq.${newConnection?.id}`
-        : ADD_CONNECTIONS;
-      const method = isEditing ? "PUT" : "POST";
-      const requestOptions = {
-        method: method,
-        headers: myHeaders,
-        body: JSON.stringify(connectionData),
-      };
-
-      const response = await fetch(url, requestOptions);
-      if (!response.ok) {
-        throw new Error("Failed to save connection");
-      }
-
-      toast({
-        description: `Connection ${
-          isEditing ? "updated" : "added"
-        } successfully`,
-        variant: "default",
-      });
-      setIsLoading(false);
-      setIsDialogOpen(false);
-      fetchConnections();
-    } catch (error) {
-      setIsLoading(false);
-      toast({
-        description: `Failed to ${isEditing ? "edit" : "add"} connection`,
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleTestConnection = async (connection: Partial<Connection>) => {
-    if (!connection.key || !connection.secret || !connection.api_url) {
-      toast({
-        description: "API URL, Key and Secret are required",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const headers = new Headers();
-      headers.append("Content-Type", "application/json");
-      headers.append(connection.key, connection.secret);
-
-      let requestOptions: RequestInit = {
-        method: connection.api_method,
-        headers: headers,
-      };
-
-      if (connection.api_method === "POST") {
-        if (!connection.test_data) {
-          toast({
-            description: "Test data is required for POST requests",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        try {
-          const parsedData = JSON.parse(connection.test_data);
-          requestOptions.body = JSON.stringify(parsedData);
-        } catch (e) {
-          toast({
-            description: "Invalid JSON data format",
-            variant: "destructive",
-          });
-          return;
-        }
-      }
-
-      const response = await fetch(connection.api_url, requestOptions);
-
-      if (!response.ok) {
-        setNewConnection({ ...connection, test_status: "failed" });
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Connection test failed");
-      }
-
-      await response.json();
-      setNewConnection({ ...connection, test_status: "passed" });
-      toast({
-        description: "Connection test successful",
-        variant: "default",
-      });
-    } catch (error: any) {
-      setNewConnection({ ...connection, test_status: "failed" });
-      toast({
-        description: error.message || "Connection test failed",
-        variant: "destructive",
       });
     }
   };
@@ -347,9 +228,7 @@ const ConnectionsNew = () => {
         <div className="grid gap-4 w-full">
           {filteredData.map((item: any) => {
             const connectionJsonField = `${item.connection_group}_connection_json`;
-            console.log("connectionJsonField---", connectionJsonField);
             const connectionData = item[connectionJsonField];
-            console.log("connectionData---", connectionData);
             return (
               <Card key={item.id} className="relative overflow-hidden">
                 <CardContent className="p-6">

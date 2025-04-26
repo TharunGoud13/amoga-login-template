@@ -59,8 +59,6 @@ const ApiConnections = ({
 
   const [testStatus, setTestStatus] = useState(false);
 
-  console.log("testStatus---", testStatus);
-
   const [connection, setConnection] = useState<Connection>({
     status: "inactive",
     created_date: new Date().toISOString().split("T")[0],
@@ -132,7 +130,6 @@ const ApiConnections = ({
       }
 
       const response = await fetch(connection.api_url, requestOptions);
-      console.log("response----", response);
 
       if (!response.ok) {
         setConnection({ ...connection, test_status: "failed" });
@@ -165,8 +162,6 @@ const ApiConnections = ({
       myHeaders.append("Content-Type", "application/json");
 
       const { test_data, connection_scope, ...connectionData } = connection;
-
-      console.log("connectionData-----", connectionData);
 
       const payload = {
         api_connection_json: connection,

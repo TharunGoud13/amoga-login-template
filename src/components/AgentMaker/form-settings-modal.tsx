@@ -38,6 +38,8 @@ interface FormSettingsModalProps {
   setRedirectActionUrl: (value: string) => void;
   formInput: string;
   setUsersSelected: (value: string[]) => void;
+  connectionJson: string;
+  setConnectionJson: (value: string) => void;
 }
 
 export function FormSettingsModal({
@@ -52,6 +54,8 @@ export function FormSettingsModal({
   setRedirectActionUrl,
   formInput,
   setUsersSelected,
+  connectionJson,
+  setConnectionJson,
 }: FormSettingsModalProps) {
   const [apiUrl, setApiUrl] = useState("");
   const [contentText, setContent] = useState("");
@@ -63,8 +67,6 @@ export function FormSettingsModal({
   const [localFormInput, setLocalFormInput] = useState(formInput || ""); // Local state for form input
   const [users, setUsers] = useState([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
-
-  console.log("editModeData----", editModeData);
 
   const {
     content,
@@ -173,10 +175,7 @@ export function FormSettingsModal({
       return;
     }
 
-    const result = await fetchValidApi();
-    const validApi = result.filter((item: any) => item.api_url === apiUrl);
-
-    if (validApi.length > 0) {
+    if (apiUrl.length > 0) {
       setApiEndpoint(apiUrl);
       toast({
         description: "API endpoint saved successfully",
@@ -340,8 +339,18 @@ export function FormSettingsModal({
                   id="apiEndpoint"
                   placeholder="Add API Endpoint"
                 />
+                <Label htmlFor="connectionJson">Connection JSON</Label>
+                <Textarea
+                  id="connectionJson"
+                  placeholder="Enter
+                  connection JSON"
+                  className="min-h-[150px]"
+                  value={connectionJson}
+                  onChange={(e) => setConnectionJson(e.target.value)}
+                />
               </div>
             </div>
+            {/* <ConnectionsNew /> */}
           </TabsContent>
           <TabsContent value="action">
             <div className="space-y-4">
