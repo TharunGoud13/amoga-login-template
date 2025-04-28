@@ -79,9 +79,10 @@ export default function AgentBuilder() {
   const [successMsg, setSuccessMsg] = React.useState("");
   const [redirectUrl, setRedirectUrl] = React.useState("");
   const [selectedUsers, setSelectedUsers] = React.useState<string[]>([]);
-  const [connectionJson, setConnectionJson] = React.useState("");
-
-  console.log("connectionJson----", Boolean(connectionJson));
+  const [apiConnectionJson, setApiConnectionJson] = React.useState("");
+  const [dbConnectionJson, setDbConnectionJson] = React.useState("");
+  const [documentConnectionJson, setDocumentConnectionJson] =
+    React.useState("");
 
   const currentPath = path.includes("edit");
   const currentId = path.split("/").at(-1);
@@ -317,6 +318,10 @@ export default function AgentBuilder() {
       share_url: uuidv4(),
       users_json: selectedUsers,
       custom_one: nameFields,
+      api_connection_json: apiConnectionJson && JSON.parse(apiConnectionJson),
+      db_connection_json: dbConnectionJson && JSON.parse(dbConnectionJson),
+      doc_connection_json:
+        documentConnectionJson && JSON.parse(documentConnectionJson),
     };
 
     try {
@@ -440,33 +445,38 @@ export default function AgentBuilder() {
         toast({ description: "Failed to save form", variant: "destructive" });
       }
 
-      if (connectionJson) {
-        const response = await axiosInstance.post(ADD_CONNECTIONS, {
-          agents_connection_scope: JSON.parse(connectionJson),
-          agent_name: formInput,
-          agent_number: formCode,
-          created_date: formatDateToCustomFormat(date),
-          agent_uuid: formUuid,
-          created_user_id: session?.user?.id,
-          created_user_name: session?.user?.name,
-          business_number: session?.user?.business_number,
-          business_name: session?.user?.business_name,
-        });
+      // if (connectionJson) {
+      //   const response = await axiosInstance.post(ADD_CONNECTIONS, {
+      //     agents_connection_scope: JSON.parse(connectionJson),
+      //     agent_name: formInput,
+      //     agent_number: formCode,
+      //     created_date: formatDateToCustomFormat(date),
+      //     agent_uuid: formUuid,
+      //     created_user_id: session?.user?.id,
+      //     created_user_name: session?.user?.name,
+      //     business_number: session?.user?.business_number,
+      //     business_name: session?.user?.business_name,
+      //   });
 
-        if (response.data.error) {
-          toast({
-            description: "Failed to save connection",
-            variant: "destructive",
-          });
-        }
-        setConnectionJson("");
-      }
+      //   if (response.data.error) {
+      //     toast({
+      //       description: "Failed to save connection",
+      //       variant: "destructive",
+      //     });
+      //   }
+      //   setConnectionJson("");
+      // }
 
       setFormFields([]);
       setFormInput("");
+      setApiConnectionJson("");
+      setDbConnectionJson("");
+      setDocumentConnectionJson("");
     } catch (error) {
       setIsLoading(false);
       toast({ description: "Failed to save form", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -894,8 +904,12 @@ export default function AgentBuilder() {
           setRedirectActionUrl={setRedirectUrl}
           formInput={formInput}
           setUsersSelected={setSelectedUsers}
-          setConnectionJson={setConnectionJson}
-          connectionJson={connectionJson}
+          apiConnectionJson={apiConnectionJson}
+          setApiConnectionJson={setApiConnectionJson}
+          dbConnectionJson={dbConnectionJson}
+          setDbConnectionJson={setDbConnectionJson}
+          documentConnectionJson={documentConnectionJson}
+          setDocumentConnectionJson={setDocumentConnectionJson}
         />
       </Tabs>
     </section>

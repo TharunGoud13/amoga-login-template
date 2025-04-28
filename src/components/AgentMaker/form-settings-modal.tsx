@@ -38,8 +38,12 @@ interface FormSettingsModalProps {
   setRedirectActionUrl: (value: string) => void;
   formInput: string;
   setUsersSelected: (value: string[]) => void;
-  connectionJson: string;
-  setConnectionJson: (value: string) => void;
+  apiConnectionJson: string;
+  setApiConnectionJson: (value: string) => void;
+  dbConnectionJson: string;
+  setDbConnectionJson: (value: string) => void;
+  documentConnectionJson: string;
+  setDocumentConnectionJson: (value: string) => void;
 }
 
 export function FormSettingsModal({
@@ -54,8 +58,12 @@ export function FormSettingsModal({
   setRedirectActionUrl,
   formInput,
   setUsersSelected,
-  connectionJson,
-  setConnectionJson,
+  apiConnectionJson,
+  setApiConnectionJson,
+  dbConnectionJson,
+  setDbConnectionJson,
+  documentConnectionJson,
+  setDocumentConnectionJson,
 }: FormSettingsModalProps) {
   const [apiUrl, setApiUrl] = useState("");
   const [contentText, setContent] = useState("");
@@ -244,7 +252,7 @@ export function FormSettingsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-full max-w-[800px]">
+      <DialogContent className="w-full max-h-[500px] overflow-y-scroll max-w-[800px]">
         <DialogHeader>
           <DialogTitle className="flex justify-between items-center">
             Agent Settings
@@ -339,14 +347,36 @@ export function FormSettingsModal({
                   id="apiEndpoint"
                   placeholder="Add API Endpoint"
                 />
-                <Label htmlFor="connectionJson">Connection JSON</Label>
+                <Label htmlFor="apiConnectionJson">API Connection JSON</Label>
                 <Textarea
-                  id="connectionJson"
+                  id="apiConnectionJson"
                   placeholder="Enter
-                  connection JSON"
+                  API Connection JSON"
                   className="min-h-[150px]"
-                  value={connectionJson}
-                  onChange={(e) => setConnectionJson(e.target.value)}
+                  value={apiConnectionJson}
+                  onChange={(e) => setApiConnectionJson(e.target.value)}
+                />
+                <Label htmlFor="dbConnectionJson">
+                  Database Connection JSON
+                </Label>
+                <Textarea
+                  id="dbConnectionJson"
+                  placeholder="Enter
+                  Database Connection JSON"
+                  className="min-h-[150px]"
+                  value={dbConnectionJson}
+                  onChange={(e) => setDbConnectionJson(e.target.value)}
+                />
+                <Label htmlFor="documentConnectionJson">
+                  Document Connection JSON
+                </Label>
+                <Textarea
+                  id="documentConnectionJson"
+                  placeholder="Enter
+                  Document Connection JSON"
+                  className="min-h-[150px]"
+                  value={documentConnectionJson}
+                  onChange={(e) => setDocumentConnectionJson(e.target.value)}
                 />
               </div>
             </div>
