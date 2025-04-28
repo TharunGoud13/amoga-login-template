@@ -102,7 +102,7 @@ const AgentsList = () => {
             className="pl-10 text-md"
           />
         </div>
-        <Link href="/AgentMaker">
+        <Link href="/AgentMaker/newAgent">
           <Button size={"icon"}>
             <Plus className="h-5 w-5" />
           </Button>

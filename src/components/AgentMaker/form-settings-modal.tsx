@@ -5,6 +5,8 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -13,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { fetchValidApi } from "@/utils/fetchValidApi";
-import { toast } from "../ui/use-toast";
+import { toast, useToast } from "../ui/use-toast";
 import {
   MultiSelector,
   MultiSelectorContent,
@@ -24,6 +26,7 @@ import {
 } from "../ui/multi-select";
 import axiosInstance from "@/utils/axiosInstance";
 import { GET_CONTACTS_API } from "@/constants/envConfig";
+import { Copy } from "lucide-react";
 
 interface FormSettingsModalProps {
   isOpen: boolean;
@@ -44,6 +47,7 @@ interface FormSettingsModalProps {
   setDbConnectionJson: (value: string) => void;
   documentConnectionJson: string;
   setDocumentConnectionJson: (value: string) => void;
+  shareUrl: string;
 }
 
 export function FormSettingsModal({
@@ -64,7 +68,9 @@ export function FormSettingsModal({
   setDbConnectionJson,
   documentConnectionJson,
   setDocumentConnectionJson,
+  shareUrl,
 }: FormSettingsModalProps) {
+  const { toast } = useToast();
   const [apiUrl, setApiUrl] = useState("");
   const [contentText, setContent] = useState("");
   const [formDescription, setFormDescription] = useState("");
@@ -300,6 +306,18 @@ export function FormSettingsModal({
                   onCheckedChange={setFormActive}
                 />
                 <Label htmlFor="formActive">Agent Active</Label>
+              </div>
+              <div className="">
+                <Label htmlFor="url" className="text-right">
+                  URL
+                </Label>
+                <Input id="url" placeholder="Url" value={shareUrl} />
+              </div>
+              <div className="">
+                <Label htmlFor="shortUrl" className="text-right">
+                  Short URL
+                </Label>
+                <Input id="shortUrl" value={shareUrl} placeholder="Short Url" />
               </div>
             </div>
           </TabsContent>
