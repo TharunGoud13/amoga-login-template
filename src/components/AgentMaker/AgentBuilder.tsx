@@ -78,12 +78,8 @@ export default function AgentBuilder() {
   const [shareUrl, setShareUrl] = useState("");
   const [editFormInput, setEditFormInput] = useState("");
 
-  console.log("editModeData----", editModeData);
-
   const currentPath = path.includes("edit");
   const currentId = path.split("/").at(-1);
-
-  console.log("currentPath----", currentPath);
 
   const filteredComponents = React.useMemo(
     () =>
