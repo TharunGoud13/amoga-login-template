@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 
 import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
+import Charts from "@/components/dashboard/Charts";
 
 const defaultColors = ["#FF6B6B", "#16a34a", "#14532d", "#fde047", "#60a5fa"];
 
@@ -138,13 +139,26 @@ export default function Dashboard() {
         </Card>
       ),
     },
+    {
+      id: "charts",
+      component: (
+        <Card className="group relative">
+          <CardHeader>
+            <CardTitle>Charts</CardTitle>
+          </CardHeader>
+          <CardContent className="pl-2">
+            <Charts />
+          </CardContent>
+        </Card>
+      ),
+    },
   ]);
 
   const handleThemeChange = (newColors: string[]) => {
     setActiveColors(newColors);
     // Update the Overview component with new colors
-    const newSections = dashboardSections.map(section => {
-      if (section.id === 'overview') {
+    const newSections = dashboardSections.map((section) => {
+      if (section.id === "overview") {
         return {
           ...section,
           component: (
@@ -156,7 +170,7 @@ export default function Dashboard() {
                 <Overview colors={newColors} />
               </CardContent>
             </Card>
-          )
+          ),
         };
       }
       return section;
@@ -166,7 +180,7 @@ export default function Dashboard() {
 
   const handleCardDragEnd = (result: any) => {
     if (!result.destination) return;
-    
+
     const { source, destination } = result;
     const newCards = Array.from(statCards);
     const [removed] = newCards.splice(source.index, 1);
@@ -199,20 +213,19 @@ export default function Dashboard() {
               </TabsList>
             </div>
             <div className="flex items-center gap-4 flex-wrap">
-              
               <ChartTheme onThemeChange={handleThemeChange} />
             </div>
           </div>
           <div className="flex items-center space-x-2">
-                <Switch
-                  id="edit-mode"
-                  checked={isEditMode}
-                  onCheckedChange={setIsEditMode}
-                />
-                <Label htmlFor="edit-mode" className="text-sm font-medium">
-                  Enable Editing
-                </Label>
-              </div> 
+            <Switch
+              id="edit-mode"
+              checked={isEditMode}
+              onCheckedChange={setIsEditMode}
+            />
+            <Label htmlFor="edit-mode" className="text-sm font-medium">
+              Enable Editing
+            </Label>
+          </div>
           <TabsContent value="overview" className="space-y-4">
             <DragDropContext onDragEnd={handleCardDragEnd}>
               <Droppable
@@ -281,14 +294,14 @@ export default function Dashboard() {
             </DragDropContext>
           </TabsContent>
         </Tabs>
-        
+
         <DragDropContext onDragEnd={handleSectionDragEnd}>
           <Droppable droppableId="sections" direction="horizontal">
             {(provided) => (
               <div
                 ref={provided.innerRef}
                 {...provided.droppableProps}
-                className="flex flex-col lg:flex-row gap-4"
+                className="grid grid-cols-1 lg:flex-row gap-4"
               >
                 {dashboardSections.map((section, index) => (
                   <Draggable
