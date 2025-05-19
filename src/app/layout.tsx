@@ -13,6 +13,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { EmailAgentProvider } from "@/contexts/EmailAgentContext";
+import BackButtonHandler from "@/components/BackButtonHandler";
 const poppins = Poppins({
   subsets: ["latin"],
   display: "swap",
@@ -44,6 +45,7 @@ export default async function RootLayout({
             <MetricDataProvider>
               <MetricProvider>
                 <ServiceWorkerRegistration />
+                <BackButtonHandler />
                 <EmailAgentProvider>{children}</EmailAgentProvider>
                 <SpeedInsights />
                 <Analytics />
