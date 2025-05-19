@@ -13,6 +13,7 @@ const ContactFetcher = () => {
           console.error("Permission denied");
           return;
         }
+        console.log("permission---------", permission);
 
         const { contacts } = await Contacts.getContacts({
           projection: { name: true, phones: true, image: true },
@@ -27,7 +28,7 @@ const ContactFetcher = () => {
     fetchContacts();
   }, []);
 
-  return <p>Fetching contacts... (check device console)</p>;
+  return <p>Fetching contacts... </p>;
 };
 
 export default ContactFetcher;
