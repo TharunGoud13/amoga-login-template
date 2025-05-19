@@ -1,6 +1,4 @@
-// components/SimInfo.tsx
 "use client";
-
 import { useEffect, useState } from "react";
 
 declare global {
@@ -14,43 +12,27 @@ const SimInfo = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const getSimInfo = async () => {
-      if (typeof window === "undefined" || !window.plugins?.sim) {
-        setError("SIM plugin not available");
-        return;
-      }
-      console.log("window----plugin------", window.plugins);
-
+    const getSimInfo = () => {
       try {
-        const permission = await (
-          window as any
-        ).cordova.plugins.diagnostic.requestRuntimePermission(
-          (status: any) => {
-            console.log("status----------", status);
-            if (status === "GRANTED") {
-              console.log("sim----info-------", window.plugins.sim);
-              window.plugins.sim.getSimInfo(
-                (info: any) => {
-                  setNumber(info.phoneNumber || "Number not available");
-                },
-                (err: any) => {
-                  setError("Failed to fetch SIM info");
-                  console.error(err);
-                }
-              );
-            } else {
-              setError("Permission denied");
-            }
+        if (!window.plugins?.sim) {
+          console.log("SIM plugin not found.");
+          setError("SIM plugin not available");
+          return;
+        }
+
+        window.plugins.sim.getSimInfo(
+          (info: any) => {
+            console.log("SIM Info:", info);
+            setNumber(info.phoneNumber || "Number not available");
           },
           (err: any) => {
-            console.error("Permission error", err);
-            setError("Permission request failed");
-          },
-          "android.permission.READ_PHONE_NUMBERS"
+            console.error("Error getting SIM info:", err);
+            setError("Failed to fetch SIM info");
+          }
         );
-      } catch (e) {
-        console.error("Error in SIM plugin", e);
-        setError("Unexpected error");
+      } catch (e: any) {
+        console.error("Unexpected error caught:", e);
+        setError(e.message || "Unexpected error");
       }
     };
 
@@ -59,7 +41,7 @@ const SimInfo = () => {
 
   return (
     <div>
-      <h3>SIM Info</h3>
+      <h3>SIM Info---------</h3>
       {number ? <p>Mobile Number: {number}</p> : <p>Loading...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
