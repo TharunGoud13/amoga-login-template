@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">amogademoapp</string>
+    <string name="title_activity_main">amogademoapp</string>
+    <string name="package_name">com.template.amoga</string>
+    <string name="custom_url_scheme">com.template.amoga</string>
+</resources>
