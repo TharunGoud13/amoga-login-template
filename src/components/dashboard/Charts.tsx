@@ -6,7 +6,7 @@ import {
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
-} from "../ui/chart";
+} from "@/components/ui/chart";
 import {
   Area,
   AreaChart,
@@ -32,18 +32,49 @@ const chartData = [
   { month: "June", desktop: 214, mobile: 140 },
 ];
 
-const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "green",
-  },
-  mobile: {
-    label: "Mobile",
-    color: "orange",
-  },
-} satisfies ChartConfig;
+const Charts = ({ colors }: { colors: string[] }) => {
+  const chartConfig = {
+    desktop: {
+      label: "desktop",
+      color: colors[0],
+    },
+    mobile: {
+      label: "mobile",
+      color: colors[1],
+    },
+  } satisfies ChartConfig;
 
-const Charts = () => {
+  const pieChartConfig = {
+    January: {
+      label: "January",
+      color: colors[0],
+    },
+    February: {
+      label: "February",
+      color: colors[1],
+    },
+    March: {
+      label: "March",
+      color: colors[2],
+    },
+    April: {
+      label: "April",
+      color: colors[3],
+    },
+    May: {
+      label: "May",
+      color: colors[4],
+    },
+    June: {
+      label: "June",
+      color: colors[2],
+    },
+  };
+
+  console.log("color.....", colors);
+
+  console.log("color-------", chartConfig.desktop.color);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <div className="max-w-[500px]">
@@ -121,7 +152,8 @@ const Charts = () => {
               dataKey="desktop"
               radius={4}
               dot={false}
-              fill={chartConfig.desktop.color}
+              stroke={chartConfig.desktop.color}
+              strokeWidth={2}
             />
           </LineChart>
         </ChartContainer>
@@ -138,7 +170,8 @@ const Charts = () => {
               type={"natural"}
               dataKey="desktop"
               radius={4}
-              fill={chartConfig.desktop.color}
+              stroke={chartConfig.desktop.color}
+              strokeWidth={2}
             />
           </LineChart>
         </ChartContainer>
@@ -146,7 +179,7 @@ const Charts = () => {
 
       <div className="max-w-[500px]">
         <h1>Donut Chart</h1>
-        <ChartContainer config={chartConfig}>
+        <ChartContainer config={pieChartConfig}>
           <PieChart>
             <ChartTooltip content={<ChartTooltipContent />} />
             <Pie
@@ -160,7 +193,7 @@ const Charts = () => {
                   return (
                     <text>
                       <tspan className="fill-foreground text-3xl font-bold">
-                        {"value"}
+                        {value}
                       </tspan>
                     </text>
                   );
@@ -181,7 +214,7 @@ const Charts = () => {
                   return (
                     <text>
                       <tspan className="fill-foreground text-3xl font-bold">
-                        {"value"}
+                        {value}
                       </tspan>
                     </text>
                   );

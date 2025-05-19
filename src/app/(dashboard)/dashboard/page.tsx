@@ -147,7 +147,7 @@ export default function Dashboard() {
             <CardTitle>Charts</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
-            <Charts />
+            <Charts colors={activeColors} />
           </CardContent>
         </Card>
       ),
@@ -159,6 +159,21 @@ export default function Dashboard() {
     // Update the Overview component with new colors
     const newSections = dashboardSections.map((section) => {
       if (section.id === "overview") {
+        return {
+          ...section,
+          component: (
+            <Card className="group relative">
+              <CardHeader>
+                <CardTitle>Overview</CardTitle>
+              </CardHeader>
+              <CardContent className="pl-2">
+                <Overview colors={newColors} />
+              </CardContent>
+            </Card>
+          ),
+        };
+      }
+      if (section.id === "charts") {
         return {
           ...section,
           component: (
