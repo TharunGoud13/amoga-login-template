@@ -192,7 +192,7 @@ const ChatMessages = ({
             {
               title: "New message received",
               body: "normalizedMessages",
-              id: Date.now(),
+              id: Math.floor(Date.now() % 100000),
               schedule: { at: new Date(Date.now() + 500) },
             },
           ],
