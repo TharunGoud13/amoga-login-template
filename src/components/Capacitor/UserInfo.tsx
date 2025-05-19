@@ -28,6 +28,7 @@ const SimInfo = () => {
           (status: any) => {
             console.log("status----------", status);
             if (status === "GRANTED") {
+              console.log("sim----info-------", window.plugins.sim);
               window.plugins.sim.getSimInfo(
                 (info: any) => {
                   setNumber(info.phoneNumber || "Number not available");
