@@ -7,6 +7,19 @@ const config = {
     url: "https://amoga-login-template.vercel.app",
     cleartext: true,
   },
+  plugins: {
+    CapacitorCookies: {
+      enabled: true,
+    },
+    CapacitorHttp: {
+      enabled: true,
+    },
+  },
+  android: {
+    allowMixedContent: true,
+    captureInput: true,
+    webContentsDebuggingEnabled: true,
+  },
 };
 
 export default config;
