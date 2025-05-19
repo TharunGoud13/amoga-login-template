@@ -14,7 +14,6 @@ const BackButtonHandler = () => {
     CapApp.addListener("backButton", () => {
       const currentPath = window.location.pathname;
       const canGoBack = window.history.length > 1;
-      console.log("history--------", window.history);
 
       console.log("Back button pressed on:", currentPath);
 
