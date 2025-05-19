@@ -22,7 +22,6 @@ const Home = async () => {
       </div>
       <div>
         <UserInfo />
-        <ContactFetcher />
       </div>
     </div>
   );

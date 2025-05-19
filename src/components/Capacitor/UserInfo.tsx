@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ContactFetcher from "./ContactsFetcher";
 
 declare global {
   interface Window {
@@ -205,6 +206,7 @@ const SimInfo = () => {
       ) : (
         <p>Loading location...</p>
       )}
+      <ContactFetcher />
     </div>
   );
 };

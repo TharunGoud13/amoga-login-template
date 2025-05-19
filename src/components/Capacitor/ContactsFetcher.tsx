@@ -1,4 +1,3 @@
-// components/ContactFetcher.tsx
 "use client";
 
 import { useEffect } from "react";
@@ -6,33 +5,43 @@ import { Contacts } from "@capacitor-community/contacts";
 
 const ContactFetcher = () => {
   useEffect(() => {
-    console.log("contact---------------------");
     const fetchContacts = async () => {
       try {
         const permission = await Contacts.requestPermissions();
-        console.log("permission--------", permission.contacts);
+        console.log("Permission response:", permission);
         if (permission.contacts !== "granted") {
           console.error("Permission denied");
           return;
         }
-        console.log("permission---------", permission);
 
         const { contacts } = await Contacts.getContacts({
           projection: { name: true, phones: true, image: true },
         });
 
-        console.log("hre----------");
-
-        console.log("Contacts:----------", contacts);
+        console.log("Contacts:", contacts);
       } catch (error) {
         console.error("Failed to fetch contacts:", error);
       }
     };
 
-    fetchContacts();
+    // Wait for the Capacitor/Cordova bridge to be ready
+    const onDeviceReady = () => {
+      console.log("Device is ready");
+      fetchContacts();
+    };
+
+    if (document.readyState === "complete") {
+      if ((window as any).cordova) {
+        document.addEventListener("deviceready", onDeviceReady, false);
+      } else {
+        onDeviceReady();
+      }
+    } else {
+      document.addEventListener("deviceready", onDeviceReady, false);
+    }
   }, []);
 
-  return <p>Fetching contacts... </p>;
+  return <p>Fetching contacts...</p>;
 };
 
 export default ContactFetcher;
