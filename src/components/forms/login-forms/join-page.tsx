@@ -16,7 +16,7 @@ import { GET_CONTACTS_API, NEXT_PUBLIC_API_KEY } from "@/constants/envConfig";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { FC, useState } from "react";
+import React, { FC, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -83,6 +83,26 @@ const JoinPage: FC<any> = ({ setSelectedTab }) => {
   const [showRePassword, setShowRePassword] = useState(false);
   const [otpSessionId, setOtpSessionId] = useState<string | null>(null);
   const [verificationError, setVerificationError] = useState(false);
+  const [tokens, setTokens] = useState<any>(null);
+
+  React.useEffect(() => {
+    const fetchTokens = async () => {
+      const response = await fetch(
+        "https://y0gcskgkwwgwkkooscoso8sg.219.93.129.146.sslip.io/user_devices",
+        {
+          headers: {
+            Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoicG9zdGdyZXMifQ.SaPQ1nlsFVeVCY9N_AC57AH4r70fAEhe8STPGvM6rBQ`,
+          },
+        }
+      );
+      const data = await response.json();
+      console.log("data-----", data);
+      setTokens(data);
+    };
+    fetchTokens();
+  }, []);
+
+  console.log("tokens-----", tokens);
 
   const defaultValues = {
     first_name: "",
@@ -155,6 +175,18 @@ const JoinPage: FC<any> = ({ setSelectedTab }) => {
             },
           }
         );
+
+        await fetch("https://exp.host/--/api/v2/push/send", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(
+            tokens.map((token: any) => ({
+              to: token.expo_push_token,
+              title: "New User Created",
+              body: "A new user has just joined!",
+            }))
+          ),
+        });
 
         const [user] = await getUserResponse.json();
         console.log("user----", user);
